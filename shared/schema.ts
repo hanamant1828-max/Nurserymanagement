@@ -1,18 +1,84 @@
-import { sql } from "drizzle-orm";
-import { pgTable, text, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, date, decimal, json, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { relations } from "drizzle-orm";
 
+// 1. Users (Login View)
 export const users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
+  role: text("role").default("staff").notNull(),
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
+// 3. Categories
+export const categories = pgTable("categories", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  active: boolean("active").default(true).notNull(),
 });
 
-export type InsertUser = z.infer<typeof insertUserSchema>;
+// 4. Varieties
+export const varieties = pgTable("varieties", {
+  id: serial("id").primaryKey(),
+  categoryId: integer("category_id").notNull(),
+  name: text("name").notNull(),
+  active: boolean("active").default(true).notNull(),
+});
+
+// 5. Lots (Sowing Lot Entry)
+export const lots = pgTable("lots", {
+  id: serial("id").primaryKey(),
+  lotNumber: text("lot_number").notNull().unique(),
+  categoryId: integer("category_id").notNull(),
+  varietyId: integer("variety_id").notNull(),
+  sowingDate: text("sowing_date").notNull(),
+  seedsSown: integer("seeds_sown").notNull(),
+  damaged: integer("damaged").default(0).notNull(),
+  expectedReadyDate: text("expected_ready_date"),
+  remarks: text("remarks"),
+});
+
+// 8. Orders (Order Booking)
+export const orders = pgTable("orders", {
+  id: serial("id").primaryKey(),
+  lotId: integer("lot_id").notNull(),
+  customerName: text("customer_name").notNull(),
+  phone: text("phone").notNull(),
+  village: text("village"),
+  bookedQty: integer("booked_qty").notNull(),
+  advanceAmount: decimal("advance_amount").notNull(),
+  paymentMode: text("payment_mode").notNull(), // Cash, PhonePe
+  deliveryDate: text("delivery_date").notNull(),
+  status: text("status").default("BOOKED").notNull(), // BOOKED, DELIVERED, CANCELLED
+  deliveredQty: integer("delivered_qty").default(0),
+});
+
+// Relations
+export const varietiesRelations = relations(varieties, ({ one }) => ({
+  category: one(categories, { fields: [varieties.categoryId], references: [categories.id] }),
+}));
+
+export const lotsRelations = relations(lots, ({ one, many }) => ({
+  category: one(categories, { fields: [lots.categoryId], references: [categories.id] }),
+  variety: one(varieties, { fields: [lots.varietyId], references: [varieties.id] }),
+  orders: many(orders),
+}));
+
+export const ordersRelations = relations(orders, ({ one }) => ({
+  lot: one(lots, { fields: [orders.lotId], references: [lots.id] }),
+}));
+
+// Schemas
+export const insertUserSchema = createInsertSchema(users).omit({ id: true });
+export const insertCategorySchema = createInsertSchema(categories).omit({ id: true });
+export const insertVarietySchema = createInsertSchema(varieties).omit({ id: true });
+export const insertLotSchema = createInsertSchema(lots).omit({ id: true });
+export const insertOrderSchema = createInsertSchema(orders).omit({ id: true });
+
+// Types
 export type User = typeof users.$inferSelect;
+export type Category = typeof categories.$inferSelect;
+export type Variety = typeof varieties.$inferSelect;
+export type Lot = typeof lots.$inferSelect;
+export type Order = typeof orders.$inferSelect;

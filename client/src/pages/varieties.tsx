@@ -1,0 +1,223 @@
+import { useState } from "react";
+import { useVarieties, useCreateVariety, useUpdateVariety } from "@/hooks/use-varieties";
+import { useCategories } from "@/hooks/use-categories";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Plus, Edit2, Flower2 } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Badge } from "@/components/ui/badge";
+import { api, type Variety } from "@shared/routes";
+
+// Extend schema for form usage (categoryId needs to be string for Select)
+const formSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  categoryId: z.string().min(1, "Category is required"),
+  active: z.boolean().default(true),
+});
+
+export default function VarietiesPage() {
+  const { data: varieties, isLoading: loadingVarieties } = useVarieties();
+  const { data: categories } = useCategories();
+  
+  const [open, setOpen] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: { name: "", categoryId: "", active: true },
+  });
+
+  const { mutate: create, isPending: creating } = useCreateVariety();
+  const { mutate: update, isPending: updating } = useUpdateVariety();
+
+  const onSubmit = (data: z.infer<typeof formSchema>) => {
+    // API expects number for categoryId
+    const payload = { ...data, categoryId: parseInt(data.categoryId) };
+    
+    if (editingId) {
+      update({ id: editingId, ...payload }, { onSuccess: () => { setOpen(false); resetForm(); } });
+    } else {
+      create(payload, { onSuccess: () => { setOpen(false); resetForm(); } });
+    }
+  };
+
+  const handleEdit = (variety: Variety) => {
+    setEditingId(variety.id);
+    form.reset({ 
+      name: variety.name, 
+      categoryId: variety.categoryId.toString(), 
+      active: variety.active 
+    });
+    setOpen(true);
+  };
+
+  const resetForm = () => {
+    setEditingId(null);
+    form.reset({ name: "", categoryId: "", active: true });
+  };
+
+  const getCategoryName = (id: number) => categories?.find(c => c.id === id)?.name || "Unknown";
+
+  return (
+    <div className="space-y-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-display font-bold">Varieties</h1>
+          <p className="text-muted-foreground">Manage specific plant varieties under categories.</p>
+        </div>
+        <Dialog open={open} onOpenChange={(val) => { setOpen(val); if(!val) resetForm(); }}>
+          <DialogTrigger asChild>
+            <Button size="lg" className="shadow-lg shadow-primary/20">
+              <Plus className="w-5 h-5 mr-2" /> Add Variety
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{editingId ? "Edit Variety" : "New Variety"}</DialogTitle>
+            </DialogHeader>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-4">
+                <FormField
+                  control={form.control}
+                  name="categoryId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Category</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a category" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {categories?.filter(c => c.active).map(category => (
+                            <SelectItem key={category.id} value={category.id.toString()}>
+                              {category.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Variety Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g. Cherry Tomato, Hybrid Rose" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="active"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base">Active Status</FormLabel>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <Button type="submit" className="w-full" disabled={creating || updating}>
+                  {editingId ? "Save Changes" : "Create Variety"}
+                </Button>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+        <Table>
+          <TableHeader className="bg-muted/50">
+            <TableRow>
+              <TableHead>Category</TableHead>
+              <TableHead>Variety Name</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {loadingVarieties ? (
+              [1, 2, 3].map(i => (
+                <TableRow key={i}>
+                  <TableCell><div className="h-4 w-24 bg-muted animate-pulse rounded" /></TableCell>
+                  <TableCell><div className="h-4 w-32 bg-muted animate-pulse rounded" /></TableCell>
+                  <TableCell><div className="h-4 w-16 bg-muted animate-pulse rounded" /></TableCell>
+                  <TableCell><div className="h-8 w-8 ml-auto bg-muted animate-pulse rounded" /></TableCell>
+                </TableRow>
+              ))
+            ) : varieties?.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={4} className="h-32 text-center text-muted-foreground">
+                  <div className="flex flex-col items-center gap-2">
+                    <Flower2 className="w-8 h-8 opacity-20" />
+                    No varieties found.
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : (
+              varieties?.map((variety) => (
+                <TableRow key={variety.id} className="group">
+                  <TableCell className="text-muted-foreground font-medium">
+                    {getCategoryName(variety.categoryId)}
+                  </TableCell>
+                  <TableCell className="font-semibold text-lg">{variety.name}</TableCell>
+                  <TableCell>
+                    <Badge variant={variety.active ? "default" : "secondary"}>
+                      {variety.active ? "Active" : "Inactive"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="icon" onClick={() => handleEdit(variety)}>
+                      <Edit2 className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  );
+}
