@@ -1,0 +1,412 @@
+Below is a COMPLETE, COMPREHENSIVE, DEVELOPER-FRIENDLY VIEW & FORM REQUIREMENTS DOCUMENT
+written so your Flask + HTML + CSS + JavaScript (Bootstrap) team can implement without asking questions.
+
+❌ No code
+❌ No theory
+✅ What fields
+✅ Textbox / dropdown / date
+✅ Bootstrap tables
+✅ Validation rules
+✅ What user sees & does
+
+You can directly hand this to developers.
+
+
+---
+
+🌱 Nursery Management Software
+
+📋 UI Views, Forms & Data Collection Requirements
+
+(Flask + HTML + CSS + JS + Bootstrap)
+
+
+---
+
+🔐 1. LOGIN VIEW
+
+Purpose
+
+Allow nursery owner / staff to access system.
+
+Form Fields
+
+Field	Type	UI Control
+
+Username	Text	Textbox
+Password	Password	Password box
+
+
+Buttons
+
+Login
+
+
+Validation
+
+Required fields
+
+Invalid login message
+
+
+
+---
+
+📊 2. DASHBOARD VIEW
+
+Purpose
+
+Quick daily overview for nursery owner.
+
+Top Summary Cards (Bootstrap Cards)
+
+Today’s Sowing Count
+
+Active Lots Count
+
+Pending Orders
+
+Upcoming Deliveries
+
+
+Tables (Optional)
+
+Upcoming Deliveries Table | Delivery Date | Lot No | Variety | Qty | Customer |
+
+
+---
+
+🌱 3. CATEGORY MANAGEMENT VIEW
+
+Purpose
+
+Manage crop categories.
+
+Add / Edit Category Form
+
+Field	Type	UI Control
+
+Category Name	Text	Textbox
+Active Status	Boolean	Toggle / Checkbox
+
+
+Table (Bootstrap Table)
+
+Category Name	Status	Actions
+
+Watermelon	Active	Edit / Disable
+
+
+
+---
+
+🌿 4. VARIETY MANAGEMENT VIEW
+
+Purpose
+
+Manage varieties under categories.
+
+Add / Edit Variety Form
+
+Field	Type	UI Control
+
+Category	Foreign Key	Dropdown
+Variety Name	Text	Textbox
+Active Status	Boolean	Checkbox
+
+
+Table
+
+| Category | Variety | Status | Actions |
+
+
+---
+
+🌱 5. SOWING LOT ENTRY VIEW (MOST IMPORTANT)
+
+Purpose
+
+Daily recording of seed sowing (lot-wise).
+
+Form Fields
+
+Field	Type	UI Control
+
+Category	FK	Dropdown
+Variety	FK	Dropdown (depends on category)
+Sowing Date	Date	Date Picker
+Lot Number	Text	Textbox (Auto / Manual)
+Seeds Sown Quantity	Number	Number Input
+Expected Ready Date	Date	Date Picker
+Remarks	Text	Textarea
+
+
+Buttons
+
+Save Lot
+
+Reset
+
+
+Validation
+
+All required
+
+Quantity > 0
+
+Duplicate lot number not allowed
+
+
+
+---
+
+📦 6. LOTS & STOCK VIEW
+
+Purpose
+
+See all lots and current availability.
+
+Bootstrap Table
+
+Lot No	Category	Variety	Sowing Date	Seeds Sown	Damaged	Available	Status	Actions
+
+
+
+Actions
+
+View Lot
+
+Update Damage
+
+View Orders
+
+
+Notes
+
+Available = Seeds − Damaged − Booked
+
+Available is calculated, not typed
+
+
+
+---
+
+⚠️ 7. UPDATE DAMAGE VIEW
+
+Purpose
+
+Record plant loss/damage.
+
+Form Fields
+
+Field	Type	UI Control
+
+Lot Number	Read-only	Label
+Damaged Quantity	Number	Number Input
+Reason	Text	Textarea
+
+
+Validation
+
+Damaged ≤ Seeds Sown
+
+
+
+---
+
+🧾 8. ORDER BOOKING VIEW (CRITICAL FLOW)
+
+Purpose
+
+Book customer orders from available lots.
+
+Step 1: Selection
+
+Field	Type	UI Control
+
+Category	FK	Dropdown
+Variety	FK	Dropdown
+Lot	FK	Dropdown / Card showing available qty
+
+
+Step 2: Customer Details
+
+Field	Type	UI Control
+
+Customer Name	Text	Textbox
+Phone Number	Text	Textbox
+Village	Text	Textbox
+
+
+Step 3: Order Details
+
+Field	Type	UI Control
+
+Booked Quantity	Number	Number Input
+Advance Amount	Decimal	Number Input
+Payment Mode	Enum	Dropdown (Cash / PhonePe)
+Delivery Date	Date	Date Picker
+
+
+Auto-Calculated
+
+Balance Amount
+
+Available Stock
+
+
+Validation
+
+Booked Qty ≤ Available Qty
+
+Lot selection mandatory
+
+
+
+---
+
+📋 9. ORDER LIST VIEW
+
+Purpose
+
+View & manage all orders.
+
+Bootstrap Table
+
+Order ID	Lot	Customer	Qty	Delivery Date	Status	Actions
+
+
+
+Status
+
+BOOKED
+
+DELIVERED
+
+CANCELLED
+
+
+Actions
+
+Mark Delivered
+
+View Details
+
+
+
+---
+
+🚚 10. DELIVERY UPDATE VIEW
+
+Purpose
+
+Confirm delivery.
+
+Fields
+
+Field	Type	UI Control
+
+Order ID	Read-only	Label
+Delivered Quantity	Number	Number Input
+Delivery Date	Date	Date Picker
+
+
+Action
+
+Mark as Delivered
+
+
+
+---
+
+👥 11. CUSTOMER LIST VIEW
+
+Purpose
+
+View repeat customers.
+
+Bootstrap Table
+
+| Name | Phone | Village | Total Orders |
+
+
+---
+
+📑 12. REPORTS VIEW
+
+Reports
+
+Daily Sowing Report
+
+Pending Delivery Report
+
+Lot-wise Stock Report
+
+
+Filters
+
+Date range
+
+Category
+
+Variety
+
+
+
+---
+
+🎨 UI / UX RULES (MANDATORY)
+
+✔ Dropdowns for all relations
+✔ No manual typing for lot selection
+✔ Bootstrap tables for all lists
+✔ Large buttons for mobile use
+✔ Minimal screens, minimal typing
+
+
+---
+
+❌ SYSTEM MUST NOT ALLOW
+
+Order without lot
+
+Over-booking
+
+Deleting historical records
+
+Manual stock editing
+
+
+
+---
+
+✅ FINAL SUMMARY
+
+This UI design:
+
+Matches nursery owner daily work
+
+Is easy for non-technical users
+
+Prevents stock & delivery mistakes
+
+Is perfect for Flask + Bootstrap
+
+
+
+---
+
+If you want next, I can:
+
+Convert this into SRS PDF
+
+Create HTML wireframes
+
+Map each form → Flask route
+
+Prepare developer checklist
+
+Create test cases
+
+
+Just tell me 👍
