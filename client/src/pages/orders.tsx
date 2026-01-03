@@ -158,7 +158,7 @@ export default function OrdersPage() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Category Filter</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value || ""}>
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue placeholder="All Categories" />
@@ -177,7 +177,7 @@ export default function OrdersPage() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Variety Filter</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value || ""}>
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue placeholder="All Varieties" />
@@ -208,7 +208,7 @@ export default function OrdersPage() {
                                 <CardContent className="p-3">
                                   <div className="flex justify-between items-start">
                                     <div>
-                                      <p className="font-bold text-sm">{lot.variety.name}</p>
+                                      <p className="font-bold text-sm">{lot.variety?.name || 'Unknown'}</p>
                                       <p className="text-xs text-muted-foreground">{lot.lotNumber}</p>
                                     </div>
                                     <Badge variant="secondary" className="bg-green-100 text-green-700">
@@ -237,7 +237,7 @@ export default function OrdersPage() {
                   <div className="space-y-4 animate-in slide-in-from-right-4">
                     {selectedLot && (
                        <div className="bg-muted/30 p-3 rounded-lg flex justify-between items-center text-sm">
-                         <span>Selected: <strong>{selectedLot.variety.name}</strong> ({selectedLot.lotNumber})</span>
+                         <span>Selected: <strong>{selectedLot.variety?.name || 'Unknown'}</strong> ({selectedLot.lotNumber})</span>
                          <Button variant="link" size="sm" onClick={() => setStep(1)}>Change</Button>
                        </div>
                     )}
@@ -343,7 +343,7 @@ export default function OrdersPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Payment Mode</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <Select onValueChange={field.onChange} value={field.value || "Cash"}>
                                 <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                                 <SelectContent>
                                   <SelectItem value="Cash">Cash</SelectItem>
@@ -403,8 +403,8 @@ export default function OrdersPage() {
                     <div className="text-xs text-muted-foreground">{order.phone}</div>
                   </TableCell>
                   <TableCell>
-                    <span className="font-medium">{order.lot.variety.name}</span>
-                    <p className="text-xs text-muted-foreground">Lot: {order.lot.lotNumber}</p>
+                    <span className="font-medium">{order.lot?.variety?.name || 'Unknown'}</span>
+                    <p className="text-xs text-muted-foreground">Lot: {order.lot?.lotNumber || 'N/A'}</p>
                   </TableCell>
                   <TableCell className="text-right font-bold">{order.bookedQty}</TableCell>
                   <TableCell>{format(new Date(order.deliveryDate), "dd MMM yyyy")}</TableCell>
