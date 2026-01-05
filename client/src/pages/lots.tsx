@@ -411,8 +411,8 @@ export default function LotsPage() {
                     <TableCell className="font-mono font-medium">{lot.lotNumber}</TableCell>
                     <TableCell>
                       <div>
-                        <span className="font-medium">{lot.variety.name}</span>
-                        <p className="text-xs text-muted-foreground">{lot.category.name}</p>
+                        <span className="font-medium">{lot.variety?.name || "Unknown Variety"}</span>
+                        <p className="text-xs text-muted-foreground">{lot.category?.name || "Unknown Category"}</p>
                       </div>
                     </TableCell>
                     <TableCell>{lot.sowingDate}</TableCell>
