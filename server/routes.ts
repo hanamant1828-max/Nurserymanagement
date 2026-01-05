@@ -69,7 +69,18 @@ export async function registerRoutes(
 
   app.delete(api.varieties.delete.path, async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
-    await storage.deleteVariety(Number(req.params.id));
+    const id = Number(req.params.id);
+
+    // Check for associated lots
+    const lots = await storage.getLots();
+    const hasLots = lots.some(l => l.varietyId === id);
+    if (hasLots) {
+      return res.status(400).json({ 
+        message: "Cannot delete variety because it has associated sowing lots. Please delete the lots first." 
+      });
+    }
+
+    await storage.deleteVariety(id);
     res.sendStatus(200);
   });
 
@@ -97,6 +108,23 @@ export async function registerRoutes(
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const orders = await storage.getOrders();
     res.json(orders);
+  });
+
+  app.delete(api.lots.delete.path, async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const id = Number(req.params.id);
+
+    // Check for associated orders
+    const orders = await storage.getOrders();
+    const hasOrders = orders.some(o => o.lotId === id);
+    if (hasOrders) {
+      return res.status(400).json({ 
+        message: "Cannot delete lot because it has associated customer orders. Please delete the orders first." 
+      });
+    }
+
+    await storage.deleteLot(id);
+    res.sendStatus(200);
   });
 
   app.post(api.orders.create.path, async (req, res) => {

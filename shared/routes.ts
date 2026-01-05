@@ -102,6 +102,11 @@ export const api = {
       input: insertLotSchema.partial(),
       responses: { 200: z.custom<typeof lots.$inferSelect>() },
     },
+    delete: {
+      method: 'DELETE' as const,
+      path: '/api/lots/:id',
+      responses: { 200: z.void() },
+    },
   },
   orders: {
     list: {

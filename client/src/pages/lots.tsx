@@ -27,7 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Sprout, AlertTriangle, Eye, Calendar as CalendarIcon } from "lucide-react";
+import { Plus, Sprout, AlertTriangle, Eye, Calendar as CalendarIcon, Trash2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -36,6 +36,19 @@ import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { useToast } from "@/hooks/use-toast";
+import { useDeleteLot } from "@/hooks/use-lots";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 // Schema for create lot form
 const formSchema = z.object({
@@ -80,6 +93,26 @@ export default function LotsPage() {
 
   const { mutate: create, isPending: creating } = useCreateLot();
   const { mutate: update, isPending: updating } = useUpdateLot();
+  const { mutate: deleteLot } = useDeleteLot();
+  const { toast } = useToast();
+
+  const handleDelete = (id: number) => {
+    deleteLot(id, {
+      onSuccess: () => {
+        toast({
+          title: "Success",
+          description: "Lot deleted successfully",
+        });
+      },
+      onError: (error: any) => {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to delete lot",
+          variant: "destructive",
+        });
+      },
+    });
+  };
 
   // Filter varieties based on selected category
   const selectedCategoryId = form.watch("categoryId");
@@ -398,15 +431,41 @@ export default function LotsPage() {
                       )}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={() => openDamageDialog(lot.id)}
-                        title="Record Damage"
-                      >
-                        <AlertTriangle className="w-4 h-4" />
-                      </Button>
+                      <div className="flex justify-end gap-2">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => openDamageDialog(lot.id)}
+                          title="Record Damage"
+                        >
+                          <AlertTriangle className="w-4 h-4" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-destructive transition-colors">
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Lot</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete this sowing lot? This action cannot be undone and will fail if there are active orders for this lot.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDelete(lot.id)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </TableCell>
                   </TableRow>
                 );

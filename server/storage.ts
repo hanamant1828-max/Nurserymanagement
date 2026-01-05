@@ -1,52 +1,55 @@
-import { db, pool } from "./db";
 import {
   users, categories, varieties, lots, orders,
   type User, type Category, type Variety, type Lot, type Order,
 } from "@shared/schema";
-import { z } from "zod";
-import { insertUserSchema, insertCategorySchema, insertVarietySchema, insertLotSchema, insertOrderSchema } from "@shared/schema";
-
-type InsertUser = z.infer<typeof insertUserSchema>;
-type InsertCategory = z.infer<typeof insertCategorySchema>;
-type InsertVariety = z.infer<typeof insertVarietySchema>;
-type InsertLot = z.infer<typeof insertLotSchema>;
-type InsertOrder = z.infer<typeof insertOrderSchema>;
+import { db, pool } from "./db";
 import { eq, sql, and } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
+import { insertUserSchema, insertCategorySchema, insertVarietySchema, insertLotSchema, insertOrderSchema } from "@shared/schema";
+import { z } from "zod";
 
 const PostgresSessionStore = connectPg(session);
 
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type InsertCategory = z.infer<typeof insertCategorySchema>;
+export type InsertVariety = z.infer<typeof insertVarietySchema>;
+export type InsertLot = z.infer<typeof insertLotSchema>;
+export type InsertOrder = z.infer<typeof insertOrderSchema>;
+
 export interface IStorage {
-  sessionStore: session.Store;
-  
-  // Users
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
 
   // Categories
   getCategories(): Promise<Category[]>;
+  getCategory(id: number): Promise<Category | undefined>;
   createCategory(category: InsertCategory): Promise<Category>;
   updateCategory(id: number, category: Partial<InsertCategory>): Promise<Category>;
   deleteCategory(id: number): Promise<void>;
 
   // Varieties
   getVarieties(): Promise<Variety[]>;
+  getVariety(id: number): Promise<Variety | undefined>;
   createVariety(variety: InsertVariety): Promise<Variety>;
   updateVariety(id: number, variety: Partial<InsertVariety>): Promise<Variety>;
   deleteVariety(id: number): Promise<void>;
 
   // Lots
-  getLots(): Promise<(Lot & { category: Category, variety: Variety, available: number })[]>;
+  getLots(): Promise<(Lot & { category: Category; variety: Variety; orders: Order[]; available: number })[]>;
   getLot(id: number): Promise<Lot | undefined>;
   createLot(lot: InsertLot): Promise<Lot>;
   updateLot(id: number, lot: Partial<InsertLot>): Promise<Lot>;
+  deleteLot(id: number): Promise<void>;
 
   // Orders
-  getOrders(): Promise<(Order & { lot: Lot })[]>;
+  getOrders(): Promise<(Order & { lot: Lot & { variety: Variety } })[]>;
   createOrder(order: InsertOrder): Promise<Order>;
   updateOrder(id: number, order: Partial<InsertOrder>): Promise<Order>;
+  deleteOrder(id: number): Promise<void>;
+
+  sessionStore: session.Store;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -69,23 +72,28 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async createUser(user: InsertUser): Promise<User> {
-    const [newUser] = await db.insert(users).values(user).returning();
-    return newUser;
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db.insert(users).values(insertUser).returning();
+    return user;
   }
 
   async getCategories(): Promise<Category[]> {
-    return await db.select().from(categories);
+    return await db.select().from(categories).orderBy(categories.name);
   }
 
-  async createCategory(category: InsertCategory): Promise<Category> {
-    const [newCategory] = await db.insert(categories).values(category).returning();
-    return newCategory;
+  async getCategory(id: number): Promise<Category | undefined> {
+    const [category] = await db.select().from(categories).where(eq(categories.id, id));
+    return category;
+  }
+
+  async createCategory(insertCategory: InsertCategory): Promise<Category> {
+    const [category] = await db.insert(categories).values(insertCategory).returning();
+    return category;
   }
 
   async updateCategory(id: number, update: Partial<InsertCategory>): Promise<Category> {
-    const [updated] = await db.update(categories).set(update).where(eq(categories.id, id)).returning();
-    return updated;
+    const [category] = await db.update(categories).set(update).where(eq(categories.id, id)).returning();
+    return category;
   }
 
   async deleteCategory(id: number): Promise<void> {
@@ -93,39 +101,50 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getVarieties(): Promise<Variety[]> {
-    return await db.select().from(varieties);
+    return await db.select().from(varieties).orderBy(varieties.name);
   }
 
-  async createVariety(variety: InsertVariety): Promise<Variety> {
-    const [newVariety] = await db.insert(varieties).values(variety).returning();
-    return newVariety;
+  async getVariety(id: number): Promise<Variety | undefined> {
+    const [variety] = await db.select().from(varieties).where(eq(varieties.id, id));
+    return variety;
+  }
+
+  async createVariety(insertVariety: InsertVariety): Promise<Variety> {
+    const [variety] = await db.insert(varieties).values(insertVariety).returning();
+    return variety;
   }
 
   async updateVariety(id: number, update: Partial<InsertVariety>): Promise<Variety> {
-    const [updated] = await db.update(varieties).set(update).where(eq(varieties.id, id)).returning();
-    return updated;
+    const [variety] = await db.update(varieties).set(update).where(eq(varieties.id, id)).returning();
+    return variety;
   }
 
   async deleteVariety(id: number): Promise<void> {
     await db.delete(varieties).where(eq(varieties.id, id));
   }
 
-  async getLots(): Promise<(Lot & { category: Category, variety: Variety, available: number })[]> {
-    const allLots = await db.query.lots.findMany({
-      with: {
-        category: true,
-        variety: true,
-        orders: true
-      }
-    });
+  async getLots(): Promise<(Lot & { category: Category; variety: Variety; orders: Order[]; available: number })[]> {
+    const allLots = await db.select().from(lots);
+    const results = [];
 
-    return allLots.map(lot => {
-      const booked = lot.orders
-        .filter(o => o.status !== 'CANCELLED')
-        .reduce((sum, o) => sum + o.bookedQty, 0);
-      const available = lot.seedsSown - lot.damaged - booked;
-      return { ...lot, available };
-    });
+    for (const lot of allLots) {
+      const [category] = await db.select().from(categories).where(eq(categories.id, lot.categoryId));
+      const [variety] = await db.select().from(varieties).where(eq(varieties.id, lot.varietyId));
+      const lotOrders = await db.select().from(orders).where(eq(orders.lotId, lot.id));
+      
+      const totalBooked = lotOrders.reduce((sum, o) => sum + o.bookedQty, 0);
+      const available = lot.seedsSown - lot.damaged - totalBooked;
+
+      results.push({
+        ...lot,
+        category,
+        variety,
+        orders: lotOrders,
+        available
+      });
+    }
+
+    return results;
   }
 
   async getLot(id: number): Promise<Lot | undefined> {
@@ -133,30 +152,52 @@ export class DatabaseStorage implements IStorage {
     return lot;
   }
 
-  async createLot(lot: InsertLot): Promise<Lot> {
-    const [newLot] = await db.insert(lots).values(lot).returning();
-    return newLot;
+  async createLot(insertLot: InsertLot): Promise<Lot> {
+    const [lot] = await db.insert(lots).values(insertLot).returning();
+    return lot;
   }
 
   async updateLot(id: number, update: Partial<InsertLot>): Promise<Lot> {
-    const [updated] = await db.update(lots).set(update).where(eq(lots.id, id)).returning();
-    return updated;
+    const [lot] = await db.update(lots).set(update).where(eq(lots.id, id)).returning();
+    return lot;
   }
 
-  async getOrders(): Promise<(Order & { lot: Lot })[]> {
-    return await db.query.orders.findMany({
-      with: { lot: true }
-    });
+  async deleteLot(id: number): Promise<void> {
+    await db.delete(lots).where(eq(lots.id, id));
   }
 
-  async createOrder(order: InsertOrder): Promise<Order> {
-    const [newOrder] = await db.insert(orders).values(order).returning();
-    return newOrder;
+  async getOrders(): Promise<(Order & { lot: Lot & { variety: Variety } })[]> {
+    const allOrders = await db.select().from(orders);
+    const results = [];
+
+    for (const order of allOrders) {
+      const [lot] = await db.select().from(lots).where(eq(lots.id, order.lotId));
+      const [variety] = await db.select().from(varieties).where(eq(varieties.id, lot.varietyId));
+      
+      results.push({
+        ...order,
+        lot: {
+          ...lot,
+          variety
+        }
+      });
+    }
+
+    return results;
+  }
+
+  async createOrder(insertOrder: InsertOrder): Promise<Order> {
+    const [order] = await db.insert(orders).values(insertOrder).returning();
+    return order;
   }
 
   async updateOrder(id: number, update: Partial<InsertOrder>): Promise<Order> {
-    const [updated] = await db.update(orders).set(update).where(eq(orders.id, id)).returning();
-    return updated;
+    const [order] = await db.update(orders).set(update).where(eq(orders.id, id)).returning();
+    return order;
+  }
+
+  async deleteOrder(id: number): Promise<void> {
+    await db.delete(orders).where(eq(orders.id, id));
   }
 }
 

@@ -46,6 +46,26 @@ export function useCreateLot() {
   });
 }
 
+export function useDeleteLot() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const url = buildUrl(api.lots.delete.path, { id });
+      const res = await fetch(url, {
+        method: api.lots.delete.method,
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to delete lot");
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [api.lots.list.path] });
+    },
+  });
+}
+
 export function useUpdateLot() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -66,7 +86,8 @@ export function useUpdateLot() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [api.lots.list.path] });
-      queryClient.invalidateQueries({ queryKey: [api.orders.list.path] }); // Orders depend on lot availability
+      // Invalidate orders if lot availability changed significantly
+      queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
     },
   });
 }
