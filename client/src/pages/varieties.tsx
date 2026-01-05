@@ -69,6 +69,7 @@ export default function VarietiesPage() {
   const { mutate: create, isPending: creating } = useCreateVariety();
   const { mutate: update, isPending: updating } = useUpdateVariety();
   const { mutate: deleteVariety } = useDeleteVariety();
+  const { toast } = useToast();
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     // API expects number for categoryId
@@ -79,6 +80,24 @@ export default function VarietiesPage() {
     } else {
       create(payload, { onSuccess: () => { setOpen(false); resetForm(); } });
     }
+  };
+
+  const handleDelete = (id: number) => {
+    deleteVariety(id, {
+      onSuccess: () => {
+        toast({
+          title: "Success",
+          description: "Variety deleted successfully",
+        });
+      },
+      onError: (error: any) => {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to delete variety",
+          variant: "destructive",
+        });
+      },
+    });
   };
 
   const handleEdit = (variety: Variety) => {
