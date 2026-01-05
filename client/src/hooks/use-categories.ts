@@ -45,7 +45,10 @@ export function useDeleteCategory() {
         method: api.categories.delete.method,
         credentials: "include",
       });
-      if (!res.ok) throw new Error("Failed to delete category");
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to delete category");
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [api.categories.list.path] });

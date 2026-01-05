@@ -37,6 +37,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Badge } from "@/components/ui/badge";
 import { api } from "@shared/routes";
 import { type Category } from "@shared/schema";
+import { useToast } from "@/hooks/use-toast";
 
 const formSchema = api.categories.create.input;
 
@@ -44,6 +45,7 @@ export default function CategoriesPage() {
   const { data: categories, isLoading } = useCategories();
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -60,6 +62,24 @@ export default function CategoriesPage() {
     } else {
       create(data, { onSuccess: () => { setOpen(false); resetForm(); } });
     }
+  };
+
+  const handleDelete = (id: number) => {
+    deleteCategory(id, {
+      onSuccess: () => {
+        toast({
+          title: "Success",
+          description: "Category deleted successfully",
+        });
+      },
+      onError: (error: any) => {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to delete category",
+          variant: "destructive",
+        });
+      },
+    });
   };
 
   const handleEdit = (category: Category) => {
@@ -194,7 +214,7 @@ export default function CategoriesPage() {
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
                             <AlertDialogAction
-                              onClick={() => deleteCategory(category.id)}
+                              onClick={() => handleDelete(category.id)}
                               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                             >
                               Delete

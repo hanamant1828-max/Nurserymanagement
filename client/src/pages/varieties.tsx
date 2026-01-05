@@ -45,6 +45,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Badge } from "@/components/ui/badge";
 import { api } from "@shared/routes";
 import { type Variety } from "@shared/schema";
+import { useToast } from "@/hooks/use-toast";
 
 // Extend schema for form usage (categoryId needs to be string for Select)
 const formSchema = z.object({
@@ -241,7 +242,7 @@ export default function VarietiesPage() {
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
                             <AlertDialogAction
-                              onClick={() => deleteVariety(variety.id)}
+                              onClick={() => handleDelete(variety.id)}
                               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                             >
                               Delete

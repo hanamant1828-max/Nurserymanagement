@@ -33,7 +33,18 @@ export async function registerRoutes(
 
   app.delete(api.categories.delete.path, async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
-    await storage.deleteCategory(Number(req.params.id));
+    const id = Number(req.params.id);
+
+    // Check for associated varieties
+    const varieties = await storage.getVarieties();
+    const hasVarieties = varieties.some(v => v.categoryId === id);
+    if (hasVarieties) {
+      return res.status(400).json({ 
+        message: "Cannot delete category because it has associated varieties. Please delete the varieties first." 
+      });
+    }
+
+    await storage.deleteCategory(id);
     res.sendStatus(200);
   });
 

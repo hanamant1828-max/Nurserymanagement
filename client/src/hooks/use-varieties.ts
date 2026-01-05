@@ -46,7 +46,10 @@ export function useDeleteVariety() {
         method: api.varieties.delete.method,
         credentials: "include",
       });
-      if (!res.ok) throw new Error("Failed to delete variety");
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to delete variety");
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [api.varieties.list.path] });
