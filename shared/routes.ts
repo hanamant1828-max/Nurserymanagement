@@ -54,6 +54,11 @@ export const api = {
       input: insertCategorySchema.partial(),
       responses: { 200: z.custom<typeof categories.$inferSelect>() },
     },
+    delete: {
+      method: 'DELETE' as const,
+      path: '/api/categories/:id',
+      responses: { 200: z.void() },
+    },
   },
   varieties: {
     list: {
@@ -72,6 +77,11 @@ export const api = {
       path: '/api/varieties/:id',
       input: insertVarietySchema.partial(),
       responses: { 200: z.custom<typeof varieties.$inferSelect>() },
+    },
+    delete: {
+      method: 'DELETE' as const,
+      path: '/api/varieties/:id',
+      responses: { 200: z.void() },
     },
   },
   lots: {

@@ -55,8 +55,14 @@ export const orders = pgTable("orders", {
 });
 
 // Relations
-export const varietiesRelations = relations(varieties, ({ one }) => ({
+export const categoriesRelations = relations(categories, ({ many }) => ({
+  varieties: many(varieties),
+  lots: many(lots),
+}));
+
+export const varietiesRelations = relations(varieties, ({ one, many }) => ({
   category: one(categories, { fields: [varieties.categoryId], references: [categories.id] }),
+  lots: many(lots),
 }));
 
 export const lotsRelations = relations(lots, ({ one, many }) => ({

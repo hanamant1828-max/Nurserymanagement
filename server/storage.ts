@@ -2,8 +2,15 @@ import { db, pool } from "./db";
 import {
   users, categories, varieties, lots, orders,
   type User, type Category, type Variety, type Lot, type Order,
-  type InsertUser, type InsertCategory, type InsertVariety, type InsertLot, type InsertOrder
 } from "@shared/schema";
+import { z } from "zod";
+import { insertUserSchema, insertCategorySchema, insertVarietySchema, insertLotSchema, insertOrderSchema } from "@shared/schema";
+
+type InsertUser = z.infer<typeof insertUserSchema>;
+type InsertCategory = z.infer<typeof insertCategorySchema>;
+type InsertVariety = z.infer<typeof insertVarietySchema>;
+type InsertLot = z.infer<typeof insertLotSchema>;
+type InsertOrder = z.infer<typeof insertOrderSchema>;
 import { eq, sql, and } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
@@ -22,11 +29,13 @@ export interface IStorage {
   getCategories(): Promise<Category[]>;
   createCategory(category: InsertCategory): Promise<Category>;
   updateCategory(id: number, category: Partial<InsertCategory>): Promise<Category>;
+  deleteCategory(id: number): Promise<void>;
 
   // Varieties
   getVarieties(): Promise<Variety[]>;
   createVariety(variety: InsertVariety): Promise<Variety>;
   updateVariety(id: number, variety: Partial<InsertVariety>): Promise<Variety>;
+  deleteVariety(id: number): Promise<void>;
 
   // Lots
   getLots(): Promise<(Lot & { category: Category, variety: Variety, available: number })[]>;
@@ -79,6 +88,10 @@ export class DatabaseStorage implements IStorage {
     return updated;
   }
 
+  async deleteCategory(id: number): Promise<void> {
+    await db.delete(categories).where(eq(categories.id, id));
+  }
+
   async getVarieties(): Promise<Variety[]> {
     return await db.select().from(varieties);
   }
@@ -91,6 +104,10 @@ export class DatabaseStorage implements IStorage {
   async updateVariety(id: number, update: Partial<InsertVariety>): Promise<Variety> {
     const [updated] = await db.update(varieties).set(update).where(eq(varieties.id, id)).returning();
     return updated;
+  }
+
+  async deleteVariety(id: number): Promise<void> {
+    await db.delete(varieties).where(eq(varieties.id, id));
   }
 
   async getLots(): Promise<(Lot & { category: Category, variety: Variety, available: number })[]> {

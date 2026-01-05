@@ -37,6 +37,23 @@ export function useCreateVariety() {
   });
 }
 
+export function useDeleteVariety() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const url = buildUrl(api.varieties.delete.path, { id });
+      const res = await fetch(url, {
+        method: api.varieties.delete.method,
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to delete variety");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [api.varieties.list.path] });
+    },
+  });
+}
+
 export function useUpdateVariety() {
   const queryClient = useQueryClient();
   return useMutation({

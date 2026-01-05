@@ -31,6 +31,12 @@ export async function registerRoutes(
     res.json(category);
   });
 
+  app.delete(api.categories.delete.path, async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    await storage.deleteCategory(Number(req.params.id));
+    res.sendStatus(200);
+  });
+
   // Varieties
   app.get(api.varieties.list.path, async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
@@ -42,6 +48,18 @@ export async function registerRoutes(
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const variety = await storage.createVariety(req.body);
     res.status(201).json(variety);
+  });
+
+  app.put(api.varieties.update.path, async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const variety = await storage.updateVariety(Number(req.params.id), req.body);
+    res.json(variety);
+  });
+
+  app.delete(api.varieties.delete.path, async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    await storage.deleteVariety(Number(req.params.id));
+    res.sendStatus(200);
   });
 
   // Lots

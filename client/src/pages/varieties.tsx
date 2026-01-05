@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useVarieties, useCreateVariety, useUpdateVariety } from "@/hooks/use-varieties";
+import { useVarieties, useCreateVariety, useUpdateVariety, useDeleteVariety } from "@/hooks/use-varieties";
 import { useCategories } from "@/hooks/use-categories";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import {
   Select,
   SelectContent,
@@ -26,13 +37,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Edit2, Flower2 } from "lucide-react";
+import { Plus, Edit2, Flower2, Trash2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
-import { api, type Variety } from "@shared/routes";
+import { api } from "@shared/routes";
+import { type Variety } from "@shared/schema";
 
 // Extend schema for form usage (categoryId needs to be string for Select)
 const formSchema = z.object({
@@ -55,6 +67,7 @@ export default function VarietiesPage() {
 
   const { mutate: create, isPending: creating } = useCreateVariety();
   const { mutate: update, isPending: updating } = useUpdateVariety();
+  const { mutate: deleteVariety } = useDeleteVariety();
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     // API expects number for categoryId
@@ -208,9 +221,35 @@ export default function VarietiesPage() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => handleEdit(variety)}>
-                      <Edit2 className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                    </Button>
+                    <div className="flex justify-end gap-2">
+                      <Button variant="ghost" size="icon" onClick={() => handleEdit(variety)}>
+                        <Edit2 className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive transition-colors" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Variety</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete this variety? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => deleteVariety(variety.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
