@@ -76,7 +76,7 @@ export default function Dashboard() {
 
   // Prepare chart data (Sales by Variety)
   const salesByVariety = orders?.reduce((acc, order) => {
-    const varietyName = order.lot.variety.name;
+    const varietyName = order.lot?.variety?.name || "Unknown Variety";
     acc[varietyName] = (acc[varietyName] || 0) + order.bookedQty;
     return acc;
   }, {} as Record<string, number>);
@@ -162,7 +162,7 @@ export default function Dashboard() {
                   <div key={order.id} className="p-4 hover:bg-muted/30 transition-colors flex items-center justify-between">
                     <div>
                       <p className="font-medium text-sm">{order.customerName}</p>
-                      <p className="text-xs text-muted-foreground">{order.lot.variety.name} • {order.bookedQty} qty</p>
+                      <p className="text-xs text-muted-foreground">{order.lot?.variety?.name || "Unknown"} • {order.bookedQty} qty</p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-bold text-primary">{format(parseISO(order.deliveryDate), 'MMM d')}</p>
