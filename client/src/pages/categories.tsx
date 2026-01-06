@@ -154,7 +154,7 @@ export default function CategoriesPage() {
         </Dialog>
       </div>
 
-      <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+      <div className="hidden md:block rounded-xl border bg-card shadow-sm overflow-hidden">
         <Table>
           <TableHeader className="bg-muted/50">
             <TableRow>
@@ -229,6 +229,58 @@ export default function CategoriesPage() {
             )}
           </TableBody>
         </Table>
+      </div>
+
+      {/* Mobile View */}
+      <div className="md:hidden space-y-4">
+        {isLoading ? (
+          <p className="text-center py-4">Loading categories...</p>
+        ) : categories?.length === 0 ? (
+          <p className="text-center py-4 text-muted-foreground">No categories found.</p>
+        ) : (
+          categories?.map((category) => (
+            <div key={category.id} className="bg-card border rounded-lg p-4 space-y-3 shadow-sm">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="font-bold text-lg">{category.name}</h3>
+                  <p className="text-xs text-muted-foreground font-mono">ID: #{category.id}</p>
+                </div>
+                <Badge variant={category.active ? "default" : "secondary"}>
+                  {category.active ? "Active" : "Inactive"}
+                </Badge>
+              </div>
+              <div className="flex justify-end gap-2 pt-2 border-t">
+                <Button variant="outline" size="sm" onClick={() => handleEdit(category)}>
+                  <Edit2 className="w-4 h-4 mr-1" /> Edit
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="outline" size="sm" className="text-destructive border-destructive/20">
+                      <Trash2 className="w-4 h-4 mr-1" /> Delete
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Category</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to delete this category?
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => handleDelete(category.id)}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

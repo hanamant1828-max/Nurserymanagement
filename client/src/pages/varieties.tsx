@@ -199,7 +199,7 @@ export default function VarietiesPage() {
         </Dialog>
       </div>
 
-      <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+      <div className="hidden md:block rounded-xl border bg-card shadow-sm overflow-hidden">
         <Table>
           <TableHeader className="bg-muted/50">
             <TableRow>
@@ -276,6 +276,60 @@ export default function VarietiesPage() {
             )}
           </TableBody>
         </Table>
+      </div>
+
+      {/* Mobile View */}
+      <div className="md:hidden space-y-4">
+        {loadingVarieties ? (
+          <p className="text-center py-4">Loading varieties...</p>
+        ) : varieties?.length === 0 ? (
+          <p className="text-center py-4 text-muted-foreground">No varieties found.</p>
+        ) : (
+          varieties?.map((variety) => (
+            <div key={variety.id} className="bg-card border rounded-lg p-4 space-y-3 shadow-sm">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="font-bold text-lg">{variety.name}</h3>
+                  <p className="text-sm text-muted-foreground font-medium">
+                    {getCategoryName(variety.categoryId)}
+                  </p>
+                </div>
+                <Badge variant={variety.active ? "default" : "secondary"}>
+                  {variety.active ? "Active" : "Inactive"}
+                </Badge>
+              </div>
+              <div className="flex justify-end gap-2 pt-2 border-t">
+                <Button variant="outline" size="sm" onClick={() => handleEdit(variety)}>
+                  <Edit2 className="w-4 h-4 mr-1" /> Edit
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="outline" size="sm" className="text-destructive border-destructive/20">
+                      <Trash2 className="w-4 h-4 mr-1" /> Delete
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Variety</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to delete this variety?
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => handleDelete(variety.id)}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

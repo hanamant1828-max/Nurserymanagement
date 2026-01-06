@@ -377,7 +377,7 @@ export default function LotsPage() {
         </Dialog>
       </div>
 
-      <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+      <div className="hidden md:block rounded-xl border bg-card shadow-sm overflow-hidden">
         <Table>
           <TableHeader className="bg-muted/50">
             <TableRow>
@@ -473,6 +473,91 @@ export default function LotsPage() {
             )}
           </TableBody>
         </Table>
+      </div>
+
+      {/* Mobile View */}
+      <div className="md:hidden space-y-4">
+        {isLoading ? (
+          <p className="text-center py-4">Loading lots...</p>
+        ) : lots?.length === 0 ? (
+          <p className="text-center py-4 text-muted-foreground">No sowing lots recorded yet.</p>
+        ) : (
+          lots?.map((lot) => {
+            const isLowStock = lot.available < (lot.seedsSown * 0.1);
+            return (
+              <div key={lot.id} className="bg-card border rounded-lg p-4 space-y-3 shadow-sm">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-bold font-mono">{lot.lotNumber}</h3>
+                    <p className="text-sm font-medium">{lot.variety?.name || "Unknown Variety"}</p>
+                    <p className="text-xs text-muted-foreground">{lot.category?.name || "Unknown Category"}</p>
+                  </div>
+                  {lot.available === 0 ? (
+                    <Badge variant="outline">Empty</Badge>
+                  ) : isLowStock ? (
+                    <Badge variant="destructive">Low Stock</Badge>
+                  ) : (
+                    <Badge variant="secondary" className="bg-green-100 text-green-700">Available</Badge>
+                  )}
+                </div>
+                
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <p className="text-muted-foreground text-xs">Sowing Date</p>
+                    <p>{lot.sowingDate}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-muted-foreground text-xs">Available Stock</p>
+                    <p className="font-bold text-primary text-lg">{lot.available}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground text-xs">Sown Quantity</p>
+                    <p>{lot.seedsSown}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-muted-foreground text-xs">Damaged</p>
+                    <p className="text-destructive">{lot.damaged || 0}</p>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2 border-t">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-destructive border-destructive/20 hover:bg-destructive/5"
+                    onClick={() => openDamageDialog(lot.id)}
+                  >
+                    <AlertTriangle className="w-4 h-4 mr-1" /> Damage
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Trash2 className="w-4 h-4 mr-1" /> Delete
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Lot</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete this lot?
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleDelete(lot.id)}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
     </div>
   );
