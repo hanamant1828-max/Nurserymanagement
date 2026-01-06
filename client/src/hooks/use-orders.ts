@@ -10,7 +10,10 @@ export function useOrders() {
     queryKey: [api.orders.list.path],
     queryFn: async () => {
       const res = await fetch(api.orders.list.path, { credentials: "include" });
-      if (!res.ok) throw new Error("Failed to fetch orders");
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({}));
+        throw new Error(error.message || "Failed to fetch orders");
+      }
       return api.orders.list.responses[200].parse(await res.json());
     },
   });
@@ -18,6 +21,7 @@ export function useOrders() {
 
 export function useCreateOrder() {
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (data: CreateOrderInput) => {
       const payload = {
@@ -26,43 +30,53 @@ export function useCreateOrder() {
         bookedQty: Number(data.bookedQty),
         advanceAmount: Number(data.advanceAmount),
       };
-      
+
       const res = await fetch(api.orders.create.path, {
         method: api.orders.create.method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
         credentials: "include",
       });
-      
+
       if (!res.ok) {
-        const error = await res.json();
+        const error = await res.json().catch(() => ({}));
         throw new Error(error.message || "Failed to create order");
       }
       return api.orders.create.responses[201].parse(await res.json());
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [api.orders.list.path] });
-      queryClient.invalidateQueries({ queryKey: [api.lots.list.path] }); // Creating order reduces available stock
+      queryClient.invalidateQueries({ queryKey: [api.lots.list.path] });
     },
   });
 }
 
 export function useUpdateOrder() {
   const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: number } & UpdateOrderInput) => {
+    mutationFn: async ({
+      id,
+      ...updates
+    }: { id: number } & Partial<UpdateOrderInput>) => {
       const url = buildUrl(api.orders.update.path, { id });
+
       const res = await fetch(url, {
         method: api.orders.update.method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updates),
         credentials: "include",
       });
-      if (!res.ok) throw new Error("Failed to update order");
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({}));
+        throw new Error(error.message || "Failed to update order");
+      }
       return api.orders.update.responses[200].parse(await res.json());
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [api.orders.list.path] });
+      queryClient.invalidateQueries({ queryKey: [api.lots.list.path] }); // Update may affect stock
     },
   });
 }
