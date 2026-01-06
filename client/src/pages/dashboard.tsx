@@ -31,7 +31,7 @@ export default function Dashboard() {
   // Calculate Metrics
   const today = new Date();
   const sowingToday = lots?.filter(l => l.sowingDate === format(today, 'yyyy-MM-dd')).length || 0;
-  const activeLots = lots?.filter(l => l.seedsSown > (l.damaged + (l.available || 0))).length || 0; // Simplified logic
+  const activeLots = lots?.filter(l => l.available > 0).length || 0;
   const pendingOrders = orders?.filter(o => o.status === 'BOOKED').length || 0;
   
   // Upcoming deliveries (next 7 days)
