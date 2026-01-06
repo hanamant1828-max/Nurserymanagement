@@ -54,7 +54,7 @@ export default function CategoriesPage() {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: { name: "", active: true },
+    defaultValues: { name: "", active: true, image: "" },
   });
 
   const { mutate: create, isPending: creating } = useCreateCategory();
@@ -244,7 +244,20 @@ export default function CategoriesPage() {
               filteredCategories.map((category) => (
                 <TableRow key={category.id} className="group">
                   <TableCell className="font-mono text-muted-foreground">#{category.id}</TableCell>
-                  <TableCell className="font-medium text-lg">{category.name}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      {category.image && (
+                        <div className="w-10 h-10 rounded-lg overflow-hidden border flex-shrink-0">
+                          <img 
+                            src={category.image} 
+                            alt={category.name} 
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      <span className="font-medium text-lg">{category.name}</span>
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <Badge variant={category.active ? "default" : "secondary"}>
                       {category.active ? "Active" : "Inactive"}
@@ -298,9 +311,20 @@ export default function CategoriesPage() {
           filteredCategories.map((category) => (
             <div key={category.id} className="bg-card border rounded-lg p-4 space-y-3 shadow-sm">
               <div className="flex justify-between items-center">
-                <div>
-                  <h3 className="font-bold text-lg">{category.name}</h3>
-                  <p className="text-xs text-muted-foreground font-mono">ID: #{category.id}</p>
+                <div className="flex items-center gap-3">
+                  {category.image && (
+                    <div className="w-12 h-12 rounded-lg overflow-hidden border flex-shrink-0">
+                      <img 
+                        src={category.image} 
+                        alt={category.name} 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <div>
+                    <h3 className="font-bold text-lg">{category.name}</h3>
+                    <p className="text-xs text-muted-foreground font-mono">ID: #{category.id}</p>
+                  </div>
                 </div>
                 <Badge variant={category.active ? "default" : "secondary"}>
                   {category.active ? "Active" : "Inactive"}
