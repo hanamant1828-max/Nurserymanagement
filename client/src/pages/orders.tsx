@@ -212,15 +212,15 @@ export default function OrdersPage() {
                                 <SelectContent>
                                   {categories?.map(c => (
                                     <SelectItem key={c.id} value={c.id.toString()}>
-                                      <div className="flex items-center gap-3 py-1">
+                                      <div className="flex items-center gap-4 py-2">
                                         {c.image ? (
-                                          <img src={c.image} className="w-8 h-8 rounded-md object-cover border shadow-sm" alt="" />
+                                          <img src={c.image} className="w-12 h-12 rounded-md object-cover border shadow-sm" alt="" />
                                         ) : (
-                                          <div className="w-8 h-8 rounded-md bg-muted flex items-center justify-center border">
-                                            <Layers className="w-4 h-4 text-muted-foreground" />
+                                          <div className="w-12 h-12 rounded-md bg-muted flex items-center justify-center border">
+                                            <Layers className="w-6 h-6 text-muted-foreground" />
                                           </div>
                                         )}
-                                        <span className="font-medium">{c.name}</span>
+                                        <span className="font-bold text-lg">{c.name}</span>
                                       </div>
                                     </SelectItem>
                                   ))}
@@ -249,15 +249,15 @@ export default function OrdersPage() {
                                     const cat = categories?.find(c => c.id === v.categoryId);
                                     return (
                                       <SelectItem key={v.id} value={v.id.toString()}>
-                                        <div className="flex items-center gap-3 py-1">
+                                        <div className="flex items-center gap-4 py-2">
                                           {cat?.image ? (
-                                            <img src={cat.image} className="w-8 h-8 rounded-md object-cover border shadow-sm" alt="" />
+                                            <img src={cat.image} className="w-12 h-12 rounded-md object-cover border shadow-sm" alt="" />
                                           ) : (
-                                            <div className="w-8 h-8 rounded-md bg-muted flex items-center justify-center border">
-                                              <Layers className="w-4 h-4 text-muted-foreground" />
+                                            <div className="w-12 h-12 rounded-md bg-muted flex items-center justify-center border">
+                                              <Layers className="w-6 h-6 text-muted-foreground" />
                                             </div>
                                           )}
-                                          <span className="font-medium">{v.name}</span>
+                                          <span className="font-bold text-lg">{v.name}</span>
                                         </div>
                                       </SelectItem>
                                     );
@@ -285,22 +285,22 @@ export default function OrdersPage() {
                                   className={`cursor-pointer transition-all border-2 ${field.value === lot.id.toString() ? 'border-primary bg-primary/5 ring-2 ring-primary/10' : 'hover:border-primary/50'}`}
                                   onClick={() => field.onChange(lot.id.toString())}
                                 >
-                                  <CardContent className="p-3">
-                                    <div className="flex justify-between items-start gap-2">
-                                      <div className="flex items-center gap-3">
+                                  <CardContent className="p-4">
+                                    <div className="flex justify-between items-start gap-4">
+                                      <div className="flex items-center gap-4">
                                         {lot.category?.image ? (
-                                          <img src={lot.category.image} className="w-10 h-10 rounded-md object-cover border" alt="" />
+                                          <img src={lot.category.image} className="w-14 h-14 rounded-md object-cover border" alt="" />
                                         ) : (
-                                          <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center border">
-                                            <Layers className="w-5 h-5 text-muted-foreground/30" />
+                                          <div className="w-14 h-14 rounded-md bg-muted flex items-center justify-center border">
+                                            <Layers className="w-7 h-7 text-muted-foreground/30" />
                                           </div>
                                         )}
                                         <div className="overflow-hidden">
-                                          <p className="font-bold text-sm truncate">{lot.variety?.name}</p>
-                                          <p className="text-[10px] text-muted-foreground font-mono">{lot.lotNumber}</p>
+                                          <p className="font-extrabold text-base truncate">{lot.variety?.name}</p>
+                                          <p className="text-xs text-muted-foreground font-mono">{lot.lotNumber}</p>
                                         </div>
                                       </div>
-                                      <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 whitespace-nowrap">
+                                      <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 whitespace-nowrap text-sm px-2 py-1">
                                         {lot.available}
                                       </Badge>
                                     </div>
@@ -488,15 +488,15 @@ export default function OrdersPage() {
                 <SelectItem value="all">All Categories</SelectItem>
                 {categories?.map(c => (
                   <SelectItem key={c.id} value={c.id.toString()}>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3 py-1">
                       {c.image ? (
-                        <img src={c.image} className="w-6 h-6 rounded-sm object-cover border" alt="" />
+                        <img src={c.image} className="w-10 h-10 rounded-md object-cover border" alt="" />
                       ) : (
-                        <div className="w-6 h-6 rounded-sm bg-muted flex items-center justify-center border">
-                          <Layers className="w-3 h-3 text-muted-foreground/40" />
+                        <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center border">
+                          <Layers className="w-5 h-5 text-muted-foreground/40" />
                         </div>
                       )}
-                      <span>{c.name}</span>
+                      <span className="font-semibold text-base">{c.name}</span>
                     </div>
                   </SelectItem>
                 ))}
