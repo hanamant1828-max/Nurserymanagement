@@ -62,12 +62,37 @@ export default function OrdersPage() {
   const [step, setStep] = useState(1);
   const [search, setSearch] = useState("");
 
-  const filteredOrdersList = orders?.filter(o => 
-    o.customerName?.toLowerCase().includes(search.toLowerCase()) ||
-    o.phone?.toLowerCase().includes(search.toLowerCase()) ||
-    o.lot?.lotNumber?.toLowerCase().includes(search.toLowerCase()) ||
-    o.lot?.variety?.name?.toLowerCase().includes(search.toLowerCase())
-  ) || [];
+  // Page level filters for cascading view
+  const [pageCategoryId, setPageCategoryId] = useState<string>("all");
+  const [pageVarietyId, setPageVarietyId] = useState<string>("all");
+  const [pageLotId, setPageLotId] = useState<string>("all");
+
+  const filteredVarietiesPage = varieties?.filter(v => 
+    pageCategoryId === "all" || v.categoryId.toString() === pageCategoryId
+  );
+
+  const filteredLotsPage = lots?.filter(l => 
+    (pageCategoryId === "all" || l.categoryId.toString() === pageCategoryId) &&
+    (pageVarietyId === "all" || l.varietyId.toString() === pageVarietyId)
+  );
+
+  const filteredOrdersList = orders?.filter(o => {
+    const matchesSearch = !search || 
+      o.customerName?.toLowerCase().includes(search.toLowerCase()) ||
+      o.phone?.toLowerCase().includes(search.toLowerCase()) ||
+      o.lot?.lotNumber?.toLowerCase().includes(search.toLowerCase()) ||
+      o.lot?.variety?.name?.toLowerCase().includes(search.toLowerCase());
+    
+    const matchesLot = pageLotId === "all" || o.lotId.toString() === pageLotId;
+    
+    // If lot is not selected, but variety is, filter orders by lot's variety
+    const matchesVariety = pageLotId !== "all" ? true : (pageVarietyId === "all" || o.lot?.varietyId.toString() === pageVarietyId);
+    
+    // If variety is not selected, but category is, filter orders by lot's category
+    const matchesCategory = (pageLotId !== "all" || pageVarietyId !== "all") ? true : (pageCategoryId === "all" || o.lot?.categoryId.toString() === pageCategoryId);
+
+    return matchesSearch && matchesLot && matchesVariety && matchesCategory;
+  }) || [];
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -163,7 +188,11 @@ export default function OrdersPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Select Category</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value || ""}>
+                              <Select onValueChange={(val) => {
+                                field.onChange(val);
+                                form.setValue("varietyId", "");
+                                form.setValue("lotId", "");
+                              }} value={field.value || ""}>
                                 <FormControl>
                                   <SelectTrigger className="h-12">
                                     <SelectValue placeholder="Pick a Category" />
@@ -195,7 +224,10 @@ export default function OrdersPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Select Variety</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value || ""}>
+                              <Select onValueChange={(val) => {
+                                field.onChange(val);
+                                form.setValue("lotId", "");
+                              }} value={field.value || ""} disabled={!selectedCategoryId}>
                                 <FormControl>
                                   <SelectTrigger className="h-12">
                                     <SelectValue placeholder="Pick a Variety" />
@@ -266,7 +298,7 @@ export default function OrdersPage() {
                               ))}
                               {availableLots?.length === 0 && (
                                 <div className="col-span-full py-8 text-center text-muted-foreground">
-                                  No plants available for these selections.
+                                  {selectedVarietyId ? "No plants available for this variety." : "Select a variety to see available lots."}
                                 </div>
                               )}
                             </div>
