@@ -76,8 +76,9 @@ export default function Dashboard() {
 
   // Prepare chart data (Sales by Variety)
   const salesByVariety = orders?.reduce((acc, order) => {
-    const varietyName = order.lot?.variety?.name || "Unknown Variety";
-    acc[varietyName] = (acc[varietyName] || 0) + order.bookedQty;
+    // variety name is accessed via order.lot.variety.name because of drizzle relations
+    const varietyName = (order as any).lot?.variety?.name || "Unknown Variety";
+    acc[varietyName] = (acc[varietyName] || 0) + (order.bookedQty || 0);
     return acc;
   }, {} as Record<string, number>);
 
@@ -162,11 +163,11 @@ export default function Dashboard() {
                   <div key={order.id} className="p-4 hover:bg-muted/30 transition-colors flex items-center justify-between">
                     <div>
                       <p className="font-medium text-sm">{order.customerName}</p>
-                      <p className="text-xs text-muted-foreground">{order.lot?.variety?.name || "Unknown"} • {order.bookedQty} qty</p>
+                      <p className="text-xs text-muted-foreground">{(order as any).lot?.variety?.name || "Unknown"} • {order.bookedQty || 0} qty</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-bold text-primary">{format(parseISO(order.deliveryDate), 'MMM d')}</p>
-                      <p className="text-xs text-muted-foreground">Lot #{order.lot.lotNumber}</p>
+                      <p className="text-sm font-bold text-primary">{order.deliveryDate ? format(parseISO(order.deliveryDate), 'MMM d') : "N/A"}</p>
+                      <p className="text-xs text-muted-foreground">Lot #{(order as any).lot?.lotNumber || "N/A"}</p>
                     </div>
                   </div>
                 ))}
