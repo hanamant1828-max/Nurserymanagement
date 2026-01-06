@@ -122,7 +122,7 @@ export default function VarietiesPage() {
     form.reset({ name: "", categoryId: "", active: true });
   };
 
-  const getCategoryName = (id: number) => categories?.find(c => c.id === id)?.name || "Unknown";
+  const getCategory = (id: number) => categories?.find(c => c.id === id);
 
   return (
     <div className="space-y-8">
@@ -165,7 +165,16 @@ export default function VarietiesPage() {
                           <SelectContent>
                             {categories?.filter(c => c.active).map(category => (
                               <SelectItem key={category.id} value={category.id.toString()}>
-                                {category.name}
+                                <div className="flex items-center gap-2">
+                                  {category.image && (
+                                    <img 
+                                      src={category.image} 
+                                      alt={category.name} 
+                                      className="w-6 h-6 rounded-full object-cover border"
+                                    />
+                                  )}
+                                  {category.name}
+                                </div>
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -244,50 +253,62 @@ export default function VarietiesPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredVarietiesList.map((variety) => (
-                <TableRow key={variety.id} className="group">
-                  <TableCell className="text-muted-foreground font-medium">
-                    {getCategoryName(variety.categoryId)}
-                  </TableCell>
-                  <TableCell className="font-semibold text-lg">{variety.name}</TableCell>
-                  <TableCell>
-                    <Badge variant={variety.active ? "default" : "secondary"}>
-                      {variety.active ? "Active" : "Inactive"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button variant="ghost" size="icon" onClick={() => handleEdit(variety)}>
-                        <Edit2 className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive transition-colors" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Variety</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to delete this variety? This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDelete(variety.id)}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
+              filteredVarietiesList.map((variety) => {
+                const category = getCategory(variety.categoryId);
+                return (
+                  <TableRow key={variety.id} className="group">
+                    <TableCell className="text-muted-foreground font-medium">
+                      <div className="flex items-center gap-3">
+                        {category?.image && (
+                          <img 
+                            src={category.image} 
+                            alt={category.name} 
+                            className="w-10 h-10 rounded-full object-cover border"
+                          />
+                        )}
+                        {category?.name || "Unknown"}
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-semibold text-lg">{variety.name}</TableCell>
+                    <TableCell>
+                      <Badge variant={variety.active ? "default" : "secondary"}>
+                        {variety.active ? "Active" : "Inactive"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button variant="ghost" size="icon" onClick={() => handleEdit(variety)}>
+                          <Edit2 className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive transition-colors" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Variety</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete this variety? This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDelete(variety.id)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>
@@ -300,50 +321,62 @@ export default function VarietiesPage() {
         ) : filteredVarietiesList.length === 0 ? (
           <p className="text-center py-4 text-muted-foreground">No varieties found.</p>
         ) : (
-          filteredVarietiesList.map((variety) => (
-            <div key={variety.id} className="bg-card border rounded-lg p-4 space-y-3 shadow-sm">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-bold text-lg">{variety.name}</h3>
-                  <p className="text-sm text-muted-foreground font-medium">
-                    {getCategoryName(variety.categoryId)}
-                  </p>
+          filteredVarietiesList.map((variety) => {
+            const category = getCategory(variety.categoryId);
+            return (
+              <div key={variety.id} className="bg-card border rounded-lg p-4 space-y-3 shadow-sm">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-3">
+                    {category?.image && (
+                      <img 
+                        src={category.image} 
+                        alt={category.name} 
+                        className="w-12 h-12 rounded-full object-cover border"
+                      />
+                    )}
+                    <div>
+                      <h3 className="font-bold text-lg">{variety.name}</h3>
+                      <p className="text-sm text-muted-foreground font-medium">
+                        {category?.name || "Unknown"}
+                      </p>
+                    </div>
+                  </div>
+                  <Badge variant={variety.active ? "default" : "secondary"}>
+                    {variety.active ? "Active" : "Inactive"}
+                  </Badge>
                 </div>
-                <Badge variant={variety.active ? "default" : "secondary"}>
-                  {variety.active ? "Active" : "Inactive"}
-                </Badge>
+                <div className="flex justify-end gap-2 pt-2 border-t">
+                  <Button variant="outline" size="sm" onClick={() => handleEdit(variety)}>
+                    <Edit2 className="w-4 h-4 mr-1" /> Edit
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="text-destructive border-destructive/20">
+                        <Trash2 className="w-4 h-4 mr-1" /> Delete
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Variety</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete this variety?
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleDelete(variety.id)}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               </div>
-              <div className="flex justify-end gap-2 pt-2 border-t">
-                <Button variant="outline" size="sm" onClick={() => handleEdit(variety)}>
-                  <Edit2 className="w-4 h-4 mr-1" /> Edit
-                </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="outline" size="sm" className="text-destructive border-destructive/20">
-                      <Trash2 className="w-4 h-4 mr-1" /> Delete
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete Variety</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Are you sure you want to delete this variety?
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() => handleDelete(variety.id)}
-                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      >
-                        Delete
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>
