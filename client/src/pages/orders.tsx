@@ -518,9 +518,13 @@ export default function OrdersPage() {
                 <SelectValue placeholder="All Varieties" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Varieties</SelectItem>
+                <SelectItem value="all">
+                  <span className="text-base font-bold py-1">All Varieties</span>
+                </SelectItem>
                 {filteredVarietiesPage?.map(v => (
-                  <SelectItem key={v.id} value={v.id.toString()}>{v.name}</SelectItem>
+                  <SelectItem key={v.id} value={v.id.toString()}>
+                    <span className="text-base font-bold py-1">{v.name}</span>
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -537,9 +541,13 @@ export default function OrdersPage() {
                 <SelectValue placeholder="All Lots" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Lots</SelectItem>
+                <SelectItem value="all">
+                  <span className="text-base font-bold py-1">All Lots</span>
+                </SelectItem>
                 {filteredLotsPage?.map(l => (
-                  <SelectItem key={l.id} value={l.id.toString()}>{l.lotNumber}</SelectItem>
+                  <SelectItem key={l.id} value={l.id.toString()}>
+                    <span className="text-base font-bold py-1">{l.lotNumber}</span>
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
