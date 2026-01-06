@@ -27,7 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, ShoppingCart, CheckCircle, Truck } from "lucide-react";
+import { Plus, ShoppingCart, CheckCircle, Layers } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -91,7 +91,6 @@ export default function OrdersPage() {
   const selectedCategoryId = form.watch("categoryId");
   const selectedVarietyId = form.watch("varietyId");
   const selectedLotId = form.watch("lotId");
-  const bookedQty = form.watch("bookedQty");
 
   // Filtering Logic
   const filteredVarieties = varieties?.filter(v => 
@@ -134,7 +133,7 @@ export default function OrdersPage() {
   };
 
   const markDelivered = (id: number) => {
-    update({ id, status: "DELIVERED", deliveredQty: 0 }); // Quantity will be set in backend logic if complex, or pass bookedQty
+    update({ id, status: "DELIVERED", deliveredQty: 0 });
   };
 
   return (
@@ -180,7 +179,20 @@ export default function OrdersPage() {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                {categories?.map(c => <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>)}
+                                {categories?.map(c => (
+                                  <SelectItem key={c.id} value={c.id.toString()}>
+                                    <div className="flex items-center gap-2">
+                                      {c.image ? (
+                                        <img src={c.image} className="w-6 h-6 rounded object-cover" alt="" />
+                                      ) : (
+                                        <div className="w-6 h-6 rounded bg-muted flex items-center justify-center">
+                                          <Layers className="w-3 h-3 text-muted-foreground" />
+                                        </div>
+                                      )}
+                                      {c.name}
+                                    </div>
+                                  </SelectItem>
+                                ))}
                               </SelectContent>
                             </Select>
                           </FormItem>
@@ -221,10 +233,19 @@ export default function OrdersPage() {
                                 onClick={() => field.onChange(lot.id.toString())}
                               >
                                 <CardContent className="p-3">
-                                  <div className="flex justify-between items-start">
-                                    <div>
-                                      <p className="font-bold text-sm">{lot.variety?.name || 'Unknown'}</p>
-                                      <p className="text-xs text-muted-foreground">{lot.lotNumber}</p>
+                                  <div className="flex justify-between items-start gap-3">
+                                    <div className="flex items-center gap-3">
+                                      {lot.category?.image ? (
+                                        <img src={lot.category.image} className="w-10 h-10 rounded object-cover border" alt="" />
+                                      ) : (
+                                        <div className="w-10 h-10 rounded bg-muted flex items-center justify-center border">
+                                          <Layers className="w-5 h-5 text-muted-foreground/30" />
+                                        </div>
+                                      )}
+                                      <div>
+                                        <p className="font-bold text-sm">{lot.variety?.name || 'Unknown'}</p>
+                                        <p className="text-xs text-muted-foreground">{lot.lotNumber}</p>
+                                      </div>
                                     </div>
                                     <Badge variant="secondary" className="bg-green-100 text-green-700">
                                       {lot.available} Avail
@@ -252,7 +273,12 @@ export default function OrdersPage() {
                   <div className="space-y-4 animate-in slide-in-from-right-4">
                     {selectedLot && (
                        <div className="bg-muted/30 p-3 rounded-lg flex justify-between items-center text-sm">
-                         <span>Selected: <strong>{selectedLot.variety?.name || 'Unknown'}</strong> ({selectedLot.lotNumber})</span>
+                         <div className="flex items-center gap-2">
+                           {selectedLot.category?.image && (
+                             <img src={selectedLot.category.image} className="w-6 h-6 rounded object-cover" alt="" />
+                           )}
+                           <span>Selected: <strong>{selectedLot.variety?.name || 'Unknown'}</strong> ({selectedLot.lotNumber})</span>
+                         </div>
                          <Button variant="link" size="sm" onClick={() => setStep(1)}>Change</Button>
                        </div>
                     )}
@@ -419,8 +445,15 @@ export default function OrdersPage() {
                     <div className="text-xs text-muted-foreground">{order.phone}</div>
                   </TableCell>
                   <TableCell>
-                    <span className="font-medium">{order.lot?.variety?.name || 'Unknown'}</span>
-                    <p className="text-xs text-muted-foreground">Lot: {order.lot?.lotNumber || 'N/A'}</p>
+                    <div className="flex items-center gap-2">
+                      {order.lot?.category?.image && (
+                        <img src={order.lot.category.image} className="w-8 h-8 rounded object-cover border" alt="" />
+                      )}
+                      <div>
+                        <span className="font-medium">{order.lot?.variety?.name || 'Unknown'}</span>
+                        <p className="text-xs text-muted-foreground">Lot: {order.lot?.lotNumber || 'N/A'}</p>
+                      </div>
+                    </div>
                   </TableCell>
                   <TableCell className="text-right font-bold">{order.bookedQty}</TableCell>
                   <TableCell>{format(new Date(order.deliveryDate), "dd MMM yyyy")}</TableCell>
