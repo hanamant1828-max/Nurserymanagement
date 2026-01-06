@@ -147,23 +147,90 @@ export async function registerRoutes(
 }
 
 async function seedDatabase() {
-  const categories = await storage.getCategories();
-  if (categories.length === 0) {
+  const categoriesList = await storage.getCategories();
+  if (categoriesList.length <= 2) {
+    // 1. Categories
     const watermelon = await storage.createCategory({ name: "Watermelon", active: true });
     const tomato = await storage.createCategory({ name: "Tomato", active: true });
+    const chili = await storage.createCategory({ name: "Green Chili", active: true });
+    const eggplant = await storage.createCategory({ name: "Eggplant", active: true });
     
+    // 2. Varieties
     const v1 = await storage.createVariety({ categoryId: watermelon.id, name: "Sugar Baby", active: true });
     const v2 = await storage.createVariety({ categoryId: tomato.id, name: "Roma", active: true });
+    const v3 = await storage.createVariety({ categoryId: tomato.id, name: "Cherry Tomato", active: true });
+    const v4 = await storage.createVariety({ categoryId: chili.id, name: "Bullet Chili", active: true });
+    const v5 = await storage.createVariety({ categoryId: eggplant.id, name: "Black Beauty", active: true });
 
-    const lot = await storage.createLot({
-      lotNumber: "LOT-001",
+    // 3. Lots
+    const lot1 = await storage.createLot({
+      lotNumber: "LOT-WM-001",
       categoryId: watermelon.id,
       varietyId: v1.id,
-      sowingDate: new Date().toISOString().split('T')[0],
+      sowingDate: "2025-12-01",
       seedsSown: 1000,
-      damaged: 0,
-      expectedReadyDate: new Date(Date.now() + 86400000 * 30).toISOString().split('T')[0],
-      remarks: "Initial seed lot"
+      damaged: 50,
+      expectedReadyDate: "2026-01-15",
+      remarks: "High quality watermelon seeds"
+    });
+
+    const lot2 = await storage.createLot({
+      lotNumber: "LOT-TM-002",
+      categoryId: tomato.id,
+      varietyId: v2.id,
+      sowingDate: "2025-12-10",
+      seedsSown: 2000,
+      damaged: 100,
+      expectedReadyDate: "2026-01-20",
+      remarks: "Roma tomato lot"
+    });
+
+    const lot3 = await storage.createLot({
+      lotNumber: "LOT-CH-003",
+      categoryId: chili.id,
+      varietyId: v4.id,
+      sowingDate: "2025-12-15",
+      seedsSown: 5000,
+      damaged: 200,
+      expectedReadyDate: "2026-02-01",
+      remarks: "Spicy chili variety"
+    });
+
+    // 4. Orders
+    await storage.createOrder({
+      lotId: lot1.id,
+      customerName: "John Doe",
+      phone: "9876543210",
+      village: "Greenwood",
+      bookedQty: 100,
+      advanceAmount: "500",
+      paymentMode: "Cash",
+      deliveryDate: "2026-01-20",
+      status: "BOOKED"
+    });
+
+    await storage.createOrder({
+      lotId: lot1.id,
+      customerName: "Jane Smith",
+      phone: "8765432109",
+      village: "Riverdale",
+      bookedQty: 50,
+      advanceAmount: "250",
+      paymentMode: "PhonePe",
+      deliveryDate: "2026-01-22",
+      status: "BOOKED"
+    });
+
+    await storage.createOrder({
+      lotId: lot2.id,
+      customerName: "Farmer Bob",
+      phone: "7654321098",
+      village: "Sunnyvale",
+      bookedQty: 500,
+      advanceAmount: "1000",
+      paymentMode: "Cash",
+      deliveryDate: "2026-01-25",
+      status: "BOOKED"
     });
   }
 }
