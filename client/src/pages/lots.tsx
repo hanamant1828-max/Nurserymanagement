@@ -389,6 +389,7 @@ export default function LotsPage() {
               </Form>
             </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       <div className="hidden md:block rounded-xl border bg-card shadow-sm overflow-hidden">
