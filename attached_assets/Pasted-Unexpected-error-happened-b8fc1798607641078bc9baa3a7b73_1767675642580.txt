@@ -1,0 +1,366 @@
+Unexpected error happened 😕
+
+b8fc1798607641078bc9baa3a7b738e7
+
+
+We're already looking into it! Feel free to reach out to our support team, make sure to copy error ID
+
+Invalid response from Replit driver
+INSERT INTO
+  categories (name, active)
+VALUES
+  ('Succulents', true),
+  ('Cacti', true),
+  ('Ferns', true),
+  ('Bonsai', true),
+  ('Climbers', true),
+  ('Shrubs', true),
+  ('Trees', true),
+  ('Grass', true),
+  ('Bulbs', true),
+  ('Palms', true),
+  ('Water Plants', true),
+  ('Medicinal', true),
+  ('Spices', true),
+  ('Ornamental', true),
+  ('Indoor', true),
+  ('Outdoor', true),
+  ('Seeds', true),
+  ('Tools', true),
+  ('Soil', true),
+  ('Fertilizers', true)
+ON CONFLICT DO NOTHING;
+
+INSERT INTO
+  varieties (name, category_id, active)
+VALUES
+  (
+    'Cherry Tomato',
+    (
+      SELECT
+        id
+      FROM
+        categories
+      WHERE
+        name = 'Vegetables'
+      LIMIT
+        1
+    ),
+    true
+  ),
+  (
+    'Roma Tomato',
+    (
+      SELECT
+        id
+      FROM
+        categories
+      WHERE
+        name = 'Vegetables'
+      LIMIT
+        1
+    ),
+    true
+  ),
+  (
+    'Bell Pepper',
+    (
+      SELECT
+        id
+      FROM
+        categories
+      WHERE
+        name = 'Vegetables'
+      LIMIT
+        1
+    ),
+    true
+  ),
+  (
+    'Thai Basil',
+    (
+      SELECT
+        id
+      FROM
+        categories
+      WHERE
+        name = 'Herbs'
+      LIMIT
+        1
+    ),
+    true
+  ),
+  (
+    'Peppermint',
+    (
+      SELECT
+        id
+      FROM
+        categories
+      WHERE
+        name = 'Herbs'
+      LIMIT
+        1
+    ),
+    true
+  ),
+  (
+    'Aloe Vera',
+    (
+      SELECT
+        id
+      FROM
+        categories
+      WHERE
+        name = 'Medicinal'
+      LIMIT
+        1
+    ),
+    true
+  ),
+  (
+    'Tulsi',
+    (
+      SELECT
+        id
+      FROM
+        categories
+      WHERE
+        name = 'Medicinal'
+      LIMIT
+        1
+    ),
+    true
+  ),
+  (
+    'Red Rose',
+    (
+      SELECT
+        id
+      FROM
+        categories
+      WHERE
+        name = 'Flowers'
+      LIMIT
+        1
+    ),
+    true
+  ),
+  (
+    'White Lily',
+    (
+      SELECT
+        id
+      FROM
+        categories
+      WHERE
+        name = 'Flowers'
+      LIMIT
+        1
+    ),
+    true
+  ),
+  (
+    'Sun Flower',
+    (
+      SELECT
+        id
+      FROM
+        categories
+      WHERE
+        name = 'Flowers'
+      LIMIT
+        1
+    ),
+    true
+  ),
+  (
+    'Jade Plant',
+    (
+      SELECT
+        id
+      FROM
+        categories
+      WHERE
+        name = 'Succulents'
+      LIMIT
+        1
+    ),
+    true
+  ),
+  (
+    'Snake Plant',
+    (
+      SELECT
+        id
+      FROM
+        categories
+      WHERE
+        name = 'Indoor'
+      LIMIT
+        1
+    ),
+    true
+  ),
+  (
+    'Money Plant',
+    (
+      SELECT
+        id
+      FROM
+        categories
+      WHERE
+        name = 'Indoor'
+      LIMIT
+        1
+    ),
+    true
+  ),
+  (
+    'Banyan',
+    (
+      SELECT
+        id
+      FROM
+        categories
+      WHERE
+        name = 'Trees'
+      LIMIT
+        1
+    ),
+    true
+  ),
+  (
+    'Mango',
+    (
+      SELECT
+        id
+      FROM
+        categories
+      WHERE
+        name = 'Fruits'
+      LIMIT
+        1
+    ),
+    true
+  ),
+  (
+    'Guava',
+    (
+      SELECT
+        id
+      FROM
+        categories
+      WHERE
+        name = 'Fruits'
+      LIMIT
+        1
+    ),
+    true
+  ),
+  (
+    'Lemon',
+    (
+      SELECT
+        id
+      FROM
+        categories
+      WHERE
+        name = 'Fruits'
+      LIMIT
+        1
+    ),
+    true
+  ),
+  (
+    'Black Pepper',
+    (
+      SELECT
+        id
+      FROM
+        categories
+      WHERE
+        name = 'Spices'
+      LIMIT
+        1
+    ),
+    true
+  ),
+  (
+    'Ginger',
+    (
+      SELECT
+        id
+      FROM
+        categories
+      WHERE
+        name = 'Spices'
+      LIMIT
+        1
+    ),
+    true
+  ),
+  (
+    'Boston Fern',
+    (
+      SELECT
+        id
+      FROM
+        categories
+      WHERE
+        name = 'Ferns'
+      LIMIT
+        1
+    ),
+    true
+  )
+ON CONFLICT DO NOTHING;
+
+DO $$
+DECLARE
+    v_id INTEGER;
+    c_id INTEGER;
+BEGIN
+    FOR i IN 1..20 LOOP
+        SELECT id, category_id INTO v_id, c_id FROM varieties ORDER BY RANDOM() LIMIT 1;
+        INSERT INTO lots (lot_number, variety_id, category_id, sowing_date, seeds_sown, damaged)
+        VALUES (
+            'LOT-DEMO-' || LPAD(i::text, 3, '0'),
+            v_id,
+            c_id,
+            CURRENT_DATE - (i || ' days')::interval,
+            500 + (RANDOM() * 500)::int,
+            (RANDOM() * 50)::int
+        );
+    END LOOP;
+END $$;
+
+DO $$
+DECLARE
+    l_id INTEGER;
+BEGIN
+    FOR i IN 1..15 LOOP
+        SELECT id INTO l_id FROM lots ORDER BY RANDOM() LIMIT 1;
+        INSERT INTO orders (lot_id, customer_name, phone, village, booked_qty, advance_amount, payment_mode, delivery_date, status)
+        VALUES (
+            l_id,
+            'Demo Customer ' || i,
+            '9876543210',
+            'Demo Village',
+            10 + (RANDOM() * 90)::int,
+            100.00,
+            'Cash',
+            TO_CHAR(CURRENT_DATE + (i || ' days')::interval, 'YYYY-MM-DD'),
+            'BOOKED'
+        );
+    END LOOP;
+END $$;
+{
+  "sql": "INSERT INTO categories (name, active) VALUES \n('Succulents', true), ('Cacti', true), ('Ferns', true), ('Bonsai', true), \n('Climbers', true), ('Shrubs', true), ('Trees', true), ('Grass', true), \n('Bulbs', true), ('Palms', true), ('Water Plants', true), ('Medicinal', true), \n('Spices', true), ('Ornamental', true), ('Indoor', true), ('Outdoor', true),\n('Seeds', true), ('Tools', true), ('Soil', true), ('Fertilizers', true)\nON CONFLICT DO NOTHING;\n\nINSERT INTO varieties (name, category_id, active) VALUES \n('Cherry Tomato', (SELECT id FROM categories WHERE name = 'Vegetables' LIMIT 1), true),\n('Roma Tomato', (SELECT id FROM categories WHERE name = 'Vegetables' LIMIT 1), true),\n('Bell Pepper', (SELECT id FROM categories WHERE name = 'Vegetables' LIMIT 1), true),\n('Thai Basil', (SELECT id FROM categories WHERE name = 'Herbs' LIMIT 1), true),\n('Peppermint', (SELECT id FROM categories WHERE name = 'Herbs' LIMIT 1), true),\n('Aloe Vera', (SELECT id FROM categories WHERE name = 'Medicinal' LIMIT 1), true),\n('Tulsi', (SELECT id FROM categories WHERE name = 'Medicinal' LIMIT 1), true),\n('Red Rose', (SELECT id FROM categories WHERE name = 'Flowers' LIMIT 1), true),\n('White Lily', (SELECT id FROM categories WHERE name = 'Flowers' LIMIT 1), true),\n('Sun Flower', (SELECT id FROM categories WHERE name = 'Flowers' LIMIT 1), true),\n('Jade Plant', (SELECT id FROM categories WHERE name = 'Succulents' LIMIT 1), true),\n('Snake Plant', (SELECT id FROM categories WHERE name = 'Indoor' LIMIT 1), true),\n('Money Plant', (SELECT id FROM categories WHERE name = 'Indoor' LIMIT 1), true),\n('Banyan', (SELECT id FROM categories WHERE name = 'Trees' LIMIT 1), true),\n('Mango', (SELECT id FROM categories WHERE name = 'Fruits' LIMIT 1), true),\n('Guava', (SELECT id FROM categories WHERE name = 'Fruits' LIMIT 1), true),\n('Lemon', (SELECT id FROM categories WHERE name = 'Fruits' LIMIT 1), true),\n('Black Pepper', (SELECT id FROM categories WHERE name = 'Spices' LIMIT 1), true),\n('Ginger', (SELECT id FROM categories WHERE name = 'Spices' LIMIT 1), true),\n('Boston Fern', (SELECT id FROM categories WHERE name = 'Ferns' LIMIT 1), true)\nON CONFLICT DO NOTHING;\n\nDO $$\nDECLARE\n    v_id INTEGER;\n    c_id INTEGER;\nBEGIN\n    FOR i IN 1..20 LOOP\n        SELECT id, category_id INTO v_id, c_id FROM varieties ORDER BY RANDOM() LIMIT 1;\n        INSERT INTO lots (lot_number, variety_id, category_id, sowing_date, seeds_sown, damaged)\n        VALUES (\n            'LOT-DEMO-' || LPAD(i::text, 3, '0'),\n            v_id,\n            c_id,\n            CURRENT_DATE - (i || ' days')::interval,\n            500 + (RANDOM() * 500)::int,\n            (RANDOM() * 50)::int\n        );\n    END LOOP;\nEND $$;\n\nDO $$\nDECLARE\n    l_id INTEGER;\nBEGIN\n    FOR i IN 1..15 LOOP\n        SELECT id INTO l_id FROM lots ORDER BY RANDOM() LIMIT 1;\n        INSERT INTO orders (lot_id, customer_name, phone, village, booked_qty, advance_amount, payment_mode, delivery_date, status)\n        VALUES (\n            l_id,\n            'Demo Customer ' || i,\n            '9876543210',\n            'Demo Village',\n            10 + (RANDOM() * 90)::int,\n            100.00,\n            'Cash',\n            TO_CHAR(CURRENT_DATE + (i || ' days')::interval, 'YYYY-MM-DD'),\n            'BOOKED'\n        );\n    END LOOP;\nEND $$;"
+}
+[
+  "[Object]",
+  "[Object]",
+  "[Object]",
+  "[Object]"
+]
