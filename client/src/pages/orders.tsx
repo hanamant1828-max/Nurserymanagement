@@ -40,17 +40,12 @@ import { Calendar as CalendarIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 const formSchema = z.object({
-  // Selection
-  categoryId: z.string().optional(), // Helper for filtering
-  varietyId: z.string().optional(),  // Helper for filtering
-  lotId: z.string().min(1, "Lot selection is required"),
-  
-  // Customer
+  categoryId: z.string().optional(),
+  varietyId: z.string().optional(),
+  lotId: z.string().min(1, "Please select a lot"),
   customerName: z.string().min(1, "Customer name is required"),
   phone: z.string().min(10, "Valid phone number required"),
   village: z.string().optional(),
-  
-  // Order
   bookedQty: z.coerce.number().min(1, "Quantity must be > 0"),
   advanceAmount: z.coerce.number().min(0),
   paymentMode: z.enum(["Cash", "PhonePe"]),
@@ -87,12 +82,10 @@ export default function OrdersPage() {
   const { mutate: create, isPending: creating } = useCreateOrder();
   const { mutate: update } = useUpdateOrder();
 
-  // Watch filters for lot selection
   const selectedCategoryId = form.watch("categoryId");
   const selectedVarietyId = form.watch("varietyId");
   const selectedLotId = form.watch("lotId");
 
-  // Filtering Logic
   const filteredVarieties = varieties?.filter(v => 
     !selectedCategoryId || v.categoryId.toString() === selectedCategoryId
   );
@@ -106,19 +99,18 @@ export default function OrdersPage() {
   const selectedLot = lots?.find(l => l.id.toString() === selectedLotId);
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
-    // Validate quantity against stock one last time
     if (selectedLot && data.bookedQty > selectedLot.available) {
       form.setError("bookedQty", { message: `Only ${selectedLot.available} available` });
       return;
     }
 
     const payload = {
-      lotId: data.lotId,
+      lotId: parseInt(data.lotId),
       customerName: data.customerName,
       phone: data.phone,
       village: data.village || "",
       bookedQty: data.bookedQty,
-      advanceAmount: data.advanceAmount,
+      advanceAmount: data.advanceAmount.toString(),
       paymentMode: data.paymentMode,
       deliveryDate: format(data.deliveryDate, "yyyy-MM-dd"),
     };
@@ -150,179 +142,192 @@ export default function OrdersPage() {
             onChange={(e) => setSearch(e.target.value)}
             className="w-full sm:w-64"
           />
-          <Dialog open={open} onOpenChange={(v) => { setOpen(v); if(!v) setStep(1); }}>
-          <DialogTrigger asChild>
-            <Button size="lg" className="shadow-lg shadow-primary/20">
-              <Plus className="w-5 h-5 mr-2" /> Book Order
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-3xl">
-            <DialogHeader>
-              <DialogTitle>New Order Booking (Step {step}/2)</DialogTitle>
-            </DialogHeader>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-4">
-                
-                {step === 1 && (
-                  <div className="space-y-4 animate-in slide-in-from-left-4">
-                    <div className="grid grid-cols-2 gap-4">
-                       <FormField
-                        control={form.control}
-                        name="categoryId"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Category Filter</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value || ""}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="All Categories" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {categories?.map(c => (
-                                  <SelectItem key={c.id} value={c.id.toString()}>
-                                    <div className="flex items-center gap-2">
-                                      {c.image ? (
-                                        <img src={c.image} className="w-6 h-6 rounded object-cover" alt="" />
-                                      ) : (
-                                        <div className="w-6 h-6 rounded bg-muted flex items-center justify-center">
-                                          <Layers className="w-3 h-3 text-muted-foreground" />
-                                        </div>
-                                      )}
-                                      {c.name}
-                                    </div>
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="varietyId"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Variety Filter</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value || ""}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="All Varieties" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {filteredVarieties?.map(v => <SelectItem key={v.id} value={v.id.toString()}>{v.name}</SelectItem>)}
-                              </SelectContent>
-                            </Select>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <FormField
-                      control={form.control}
-                      name="lotId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Select Lot (Required)</FormLabel>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-60 overflow-y-auto p-1">
-                            {availableLots?.map(lot => (
-                              <Card 
-                                key={lot.id} 
-                                className={`cursor-pointer hover:border-primary transition-all ${field.value === lot.id.toString() ? 'border-primary ring-2 ring-primary/20 bg-primary/5' : ''}`}
-                                onClick={() => field.onChange(lot.id.toString())}
-                              >
-                                <CardContent className="p-3">
-                                  <div className="flex justify-between items-start gap-3">
-                                    <div className="flex items-center gap-3">
-                                      {lot.category?.image ? (
-                                        <img src={lot.category.image} className="w-10 h-10 rounded object-cover border" alt="" />
-                                      ) : (
-                                        <div className="w-10 h-10 rounded bg-muted flex items-center justify-center border">
-                                          <Layers className="w-5 h-5 text-muted-foreground/30" />
-                                        </div>
-                                      )}
-                                      <div>
-                                        <p className="font-bold text-sm">{lot.variety?.name || 'Unknown'}</p>
-                                        <p className="text-xs text-muted-foreground">{lot.lotNumber}</p>
-                                      </div>
-                                    </div>
-                                    <Badge variant="secondary" className="bg-green-100 text-green-700">
-                                      {lot.available} Avail
-                                    </Badge>
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            ))}
-                            {availableLots?.length === 0 && <p className="text-sm text-muted-foreground col-span-2 text-center py-4">No available lots found matching filters.</p>}
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <Button type="button" onClick={() => { 
-                      form.trigger(["lotId"]).then(isValid => { if(isValid) setStep(2); });
-                    }} className="w-full">
-                      Next: Customer & Payment
-                    </Button>
-                  </div>
-                )}
-
-                {step === 2 && (
-                  <div className="space-y-4 animate-in slide-in-from-right-4">
-                    {selectedLot && (
-                       <div className="bg-muted/30 p-3 rounded-lg flex justify-between items-center text-sm">
-                         <div className="flex items-center gap-2">
-                           {selectedLot.category?.image && (
-                             <img src={selectedLot.category.image} className="w-6 h-6 rounded object-cover" alt="" />
-                           )}
-                           <span>Selected: <strong>{selectedLot.variety?.name || 'Unknown'}</strong> ({selectedLot.lotNumber})</span>
-                         </div>
-                         <Button variant="link" size="sm" onClick={() => setStep(1)}>Change</Button>
-                       </div>
-                    )}
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="customerName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Customer Name</FormLabel>
-                            <FormControl><Input {...field} /></FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="phone"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Phone Number</FormLabel>
-                            <FormControl><Input {...field} /></FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    
-                    <FormField
-                      control={form.control}
-                      name="village"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Village / Address</FormLabel>
-                          <FormControl><Input {...field} /></FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <div className="border-t pt-4 mt-4">
-                      <h3 className="font-semibold mb-3">Order Details</h3>
+          <Dialog open={open} onOpenChange={(v) => { setOpen(v); if(!v) setOpen(false); }}>
+            <DialogTrigger asChild>
+              <Button size="lg" className="shadow-lg shadow-primary/20">
+                <Plus className="w-5 h-5 mr-2" /> Book Order
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Book Order</DialogTitle>
+              </DialogHeader>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-2">
+                  {step === 1 && (
+                    <div className="space-y-6 animate-in fade-in zoom-in duration-300">
                       <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="categoryId"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Select Category</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value || ""}>
+                                <FormControl>
+                                  <SelectTrigger className="h-12">
+                                    <SelectValue placeholder="Pick a Category" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {categories?.map(c => (
+                                    <SelectItem key={c.id} value={c.id.toString()}>
+                                      <div className="flex items-center gap-3 py-1">
+                                        {c.image ? (
+                                          <img src={c.image} className="w-8 h-8 rounded-md object-cover border shadow-sm" alt="" />
+                                        ) : (
+                                          <div className="w-8 h-8 rounded-md bg-muted flex items-center justify-center border">
+                                            <Layers className="w-4 h-4 text-muted-foreground" />
+                                          </div>
+                                        )}
+                                        <span className="font-medium">{c.name}</span>
+                                      </div>
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="varietyId"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Select Variety</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value || ""}>
+                                <FormControl>
+                                  <SelectTrigger className="h-12">
+                                    <SelectValue placeholder="Pick a Variety" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {filteredVarieties?.map(v => <SelectItem key={v.id} value={v.id.toString()}>{v.name}</SelectItem>)}
+                                </SelectContent>
+                              </Select>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <FormField
+                        control={form.control}
+                        name="lotId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="flex justify-between">
+                              <span>Select Stock Lot</span>
+                              <span className="text-destructive text-xs font-normal">Required</span>
+                            </FormLabel>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-64 overflow-y-auto p-1 rounded-md bg-muted/20 border">
+                              {availableLots?.map(lot => (
+                                <Card 
+                                  key={lot.id} 
+                                  className={`cursor-pointer transition-all border-2 ${field.value === lot.id.toString() ? 'border-primary bg-primary/5 ring-2 ring-primary/10' : 'hover:border-primary/50'}`}
+                                  onClick={() => field.onChange(lot.id.toString())}
+                                >
+                                  <CardContent className="p-3">
+                                    <div className="flex justify-between items-start gap-2">
+                                      <div className="flex items-center gap-3">
+                                        {lot.category?.image ? (
+                                          <img src={lot.category.image} className="w-10 h-10 rounded-md object-cover border" alt="" />
+                                        ) : (
+                                          <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center border">
+                                            <Layers className="w-5 h-5 text-muted-foreground/30" />
+                                          </div>
+                                        )}
+                                        <div className="overflow-hidden">
+                                          <p className="font-bold text-sm truncate">{lot.variety?.name}</p>
+                                          <p className="text-[10px] text-muted-foreground font-mono">{lot.lotNumber}</p>
+                                        </div>
+                                      </div>
+                                      <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 whitespace-nowrap">
+                                        {lot.available}
+                                      </Badge>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              ))}
+                              {availableLots?.length === 0 && (
+                                <div className="col-span-full py-8 text-center text-muted-foreground">
+                                  No plants available for these selections.
+                                </div>
+                              )}
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <Button 
+                        type="button" 
+                        size="lg"
+                        className="w-full text-lg"
+                        onClick={async () => { 
+                          const isValid = await form.trigger(["lotId"]);
+                          if(isValid) setStep(2); 
+                        }} 
+                      >
+                        Next Step
+                      </Button>
+                    </div>
+                  )}
+
+                  {step === 2 && (
+                    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                      {selectedLot && (
+                         <div className="bg-primary/5 border border-primary/20 p-3 rounded-lg flex justify-between items-center shadow-sm">
+                           <div className="flex items-center gap-3">
+                             {selectedLot.category?.image && (
+                               <img src={selectedLot.category.image} className="w-10 h-10 rounded-md object-cover border" alt="" />
+                             )}
+                             <div>
+                               <p className="font-bold text-sm leading-tight">{selectedLot.variety?.name}</p>
+                               <p className="text-xs text-muted-foreground">{selectedLot.lotNumber}</p>
+                             </div>
+                           </div>
+                           <Button variant="outline" size="sm" onClick={() => setStep(1)} className="h-8">Change</Button>
+                         </div>
+                      )}
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="customerName"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Customer Name</FormLabel>
+                              <FormControl><Input placeholder="Name" className="h-11" {...field} /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="phone"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Mobile Number</FormLabel>
+                              <FormControl><Input placeholder="Phone" className="h-11" {...field} /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      
+                      <FormField
+                        control={form.control}
+                        name="village"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Village / Area</FormLabel>
+                            <FormControl><Input placeholder="Address" className="h-11" {...field} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <div className="grid grid-cols-2 gap-4 pt-2">
                         <FormField
                           control={form.control}
                           name="bookedQty"
@@ -330,14 +335,11 @@ export default function OrdersPage() {
                             <FormItem>
                               <FormLabel>Quantity</FormLabel>
                               <FormControl>
-                                <Input type="number" {...field} 
+                                <Input type="number" className="h-11" {...field} 
                                   max={selectedLot?.available} 
-                                  onChange={e => field.onChange(parseInt(e.target.value))} 
+                                  onChange={e => field.onChange(parseInt(e.target.value) || 0)} 
                                 />
                               </FormControl>
-                              {selectedLot && (
-                                <p className="text-xs text-muted-foreground">Max: {selectedLot.available}</p>
-                              )}
                               <FormMessage />
                             </FormItem>
                           )}
@@ -351,8 +353,8 @@ export default function OrdersPage() {
                               <Popover>
                                 <PopoverTrigger asChild>
                                   <FormControl>
-                                    <Button variant={"outline"} className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}>
-                                      {field.value ? format(field.value, "PPP") : <span>Pick date</span>}
+                                    <Button variant={"outline"} className={`h-11 w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}>
+                                      {field.value ? format(field.value, "dd MMM yyyy") : <span>Pick date</span>}
                                       <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                     </Button>
                                   </FormControl>
@@ -366,14 +368,15 @@ export default function OrdersPage() {
                           )}
                         />
                       </div>
-                      <div className="grid grid-cols-2 gap-4 mt-4">
+
+                      <div className="grid grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
                           name="advanceAmount"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Advance Amount (₹)</FormLabel>
-                              <FormControl><Input type="number" {...field} /></FormControl>
+                              <FormLabel>Advance (₹)</FormLabel>
+                              <FormControl><Input type="number" className="h-11" {...field} /></FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -385,7 +388,7 @@ export default function OrdersPage() {
                             <FormItem>
                               <FormLabel>Payment Mode</FormLabel>
                               <Select onValueChange={field.onChange} value={field.value || "Cash"}>
-                                <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                                <FormControl><SelectTrigger className="h-11"><SelectValue /></SelectTrigger></FormControl>
                                 <SelectContent>
                                   <SelectItem value="Cash">Cash</SelectItem>
                                   <SelectItem value="PhonePe">PhonePe / UPI</SelectItem>
@@ -396,18 +399,17 @@ export default function OrdersPage() {
                           )}
                         />
                       </div>
-                    </div>
 
-                    <div className="flex gap-3">
-                      <Button type="button" variant="outline" onClick={() => setStep(1)} className="flex-1">Back</Button>
-                      <Button type="submit" className="flex-[2]" disabled={creating}>Confirm Order</Button>
+                      <div className="flex gap-3 pt-2">
+                        <Button type="button" variant="outline" size="lg" onClick={() => setStep(1)} className="flex-1">Back</Button>
+                        <Button type="submit" size="lg" className="flex-[2] text-lg" disabled={creating}>Confirm Order</Button>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
+                  )}
+                </form>
+              </Form>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
@@ -415,9 +417,9 @@ export default function OrdersPage() {
         <Table>
           <TableHeader className="bg-muted/50">
             <TableRow>
-              <TableHead>Order ID</TableHead>
+              <TableHead className="w-20">ID</TableHead>
               <TableHead>Customer</TableHead>
-              <TableHead>Details</TableHead>
+              <TableHead>Plant Details</TableHead>
               <TableHead className="text-right">Qty</TableHead>
               <TableHead>Delivery Date</TableHead>
               <TableHead>Status</TableHead>
@@ -438,27 +440,31 @@ export default function OrdersPage() {
               </TableRow>
             ) : (
               filteredOrdersList.map((order) => (
-                <TableRow key={order.id}>
-                  <TableCell className="font-mono text-muted-foreground">#{order.id}</TableCell>
+                <TableRow key={order.id} className="group hover:bg-muted/30 transition-colors">
+                  <TableCell className="font-mono text-muted-foreground text-xs">#{order.id}</TableCell>
                   <TableCell>
-                    <div className="font-medium">{order.customerName}</div>
+                    <div className="font-bold">{order.customerName}</div>
                     <div className="text-xs text-muted-foreground">{order.phone}</div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
-                      {order.lot?.category?.image && (
-                        <img src={order.lot.category.image} className="w-8 h-8 rounded object-cover border" alt="" />
+                    <div className="flex items-center gap-3">
+                      {order.lot?.category?.image ? (
+                        <img src={order.lot.category.image} className="w-10 h-10 rounded-md object-cover border shadow-sm" alt="" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center border">
+                          <Layers className="w-4 h-4 text-muted-foreground/30" />
+                        </div>
                       )}
                       <div>
-                        <span className="font-medium">{order.lot?.variety?.name || 'Unknown'}</span>
-                        <p className="text-xs text-muted-foreground">Lot: {order.lot?.lotNumber || 'N/A'}</p>
+                        <span className="font-bold text-sm block leading-tight">{order.lot?.variety?.name}</span>
+                        <p className="text-[10px] text-muted-foreground uppercase font-mono">{order.lot?.lotNumber}</p>
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="text-right font-bold">{order.bookedQty}</TableCell>
-                  <TableCell>{format(new Date(order.deliveryDate), "dd MMM yyyy")}</TableCell>
+                  <TableCell className="text-right font-black text-primary">{order.bookedQty}</TableCell>
+                  <TableCell className="text-sm font-medium">{format(new Date(order.deliveryDate), "dd MMM yyyy")}</TableCell>
                   <TableCell>
-                    <Badge variant={order.status === 'DELIVERED' ? 'secondary' : order.status === 'CANCELLED' ? 'destructive' : 'default'} className={order.status === 'DELIVERED' ? 'bg-green-100 text-green-700' : ''}>
+                    <Badge variant={order.status === 'DELIVERED' ? 'secondary' : order.status === 'CANCELLED' ? 'destructive' : 'default'} className={order.status === 'DELIVERED' ? 'bg-green-100 text-green-700 border-green-200' : ''}>
                       {order.status}
                     </Badge>
                   </TableCell>
@@ -467,10 +473,10 @@ export default function OrdersPage() {
                       <Button 
                         size="sm" 
                         variant="outline" 
-                        className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                        className="h-8 text-green-600 hover:text-green-700 hover:bg-green-50 border-green-200 hover:border-green-300 transition-all"
                         onClick={() => markDelivered(order.id)}
                       >
-                        <CheckCircle className="w-4 h-4 mr-1" /> Delivered
+                        <CheckCircle className="w-4 h-4 mr-1.5" /> Delivered
                       </Button>
                     )}
                   </TableCell>
