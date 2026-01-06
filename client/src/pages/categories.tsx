@@ -216,6 +216,7 @@ export default function CategoriesPage() {
           <TableHeader className="bg-muted/50">
             <TableRow>
               <TableHead className="w-[100px]">ID</TableHead>
+              <TableHead>Image</TableHead>
               <TableHead>Category Name</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -226,6 +227,7 @@ export default function CategoriesPage() {
               [1, 2, 3].map(i => (
                 <TableRow key={i}>
                   <TableCell><div className="h-4 w-8 bg-muted animate-pulse rounded" /></TableCell>
+                  <TableCell><div className="h-10 w-10 bg-muted animate-pulse rounded-lg" /></TableCell>
                   <TableCell><div className="h-4 w-32 bg-muted animate-pulse rounded" /></TableCell>
                   <TableCell><div className="h-4 w-16 bg-muted animate-pulse rounded" /></TableCell>
                   <TableCell><div className="h-8 w-8 ml-auto bg-muted animate-pulse rounded" /></TableCell>
@@ -233,7 +235,7 @@ export default function CategoriesPage() {
               ))
             ) : filteredCategories.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="h-32 text-center text-muted-foreground">
+                <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
                   <div className="flex flex-col items-center gap-2">
                     <Layers className="w-8 h-8 opacity-20" />
                     No categories found.
@@ -245,19 +247,21 @@ export default function CategoriesPage() {
                 <TableRow key={category.id} className="group">
                   <TableCell className="font-mono text-muted-foreground">#{category.id}</TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-3">
-                      {category.image && (
-                        <div className="w-10 h-10 rounded-lg overflow-hidden border flex-shrink-0">
-                          <img 
-                            src={category.image} 
-                            alt={category.name} 
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      )}
-                      <span className="font-medium text-lg">{category.name}</span>
-                    </div>
+                    {category.image ? (
+                      <div className="w-10 h-10 rounded-lg overflow-hidden border bg-muted">
+                        <img 
+                          src={category.image} 
+                          alt={category.name} 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center border">
+                        <Layers className="w-5 h-5 text-muted-foreground/30" />
+                      </div>
+                    )}
                   </TableCell>
+                  <TableCell className="font-medium text-lg">{category.name}</TableCell>
                   <TableCell>
                     <Badge variant={category.active ? "default" : "secondary"}>
                       {category.active ? "Active" : "Inactive"}
@@ -312,13 +316,17 @@ export default function CategoriesPage() {
             <div key={category.id} className="bg-card border rounded-lg p-4 space-y-3 shadow-sm">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                  {category.image && (
-                    <div className="w-12 h-12 rounded-lg overflow-hidden border flex-shrink-0">
+                  {category.image ? (
+                    <div className="w-12 h-12 rounded-lg overflow-hidden border bg-muted">
                       <img 
                         src={category.image} 
                         alt={category.name} 
                         className="w-full h-full object-cover"
                       />
+                    </div>
+                  ) : (
+                    <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center border">
+                      <Layers className="w-6 h-6 text-muted-foreground/30" />
                     </div>
                   )}
                   <div>
