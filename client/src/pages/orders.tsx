@@ -487,7 +487,18 @@ export default function OrdersPage() {
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
                 {categories?.map(c => (
-                  <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
+                  <SelectItem key={c.id} value={c.id.toString()}>
+                    <div className="flex items-center gap-2">
+                      {c.image ? (
+                        <img src={c.image} className="w-6 h-6 rounded-sm object-cover border" alt="" />
+                      ) : (
+                        <div className="w-6 h-6 rounded-sm bg-muted flex items-center justify-center border">
+                          <Layers className="w-3 h-3 text-muted-foreground/40" />
+                        </div>
+                      )}
+                      <span>{c.name}</span>
+                    </div>
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
