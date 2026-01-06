@@ -202,7 +202,23 @@ export default function OrdersPage() {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  {filteredVarieties?.map(v => <SelectItem key={v.id} value={v.id.toString()}>{v.name}</SelectItem>)}
+                                  {filteredVarieties?.map(v => {
+                                    const cat = categories?.find(c => c.id === v.categoryId);
+                                    return (
+                                      <SelectItem key={v.id} value={v.id.toString()}>
+                                        <div className="flex items-center gap-3 py-1">
+                                          {cat?.image ? (
+                                            <img src={cat.image} className="w-8 h-8 rounded-md object-cover border shadow-sm" alt="" />
+                                          ) : (
+                                            <div className="w-8 h-8 rounded-md bg-muted flex items-center justify-center border">
+                                              <Layers className="w-4 h-4 text-muted-foreground" />
+                                            </div>
+                                          )}
+                                          <span className="font-medium">{v.name}</span>
+                                        </div>
+                                      </SelectItem>
+                                    );
+                                  })}
                                 </SelectContent>
                               </Select>
                             </FormItem>
