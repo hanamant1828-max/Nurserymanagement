@@ -80,16 +80,16 @@ export default function OrdersPage() {
     const matchesSearch = !search || 
       o.customerName?.toLowerCase().includes(search.toLowerCase()) ||
       o.phone?.toLowerCase().includes(search.toLowerCase()) ||
-      o.lot?.lotNumber?.toLowerCase().includes(search.toLowerCase()) ||
-      o.lot?.variety?.name?.toLowerCase().includes(search.toLowerCase());
+      lots?.find(l => l.id === o.lotId)?.lotNumber?.toLowerCase().includes(search.toLowerCase()) ||
+      varieties?.find(v => v.id === (lots?.find(l => l.id === o.lotId)?.varietyId))?.name?.toLowerCase().includes(search.toLowerCase());
     
     const matchesLot = pageLotId === "all" || o.lotId.toString() === pageLotId;
     
     // If lot is not selected, but variety is, filter orders by lot's variety
-    const matchesVariety = pageLotId !== "all" ? true : (pageVarietyId === "all" || o.lot?.varietyId.toString() === pageVarietyId);
+    const matchesVariety = pageLotId !== "all" ? true : (pageVarietyId === "all" || (lots?.find(l => l.id === o.lotId)?.varietyId.toString() === pageVarietyId));
     
     // If variety is not selected, but category is, filter orders by lot's category
-    const matchesCategory = (pageLotId !== "all" || pageVarietyId !== "all") ? true : (pageCategoryId === "all" || o.lot?.categoryId.toString() === pageCategoryId);
+    const matchesCategory = (pageLotId !== "all" || pageVarietyId !== "all") ? true : (pageCategoryId === "all" || (lots?.find(l => l.id === o.lotId)?.categoryId.toString() === pageCategoryId));
 
     return matchesSearch && matchesLot && matchesVariety && matchesCategory;
   }) || [];
