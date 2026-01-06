@@ -75,6 +75,13 @@ export default function LotsPage() {
   const [open, setOpen] = useState(false);
   const [damageDialogOpen, setDamageDialogOpen] = useState(false);
   const [selectedLotId, setSelectedLotId] = useState<number | null>(null);
+  const [search, setSearch] = useState("");
+
+  const filteredLotsList = lots?.filter(l => 
+    l.lotNumber.toLowerCase().includes(search.toLowerCase()) ||
+    l.variety?.name.toLowerCase().includes(search.toLowerCase()) ||
+    l.category?.name.toLowerCase().includes(search.toLowerCase())
+  ) || [];
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -152,10 +159,17 @@ export default function LotsPage() {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-display font-bold">Lots & Stock</h1>
+          <h1 className="text-3xl font-display font-bold">Lots & Stock ({filteredLotsList.length})</h1>
           <p className="text-muted-foreground">Monitor sowing lots, stock availability, and damages.</p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
+        <div className="flex flex-col sm:flex-row gap-4">
+          <Input 
+            placeholder="Search lot no, variety, category..." 
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full sm:w-64"
+          />
+          <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button size="lg" className="shadow-lg shadow-primary/20">
               <Plus className="w-5 h-5 mr-2" /> New Sowing Entry
@@ -394,17 +408,17 @@ export default function LotsPage() {
           <TableBody>
             {isLoading ? (
               <TableRow><TableCell colSpan={8} className="h-24 text-center">Loading lots...</TableCell></TableRow>
-            ) : lots?.length === 0 ? (
+            ) : filteredLotsList.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="h-32 text-center text-muted-foreground">
                   <div className="flex flex-col items-center gap-2">
                     <Sprout className="w-8 h-8 opacity-20" />
-                    No sowing lots recorded yet.
+                    No lots found.
                   </div>
                 </TableCell>
               </TableRow>
             ) : (
-              lots?.map((lot) => {
+              filteredLotsList.map((lot) => {
                 const isLowStock = lot.available < (lot.seedsSown * 0.1);
                 return (
                   <TableRow key={lot.id}>
@@ -479,10 +493,10 @@ export default function LotsPage() {
       <div className="md:hidden space-y-4">
         {isLoading ? (
           <p className="text-center py-4">Loading lots...</p>
-        ) : lots?.length === 0 ? (
-          <p className="text-center py-4 text-muted-foreground">No sowing lots recorded yet.</p>
+        ) : filteredLotsList.length === 0 ? (
+          <p className="text-center py-4 text-muted-foreground">No lots found.</p>
         ) : (
-          lots?.map((lot) => {
+          filteredLotsList.map((lot) => {
             const isLowStock = lot.available < (lot.seedsSown * 0.1);
             return (
               <div key={lot.id} className="bg-card border rounded-lg p-4 space-y-3 shadow-sm">

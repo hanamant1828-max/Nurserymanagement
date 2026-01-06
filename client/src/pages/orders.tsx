@@ -65,6 +65,14 @@ export default function OrdersPage() {
 
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(1);
+  const [search, setSearch] = useState("");
+
+  const filteredOrdersList = orders?.filter(o => 
+    o.customerName?.toLowerCase().includes(search.toLowerCase()) ||
+    o.phone?.toLowerCase().includes(search.toLowerCase()) ||
+    o.lot?.lotNumber?.toLowerCase().includes(search.toLowerCase()) ||
+    o.lot?.variety?.name?.toLowerCase().includes(search.toLowerCase())
+  ) || [];
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -133,10 +141,17 @@ export default function OrdersPage() {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-display font-bold">Orders</h1>
+          <h1 className="text-3xl font-display font-bold">Orders ({filteredOrdersList.length})</h1>
           <p className="text-muted-foreground">Book new orders and manage deliveries.</p>
         </div>
-        <Dialog open={open} onOpenChange={(v) => { setOpen(v); if(!v) setStep(1); }}>
+        <div className="flex flex-col sm:flex-row gap-4">
+          <Input 
+            placeholder="Search customer, phone, lot..." 
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full sm:w-64"
+          />
+          <Dialog open={open} onOpenChange={(v) => { setOpen(v); if(!v) setStep(1); }}>
           <DialogTrigger asChild>
             <Button size="lg" className="shadow-lg shadow-primary/20">
               <Plus className="w-5 h-5 mr-2" /> Book Order
@@ -385,7 +400,7 @@ export default function OrdersPage() {
           <TableBody>
             {isLoading ? (
               <TableRow><TableCell colSpan={7} className="h-24 text-center">Loading orders...</TableCell></TableRow>
-            ) : orders?.length === 0 ? (
+            ) : filteredOrdersList.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
                   <div className="flex flex-col items-center gap-2">
@@ -395,7 +410,7 @@ export default function OrdersPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              orders?.map((order) => (
+              filteredOrdersList.map((order) => (
                 <TableRow key={order.id}>
                   <TableCell className="font-mono text-muted-foreground">#{order.id}</TableCell>
                   <TableCell>

@@ -60,6 +60,13 @@ export default function VarietiesPage() {
   
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [search, setSearch] = useState("");
+
+  const filteredVarietiesList = varieties?.filter(v => {
+    const categoryName = categories?.find(c => c.id === v.categoryId)?.name || "";
+    return v.name.toLowerCase().includes(search.toLowerCase()) || 
+           categoryName.toLowerCase().includes(search.toLowerCase());
+  }) || [];
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -121,82 +128,90 @@ export default function VarietiesPage() {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-display font-bold">Varieties</h1>
+          <h1 className="text-3xl font-display font-bold">Varieties ({filteredVarietiesList.length})</h1>
           <p className="text-muted-foreground">Manage specific plant varieties under categories.</p>
         </div>
-        <Dialog open={open} onOpenChange={(val) => { setOpen(val); if(!val) resetForm(); }}>
-          <DialogTrigger asChild>
-            <Button size="lg" className="shadow-lg shadow-primary/20">
-              <Plus className="w-5 h-5 mr-2" /> Add Variety
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{editingId ? "Edit Variety" : "New Variety"}</DialogTitle>
-            </DialogHeader>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-4">
-                <FormField
-                  control={form.control}
-                  name="categoryId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Category</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+        <div className="flex flex-col sm:flex-row gap-4">
+          <Input 
+            placeholder="Search varieties or categories..." 
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full sm:w-64"
+          />
+          <Dialog open={open} onOpenChange={(val) => { setOpen(val); if(!val) resetForm(); }}>
+            <DialogTrigger asChild>
+              <Button size="lg" className="shadow-lg shadow-primary/20">
+                <Plus className="w-5 h-5 mr-2" /> Add Variety
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>{editingId ? "Edit Variety" : "New Variety"}</DialogTitle>
+              </DialogHeader>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-4">
+                  <FormField
+                    control={form.control}
+                    name="categoryId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Category</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a category" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {categories?.filter(c => c.active).map(category => (
+                              <SelectItem key={category.id} value={category.id.toString()}>
+                                {category.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Variety Name</FormLabel>
                         <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a category" />
-                          </SelectTrigger>
+                          <Input placeholder="e.g. Cherry Tomato, Hybrid Rose" {...field} />
                         </FormControl>
-                        <SelectContent>
-                          {categories?.filter(c => c.active).map(category => (
-                            <SelectItem key={category.id} value={category.id.toString()}>
-                              {category.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Variety Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g. Cherry Tomato, Hybrid Rose" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="active"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center justify-between rounded-lg border p-4">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-base">Active Status</FormLabel>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit" className="w-full" disabled={creating || updating}>
-                  {editingId ? "Save Changes" : "Create Variety"}
-                </Button>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="active"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-base">Active Status</FormLabel>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <Button type="submit" className="w-full" disabled={creating || updating}>
+                    {editingId ? "Save Changes" : "Create Variety"}
+                  </Button>
+                </form>
+              </Form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <div className="hidden md:block rounded-xl border bg-card shadow-sm overflow-hidden">
@@ -219,7 +234,7 @@ export default function VarietiesPage() {
                   <TableCell><div className="h-8 w-8 ml-auto bg-muted animate-pulse rounded" /></TableCell>
                 </TableRow>
               ))
-            ) : varieties?.length === 0 ? (
+            ) : filteredVarietiesList.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={4} className="h-32 text-center text-muted-foreground">
                   <div className="flex flex-col items-center gap-2">
@@ -229,7 +244,7 @@ export default function VarietiesPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              varieties?.map((variety) => (
+              filteredVarietiesList.map((variety) => (
                 <TableRow key={variety.id} className="group">
                   <TableCell className="text-muted-foreground font-medium">
                     {getCategoryName(variety.categoryId)}
@@ -282,10 +297,10 @@ export default function VarietiesPage() {
       <div className="md:hidden space-y-4">
         {loadingVarieties ? (
           <p className="text-center py-4">Loading varieties...</p>
-        ) : varieties?.length === 0 ? (
+        ) : filteredVarietiesList.length === 0 ? (
           <p className="text-center py-4 text-muted-foreground">No varieties found.</p>
         ) : (
-          varieties?.map((variety) => (
+          filteredVarietiesList.map((variety) => (
             <div key={variety.id} className="bg-card border rounded-lg p-4 space-y-3 shadow-sm">
               <div className="flex justify-between items-start">
                 <div>
