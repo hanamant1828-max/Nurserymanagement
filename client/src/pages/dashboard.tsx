@@ -106,7 +106,7 @@ export default function Dashboard() {
                   <h3 className="text-3xl font-bold font-display tracking-tight">{stat.value}</h3>
                 </div>
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform duration-300`}>
-                  <stat.icon className="w-6 h-6" />
+                  {stat.icon && <stat.icon className="w-6 h-6" />}
                 </div>
               </CardContent>
             </Card>
