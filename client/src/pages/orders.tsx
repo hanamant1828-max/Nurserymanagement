@@ -83,15 +83,26 @@ export default function OrdersPage() {
       lots?.find(l => l.id === o.lotId)?.lotNumber?.toLowerCase().includes(search.toLowerCase()) ||
       varieties?.find(v => v.id === (lots?.find(l => l.id === o.lotId)?.varietyId))?.name?.toLowerCase().includes(search.toLowerCase());
     
-    const matchesLot = pageLotId === "all" || o.lotId.toString() === pageLotId;
+    // Strict hierarchical filtering:
+    // 1. If lot is selected, filter by lot
+    // 2. Else if variety is selected, filter by variety
+    // 3. Else if category is selected, filter by category
     
-    // If lot is not selected, but variety is, filter orders by lot's variety
-    const matchesVariety = pageLotId !== "all" ? true : (pageVarietyId === "all" || (lots?.find(l => l.id === o.lotId)?.varietyId.toString() === pageVarietyId));
+    if (pageLotId !== "all") {
+      return matchesSearch && o.lotId.toString() === pageLotId;
+    }
     
-    // If variety is not selected, but category is, filter orders by lot's category
-    const matchesCategory = (pageLotId !== "all" || pageVarietyId !== "all") ? true : (pageCategoryId === "all" || (lots?.find(l => l.id === o.lotId)?.categoryId.toString() === pageCategoryId));
+    if (pageVarietyId !== "all") {
+      const lot = lots?.find(l => l.id === o.lotId);
+      return matchesSearch && lot?.varietyId.toString() === pageVarietyId;
+    }
+    
+    if (pageCategoryId !== "all") {
+      const lot = lots?.find(l => l.id === o.lotId);
+      return matchesSearch && lot?.categoryId.toString() === pageCategoryId;
+    }
 
-    return matchesSearch && matchesLot && matchesVariety && matchesCategory;
+    return matchesSearch;
   }) || [];
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -460,6 +471,84 @@ export default function OrdersPage() {
           </Dialog>
         </div>
       </div>
+
+      <Card className="bg-muted/30 border-none shadow-none">
+        <CardContent className="p-4 flex flex-wrap gap-4 items-end">
+          <div className="space-y-1.5 flex-1 min-w-[200px]">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">Category Filter</label>
+            <Select onValueChange={(val) => {
+              setPageCategoryId(val);
+              setPageVarietyId("all");
+              setPageLotId("all");
+            }} value={pageCategoryId}>
+              <SelectTrigger className="h-11 bg-background border-muted-foreground/20">
+                <SelectValue placeholder="All Categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {categories?.map(c => (
+                  <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1.5 flex-1 min-w-[200px]">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">Variety Filter</label>
+            <Select 
+              onValueChange={(val) => {
+                setPageVarietyId(val);
+                setPageLotId("all");
+              }} 
+              value={pageVarietyId}
+              disabled={pageCategoryId === "all"}
+            >
+              <SelectTrigger className="h-11 bg-background border-muted-foreground/20">
+                <SelectValue placeholder="All Varieties" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Varieties</SelectItem>
+                {filteredVarietiesPage?.map(v => (
+                  <SelectItem key={v.id} value={v.id.toString()}>{v.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1.5 flex-1 min-w-[200px]">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">Lot Filter</label>
+            <Select 
+              onValueChange={setPageLotId} 
+              value={pageLotId}
+              disabled={pageVarietyId === "all"}
+            >
+              <SelectTrigger className="h-11 bg-background border-muted-foreground/20">
+                <SelectValue placeholder="All Lots" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Lots</SelectItem>
+                {filteredLotsPage?.map(l => (
+                  <SelectItem key={l.id} value={l.id.toString()}>{l.lotNumber}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {(pageCategoryId !== "all" || pageVarietyId !== "all" || pageLotId !== "all") && (
+            <Button 
+              variant="ghost" 
+              onClick={() => {
+                setPageCategoryId("all");
+                setPageVarietyId("all");
+                setPageLotId("all");
+              }}
+              className="h-11 px-4 text-muted-foreground hover:text-foreground"
+            >
+              Clear Filters
+            </Button>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
         <Table>
