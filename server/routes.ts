@@ -147,90 +147,63 @@ export async function registerRoutes(
 }
 
 async function seedDatabase() {
-  const categoriesList = await storage.getCategories();
-  if (categoriesList.length <= 2) {
-    // 1. Categories
-    const watermelon = await storage.createCategory({ name: "Watermelon", active: true });
-    const tomato = await storage.createCategory({ name: "Tomato", active: true });
-    const chili = await storage.createCategory({ name: "Green Chili", active: true });
-    const eggplant = await storage.createCategory({ name: "Eggplant", active: true });
-    
-    // 2. Varieties
-    const v1 = await storage.createVariety({ categoryId: watermelon.id, name: "Sugar Baby", active: true });
-    const v2 = await storage.createVariety({ categoryId: tomato.id, name: "Roma", active: true });
-    const v3 = await storage.createVariety({ categoryId: tomato.id, name: "Cherry Tomato", active: true });
-    const v4 = await storage.createVariety({ categoryId: chili.id, name: "Bullet Chili", active: true });
-    const v5 = await storage.createVariety({ categoryId: eggplant.id, name: "Black Beauty", active: true });
+  const existingCategories = await storage.getCategories();
+  if (existingCategories.length < 15) {
+    const categoriesToCreate = [
+      { name: "Watermelon", image: "https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=100&q=80" },
+      { name: "Tomato", image: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&w=100&q=80" },
+      { name: "Green Chili", image: "https://images.unsplash.com/photo-1588253518679-119c709cbef5?auto=format&fit=crop&w=100&q=80" },
+      { name: "Eggplant", image: "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=100&q=80" },
+      { name: "Cucumber", image: "https://images.unsplash.com/photo-1449300079323-02e209d9d3a6?auto=format&fit=crop&w=100&q=80" },
+      { name: "Bell Pepper", image: "https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?auto=format&fit=crop&w=100&q=80" },
+      { name: "Cabbage", image: "https://images.unsplash.com/photo-1550258114-b83033991628?auto=format&fit=crop&w=100&q=80" },
+      { name: "Cauliflower", image: "https://images.unsplash.com/photo-1568584711075-3d021a7c3ca3?auto=format&fit=crop&w=100&q=80" },
+      { name: "Broccoli", image: "https://images.unsplash.com/photo-1453360994457-13d704300f98?auto=format&fit=crop&w=100&q=80" },
+      { name: "Onion", image: "https://images.unsplash.com/photo-1508747703725-719777637510?auto=format&fit=crop&w=100&q=80" },
+      { name: "Garlic", image: "https://images.unsplash.com/photo-1540148426945-6cf22a6b2383?auto=format&fit=crop&w=100&q=80" },
+      { name: "Ginger", image: "https://images.unsplash.com/photo-1615485500704-8e990f9900f7?auto=format&fit=crop&w=100&q=80" },
+      { name: "Carrot", image: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?auto=format&fit=crop&w=100&q=80" },
+      { name: "Radish", image: "https://images.unsplash.com/photo-1590779033100-9f60702a053b?auto=format&fit=crop&w=100&q=80" },
+      { name: "Spinach", image: "https://images.unsplash.com/photo-1576045057995-568f588f82fb?auto=format&fit=crop&w=100&q=80" }
+    ];
 
-    // 3. Lots
-    const lot1 = await storage.createLot({
-      lotNumber: "LOT-WM-001",
-      categoryId: watermelon.id,
-      varietyId: v1.id,
-      sowingDate: "2025-12-01",
-      seedsSown: 1000,
-      damaged: 50,
-      expectedReadyDate: "2026-01-15",
-      remarks: "High quality watermelon seeds"
-    });
+    for (const catData of categoriesToCreate) {
+      const category = await storage.createCategory({ name: catData.name, image: catData.image, active: true });
+      
+      for (let i = 1; i <= 5; i++) {
+        const variety = await storage.createVariety({ 
+          categoryId: category.id, 
+          name: `${category.name} Variety ${i}`, 
+          active: true 
+        });
 
-    const lot2 = await storage.createLot({
-      lotNumber: "LOT-TM-002",
-      categoryId: tomato.id,
-      varietyId: v2.id,
-      sowingDate: "2025-12-10",
-      seedsSown: 2000,
-      damaged: 100,
-      expectedReadyDate: "2026-01-20",
-      remarks: "Roma tomato lot"
-    });
+        for (let j = 1; j <= 4; j++) {
+          const lot = await storage.createLot({
+            lotNumber: `LOT-${category.name.substring(0, 2).toUpperCase()}-${variety.id}-${j}`,
+            categoryId: category.id,
+            varietyId: variety.id,
+            sowingDate: "2025-12-01",
+            seedsSown: 1000,
+            damaged: 10,
+            expectedReadyDate: "2026-02-01",
+            remarks: "Batch seeding"
+          });
 
-    const lot3 = await storage.createLot({
-      lotNumber: "LOT-CH-003",
-      categoryId: chili.id,
-      varietyId: v4.id,
-      sowingDate: "2025-12-15",
-      seedsSown: 5000,
-      damaged: 200,
-      expectedReadyDate: "2026-02-01",
-      remarks: "Spicy chili variety"
-    });
-
-    // 4. Orders
-    await storage.createOrder({
-      lotId: lot1.id,
-      customerName: "John Doe",
-      phone: "9876543210",
-      village: "Greenwood",
-      bookedQty: 100,
-      advanceAmount: "500",
-      paymentMode: "Cash",
-      deliveryDate: "2026-01-20",
-      status: "BOOKED"
-    });
-
-    await storage.createOrder({
-      lotId: lot1.id,
-      customerName: "Jane Smith",
-      phone: "8765432109",
-      village: "Riverdale",
-      bookedQty: 50,
-      advanceAmount: "250",
-      paymentMode: "PhonePe",
-      deliveryDate: "2026-01-22",
-      status: "BOOKED"
-    });
-
-    await storage.createOrder({
-      lotId: lot2.id,
-      customerName: "Farmer Bob",
-      phone: "7654321098",
-      village: "Sunnyvale",
-      bookedQty: 500,
-      advanceAmount: "1000",
-      paymentMode: "Cash",
-      deliveryDate: "2026-01-25",
-      status: "BOOKED"
-    });
+          for (let k = 1; k <= 10; k++) {
+            await storage.createOrder({
+              lotId: lot.id,
+              customerName: `Customer ${k} for ${lot.lotNumber}`,
+              phone: `90000000${k}`,
+              village: "Seeded Village",
+              bookedQty: 5,
+              advanceAmount: "100",
+              paymentMode: "Cash",
+              deliveryDate: "2026-02-15",
+              status: "BOOKED"
+            });
+          }
+        }
+      }
+    }
   }
 }
