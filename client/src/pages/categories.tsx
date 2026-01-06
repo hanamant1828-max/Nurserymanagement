@@ -89,13 +89,28 @@ export default function CategoriesPage() {
 
   const handleEdit = (category: Category) => {
     setEditingId(category.id);
-    form.reset({ name: category.name, active: category.active });
+    form.reset({ 
+      name: category.name, 
+      active: category.active,
+      image: category.image || "" 
+    });
     setOpen(true);
   };
 
   const resetForm = () => {
     setEditingId(null);
-    form.reset({ name: "", active: true });
+    form.reset({ name: "", active: true, image: "" });
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        form.setValue("image", reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   return (
@@ -132,6 +147,35 @@ export default function CategoriesPage() {
                         <FormLabel>Category Name</FormLabel>
                         <FormControl>
                           <Input placeholder="e.g. Vegetables, Flowers" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="image"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Category Image</FormLabel>
+                        <FormControl>
+                          <div className="space-y-4">
+                            <Input 
+                              type="file" 
+                              accept="image/*" 
+                              onChange={handleImageChange}
+                              className="cursor-pointer"
+                            />
+                            {field.value && (
+                              <div className="relative w-24 h-24 rounded-lg overflow-hidden border">
+                                <img 
+                                  src={field.value} 
+                                  alt="Preview" 
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            )}
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>

@@ -15,6 +15,7 @@ export const users = pgTable("users", {
 export const categories = pgTable("categories", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
+  image: text("image"), // Base64 string
   active: boolean("active").default(true).notNull(),
 });
 
