@@ -344,16 +344,24 @@ export default function OrdersPage() {
                     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                       {selectedLot && (
                          <div className="bg-primary/5 border border-primary/20 p-3 rounded-lg flex justify-between items-center shadow-sm">
-                           <div className="flex items-center gap-3">
+                           <div className="flex items-center gap-4">
                              {selectedLot.category?.image && (
-                               <img src={selectedLot.category.image} className="w-10 h-10 rounded-md object-cover border" alt="" />
+                               <img src={selectedLot.category.image} className="w-12 h-12 rounded-md object-cover border shadow-sm" alt="" />
                              )}
                              <div>
-                               <p className="font-bold text-sm leading-tight">{selectedLot.variety?.name}</p>
-                               <p className="text-xs text-muted-foreground">{selectedLot.lotNumber}</p>
+                               <p className="font-bold text-base leading-tight">{selectedLot.variety?.name}</p>
+                               <p className="text-xs text-muted-foreground font-mono">{selectedLot.lotNumber}</p>
                              </div>
                            </div>
-                           <Button variant="outline" size="sm" onClick={() => setStep(1)} className="h-8">Change</Button>
+                           <div className="flex items-center gap-3">
+                             <div className="text-right">
+                               <p className="text-[10px] uppercase text-muted-foreground font-semibold">Stock</p>
+                               <Badge className="bg-primary text-primary-foreground font-black text-sm px-2.5 py-0.5">
+                                 {selectedLot.available}
+                               </Badge>
+                             </div>
+                             <Button variant="outline" size="sm" onClick={() => setStep(1)} className="h-9 font-semibold">Change</Button>
+                           </div>
                          </div>
                       )}
                       
