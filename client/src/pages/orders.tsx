@@ -28,6 +28,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Plus, ShoppingCart, CheckCircle, Layers, Check, ChevronsUpDown } from "lucide-react";
+import confetti from "canvas-confetti";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -254,7 +255,16 @@ export default function OrdersPage() {
   };
 
   const markDelivered = (id: number) => {
-    update({ id, status: "DELIVERED", deliveredQty: 0 });
+    update({ id, status: "DELIVERED", deliveredQty: 0 }, {
+      onSuccess: () => {
+        confetti({
+          particleCount: 150,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#10b981', '#3b82f6', '#f59e0b']
+        });
+      }
+    });
   };
 
   return (
