@@ -151,8 +151,7 @@ export default function OrdersPage() {
   const [step, setStep] = useState(1);
   const [search, setSearch] = useState("");
 
-  // Page level filters for cascading view
-  const [pageCategoryId, setPageCategoryId] = useState<string>("all");
+  const [pageCategoryId, setPageCategoryId] = useState<string>("");
   const [pageVarietyId, setPageVarietyId] = useState<string>("all");
   const [pageLotId, setPageLotId] = useState<string>("all");
 
@@ -161,56 +160,53 @@ export default function OrdersPage() {
     return [...categories].sort((a, b) => a.name.localeCompare(b.name));
   }, [categories]);
 
-  // Automatically select the first category alphabetically if "all" is selected
+  // Automatically select the first category alphabetically if none is selected
   useEffect(() => {
-    if (pageCategoryId === "all" && sortedCategories.length > 0) {
+    if (!pageCategoryId && sortedCategories.length > 0) {
       setPageCategoryId(sortedCategories[0].id.toString());
     }
   }, [sortedCategories, pageCategoryId]);
 
   const filteredVarietiesPage = varieties?.filter(v => 
-    pageCategoryId === "all" || v.categoryId.toString() === pageCategoryId
+    !pageCategoryId || v.categoryId.toString() === pageCategoryId
   );
 
   const filteredLotsPage = lots?.filter(l => 
-    (pageCategoryId === "all" || l.categoryId.toString() === pageCategoryId) &&
+    (!pageCategoryId || l.categoryId.toString() === pageCategoryId) &&
     (pageVarietyId === "all" || l.varietyId.toString() === pageVarietyId)
   );
 
   const filteredOrdersList = useMemo(() => {
-    if (!orders) return [];
+    if (!orders || !lots || !pageCategoryId) return [];
     
     // Only show BOOKED orders
     const bookedOrders = orders.filter(o => o.status === "BOOKED");
 
     return bookedOrders.filter(o => {
-      const matchesSearch = !search || 
-        o.customerName?.toLowerCase().includes(search.toLowerCase()) ||
-        o.phone?.toLowerCase().includes(search.toLowerCase()) ||
-        lots?.find(l => l.id === o.lotId)?.lotNumber?.toLowerCase().includes(search.toLowerCase()) ||
-        varieties?.find(v => v.id === (lots?.find(l => l.id === o.lotId)?.varietyId))?.name?.toLowerCase().includes(search.toLowerCase());
-      
-      const lot = lots?.find(l => l.id === o.lotId);
+      const lot = lots.find(l => l.id === o.lotId);
       if (!lot) return false;
 
       // Ensure we compare as strings to avoid type issues
       const catIdStr = lot.categoryId?.toString();
-      const pageCatIdStr = pageCategoryId?.toString();
+      const pageCatIdStr = pageCategoryId.toString();
 
-      // If category filter is "all" or matches, then apply variety/lot filters
-      if (pageCategoryId === "all" || catIdStr === pageCatIdStr) {
-        if (pageLotId !== "all") {
-          return matchesSearch && o.lotId.toString() === pageLotId.toString();
-        }
-        
-        if (pageVarietyId !== "all") {
-          return matchesSearch && lot.varietyId.toString() === pageVarietyId.toString();
-        }
-        
-        return matchesSearch;
+      if (catIdStr !== pageCatIdStr) return false;
+
+      const matchesSearch = !search || 
+        o.customerName?.toLowerCase().includes(search.toLowerCase()) ||
+        o.phone?.toLowerCase().includes(search.toLowerCase()) ||
+        lot.lotNumber?.toLowerCase().includes(search.toLowerCase()) ||
+        varieties?.find(v => v.id === lot.varietyId)?.name?.toLowerCase().includes(search.toLowerCase());
+      
+      if (pageLotId !== "all") {
+        return matchesSearch && o.lotId.toString() === pageLotId.toString();
       }
-
-      return false;
+      
+      if (pageVarietyId !== "all") {
+        return matchesSearch && lot.varietyId.toString() === pageVarietyId.toString();
+      }
+      
+      return matchesSearch;
     });
   }, [orders, search, lots, varieties, pageLotId, pageVarietyId, pageCategoryId]);
 
