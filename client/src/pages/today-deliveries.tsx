@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useOrders } from "@/hooks/use-orders";
 import { useLots } from "@/hooks/use-lots";
 import { useVarieties } from "@/hooks/use-varieties";
@@ -23,6 +23,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import confetti from "canvas-confetti";
 
 export default function TodayDeliveriesPage() {
@@ -87,12 +88,6 @@ export default function TodayDeliveriesPage() {
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedDate, pageCategoryId, pageVarietyId, pageLotId]);
-
-  const totalPages = Math.ceil(filteredOrders.length / 25);
-  const paginatedOrders = filteredOrders.slice(
-    (currentPage - 1) * 25,
-    currentPage * 25
-  );
 
   const totalPages = Math.ceil(filteredOrders.length / 25);
   const paginatedOrders = filteredOrders.slice(
