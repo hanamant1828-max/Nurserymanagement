@@ -122,6 +122,10 @@ export default function OrdersPage() {
   const selectedVarietyId = form.watch("varietyId");
   const selectedLotId = form.watch("lotId");
 
+  const filteredVarieties = varieties?.filter(v => 
+    !selectedCategoryId || v.categoryId.toString() === selectedCategoryId
+  );
+
   const availableLots = lots?.filter(l => 
     (!selectedCategoryId || l.categoryId.toString() === selectedCategoryId) &&
     (!selectedVarietyId || l.varietyId.toString() === selectedVarietyId) &&
