@@ -134,6 +134,13 @@ export async function registerRoutes(
       createdBy: (req.user as any).id
     };
     const order = await storage.createOrder(orderData);
+    await storage.createAuditLog({
+      userId: (req.user as any).id,
+      action: "CREATE",
+      entityType: "order",
+      entityId: order.id,
+      details: `Created new order for: ${order.customerName}`,
+    });
     res.status(201).json(order);
   });
 
