@@ -126,6 +126,36 @@ export const api = {
       input: insertOrderSchema.partial(),
       responses: { 200: z.custom<typeof orders.$inferSelect>() },
     },
+    delete: {
+      method: 'DELETE' as const,
+      path: '/api/orders/:id',
+      responses: { 200: z.void() },
+    },
+  },
+  users: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/users',
+      responses: { 200: z.array(z.custom<typeof users.$inferSelect>()) },
+    },
+    create: {
+      method: 'POST' as const,
+      path: '/api/users',
+      input: insertUserSchema,
+      responses: { 201: z.custom<typeof users.$inferSelect>() },
+    },
+    delete: {
+      method: 'DELETE' as const,
+      path: '/api/users/:id',
+      responses: { 200: z.void() },
+    },
+  },
+  auditLogs: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/audit-logs',
+      responses: { 200: z.array(z.custom<typeof auditLogs.$inferSelect & { user: typeof users.$inferSelect }>()) },
+    },
   },
 };
 

@@ -137,7 +137,54 @@ export async function registerRoutes(
   app.put(api.orders.update.path, async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const order = await storage.updateOrder(Number(req.params.id), req.body);
+    await storage.createAuditLog({
+      userId: req.user!.id,
+      action: "UPDATE",
+      entityType: "order",
+      entityId: order.id,
+      details: `Updated order status to: ${order.status}`,
+    });
     res.json(order);
+  });
+
+  app.delete(api.orders.delete.path || "/api/orders/:id", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const id = Number(req.params.id);
+    await storage.deleteOrder(id);
+    await storage.createAuditLog({
+      userId: req.user!.id,
+      action: "DELETE",
+      entityType: "order",
+      entityId: id,
+      details: `Deleted order ID: ${id}`,
+    });
+    res.sendStatus(200);
+  });
+
+  // User Management
+  app.get("/api/users", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== "admin") return res.sendStatus(403);
+    const users = await storage.getUsers();
+    res.json(users);
+  });
+
+  app.post("/api/users", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== "admin") return res.sendStatus(403);
+    const user = await storage.createUser(req.body);
+    res.status(201).json(user);
+  });
+
+  app.delete("/api/users/:id", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== "admin") return res.sendStatus(403);
+    await storage.deleteUser(Number(req.params.id));
+    res.sendStatus(200);
+  });
+
+  // Audit Logs
+  app.get("/api/audit-logs", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== "admin") return res.sendStatus(403);
+    const logs = await storage.getAuditLogs();
+    res.json(logs);
   });
 
   // Seed Data - Run in background to avoid blocking server startup

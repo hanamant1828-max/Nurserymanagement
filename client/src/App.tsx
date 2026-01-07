@@ -18,6 +18,7 @@ import OrdersPage from "@/pages/orders";
 import TodayDeliveriesPage from "@/pages/today-deliveries";
 import CustomersPage from "@/pages/customers";
 import ReportsPage from "@/pages/reports";
+import UserManagementPage from "@/pages/users";
 import NotFound from "@/pages/not-found";
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
@@ -39,6 +40,37 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
   }
 
   if (!user) return null;
+
+  return (
+    <Layout>
+      <Component />
+    </Layout>
+  );
+}
+
+function AdminRoute({ component: Component }: { component: React.ComponentType }) {
+  const { user, isLoading } = useUser();
+  const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (!isLoading) {
+      if (!user) {
+        setLocation("/login");
+      } else if (user.role !== "admin") {
+        setLocation("/");
+      }
+    }
+  }, [user, isLoading, setLocation]);
+
+  if (isLoading) {
+    return (
+      <div className="h-screen w-full flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user || user.role !== "admin") return null;
 
   return (
     <Layout>
@@ -76,6 +108,9 @@ function Router() {
       </Route>
       <Route path="/reports">
         {() => <ProtectedRoute component={ReportsPage} />}
+      </Route>
+      <Route path="/users">
+        {() => <AdminRoute component={UserManagementPage} />}
       </Route>
 
       <Route component={NotFound} />

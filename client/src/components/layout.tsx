@@ -35,6 +35,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/reports", label: "Reports", icon: BarChart3 },
   ];
 
+  const adminItems = [
+    { href: "/users", label: "User Management", icon: Users },
+  ];
+
   const NavContent = () => (
     <div className="flex flex-col h-full">
       <div className="p-6 border-b border-border/50">
@@ -59,6 +63,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </Link>
           );
         })}
+
+        {user?.role === 'admin' && (
+          <div className="pt-4 mt-4 border-t border-border/50">
+            <p className="px-3 mb-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Administration</p>
+            {adminItems.map((item) => {
+              const isActive = location === item.href;
+              return (
+                <Link key={item.href} href={item.href} className={`nav-item ${isActive ? 'active' : 'text-muted-foreground hover:text-primary'}`} onClick={() => setOpen(false)}>
+                  <item.icon className={`w-5 h-5 ${isActive ? 'stroke-2' : 'stroke-[1.5]'}`} />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </nav>
 
       <div className="p-4 border-t border-border/50">

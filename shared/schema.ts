@@ -58,8 +58,24 @@ export const orders = pgTable("orders", {
   deliveryDate: text("delivery_date").notNull(),
   status: text("status").default("BOOKED").notNull(), // BOOKED, DELIVERED, CANCELLED
   deliveredQty: integer("delivered_qty").default(0),
+  createdBy: integer("created_by"),
 }, (table) => [
   index("orders_lot_id_idx").on(table.lotId),
+  index("orders_created_by_idx").on(table.createdBy),
+]);
+
+// 9. Audit Logs
+export const auditLogs = pgTable("audit_logs", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  action: text("action").notNull(), // CREATE, UPDATE, DELETE
+  entityType: text("entity_type").notNull(), // category, variety, lot, order
+  entityId: integer("entity_id").notNull(),
+  details: text("details"),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+}, (table) => [
+  index("audit_logs_user_id_idx").on(table.userId),
+  index("audit_logs_entity_idx").on(table.entityType, table.entityId),
 ]);
 
 // Relations
@@ -81,6 +97,11 @@ export const lotsRelations = relations(lots, ({ one, many }) => ({
 
 export const ordersRelations = relations(orders, ({ one }) => ({
   lot: one(lots, { fields: [orders.lotId], references: [lots.id] }),
+  creator: one(users, { fields: [orders.createdBy], references: [users.id] }),
+}));
+
+export const auditLogsRelations = relations(auditLogs, ({ one }) => ({
+  user: one(users, { fields: [auditLogs.userId], references: [users.id] }),
 }));
 
 // Schemas
@@ -89,6 +110,7 @@ export const insertCategorySchema = createInsertSchema(categories).omit({ id: tr
 export const insertVarietySchema = createInsertSchema(varieties).omit({ id: true });
 export const insertLotSchema = createInsertSchema(lots).omit({ id: true });
 export const insertOrderSchema = createInsertSchema(orders).omit({ id: true });
+export const insertAuditLogSchema = createInsertSchema(auditLogs).omit({ id: true });
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -96,3 +118,4 @@ export type Category = typeof categories.$inferSelect;
 export type Variety = typeof varieties.$inferSelect;
 export type Lot = typeof lots.$inferSelect;
 export type Order = typeof orders.$inferSelect;
+export type AuditLog = typeof auditLogs.$inferSelect;

@@ -1,12 +1,12 @@
 import {
-  users, categories, varieties, lots, orders,
-  type User, type Category, type Variety, type Lot, type Order,
+  users, categories, varieties, lots, orders, auditLogs,
+  type User, type Category, type Variety, type Lot, type Order, type AuditLog,
 } from "@shared/schema";
 import { db, pool } from "./db";
-import { eq, sql, and } from "drizzle-orm";
+import { eq, sql, and, desc } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
-import { insertUserSchema, insertCategorySchema, insertVarietySchema, insertLotSchema, insertOrderSchema } from "@shared/schema";
+import { insertUserSchema, insertCategorySchema, insertVarietySchema, insertLotSchema, insertOrderSchema, insertAuditLogSchema } from "@shared/schema";
 import { z } from "zod";
 
 const PostgresSessionStore = connectPg(session);
@@ -19,8 +19,11 @@ export type InsertOrder = z.infer<typeof insertOrderSchema>;
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
+  getUsers(): Promise<User[]>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(id: number, user: Partial<InsertUser>): Promise<User>;
+  deleteUser(id: number): Promise<void>;
 
   // Categories
   getCategories(): Promise<Category[]>;
@@ -44,10 +47,14 @@ export interface IStorage {
   deleteLot(id: number): Promise<void>;
 
   // Orders
-  getOrders(): Promise<(Order & { lot: Lot & { variety: Variety } })[]>;
+  getOrders(): Promise<(Order & { lot: Lot & { variety: Variety }; creator?: User })[]>;
   createOrder(order: InsertOrder): Promise<Order>;
   updateOrder(id: number, order: Partial<InsertOrder>): Promise<Order>;
   deleteOrder(id: number): Promise<void>;
+
+  // Audit Logs
+  createAuditLog(log: z.infer<typeof insertAuditLogSchema>): Promise<AuditLog>;
+  getAuditLogs(): Promise<(AuditLog & { user: User })[]>;
 
   sessionStore: session.Store;
 }
@@ -67,6 +74,10 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
+  async getUsers(): Promise<User[]> {
+    return await db.select().from(users);
+  }
+
   async getUserByUsername(username: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.username, username));
     return user;
@@ -75,6 +86,15 @@ export class DatabaseStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const [user] = await db.insert(users).values(insertUser).returning();
     return user;
+  }
+
+  async updateUser(id: number, update: Partial<InsertUser>): Promise<User> {
+    const [user] = await db.update(users).set(update).where(eq(users.id, id)).returning();
+    return user;
+  }
+
+  async deleteUser(id: number): Promise<void> {
+    await db.delete(users).where(eq(users.id, id));
   }
 
   async getCategories(): Promise<Category[]> {
@@ -162,14 +182,15 @@ export class DatabaseStorage implements IStorage {
     await db.delete(lots).where(eq(lots.id, id));
   }
 
-  async getOrders(): Promise<(Order & { lot: Lot & { variety: Variety } })[]> {
+  async getOrders(): Promise<(Order & { lot: Lot & { variety: Variety }; creator?: User })[]> {
     const allOrders = await db.query.orders.findMany({
       with: {
         lot: {
           with: {
             variety: true,
           }
-        }
+        },
+        creator: true,
       }
     });
 
@@ -188,6 +209,21 @@ export class DatabaseStorage implements IStorage {
 
   async deleteOrder(id: number): Promise<void> {
     await db.delete(orders).where(eq(orders.id, id));
+  }
+
+  async createAuditLog(log: z.infer<typeof insertAuditLogSchema>): Promise<AuditLog> {
+    const [auditLog] = await db.insert(auditLogs).values(log).returning();
+    return auditLog;
+  }
+
+  async getAuditLogs(): Promise<(AuditLog & { user: User })[]> {
+    return await db.query.auditLogs.findMany({
+      with: {
+        user: true,
+      },
+      orderBy: (auditLogs, { desc }) => [desc(auditLogs.timestamp)],
+      limit: 100,
+    });
   }
 }
 
