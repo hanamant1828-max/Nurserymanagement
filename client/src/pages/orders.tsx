@@ -29,7 +29,15 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, ShoppingCart, CheckCircle, Layers, Check, ChevronsUpDown, Loader2, Search } from "lucide-react";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { Plus, ShoppingCart, CheckCircle, Layers, Check, ChevronsUpDown, Loader2, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import confetti from "canvas-confetti";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -150,10 +158,17 @@ export default function OrdersPage() {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(1);
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 25;
 
   const [pageCategoryId, setPageCategoryId] = useState<string>("all");
   const [pageVarietyId, setPageVarietyId] = useState<string>("all");
   const [pageLotId, setPageLotId] = useState<string>("all");
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, pageCategoryId, pageVarietyId, pageLotId]);
 
   const sortedCategories = useMemo(() => {
     if (!categories) return [];
@@ -202,6 +217,12 @@ export default function OrdersPage() {
       return true;
     });
   }, [orders, search, lots, varieties, pageLotId, pageVarietyId, pageCategoryId]);
+
+  const totalPages = Math.ceil(filteredOrdersList.length / itemsPerPage);
+  const paginatedOrders = filteredOrdersList.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -766,7 +787,7 @@ export default function OrdersPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredOrdersList.map((order) => {
+              paginatedOrders.map((order) => {
                 const lot = lots?.find(l => l.id === order.lotId);
                 const variety = varieties?.find(v => v.id === lot?.varietyId);
                 const category = categories?.find(c => c.id === lot?.categoryId);
@@ -835,6 +856,80 @@ export default function OrdersPage() {
         </Table>
       </div>
 
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between px-2 py-4 border-t bg-card rounded-b-xl border-x border-b">
+          <p className="text-sm text-muted-foreground">
+            Showing <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> to{" "}
+            <span className="font-medium">
+              {Math.min(currentPage * itemsPerPage, filteredOrdersList.length)}
+            </span> of{" "}
+            <span className="font-medium">{filteredOrdersList.length}</span> results
+          </p>
+          <Pagination className="mx-0 w-auto">
+            <PaginationContent>
+              <PaginationItem>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="gap-1"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </Button>
+              </PaginationItem>
+              
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(page => {
+                  // Show current page, first, last, and neighbors
+                  return (
+                    page === 1 ||
+                    page === totalPages ||
+                    Math.abs(page - currentPage) <= 1
+                  );
+                })
+                .map((page, index, array) => {
+                  const items = [];
+                  if (index > 0 && page - array[index - 1] > 1) {
+                    items.push(
+                      <PaginationItem key={`ellipsis-${page}`}>
+                        <span className="px-2 text-muted-foreground">...</span>
+                      </PaginationItem>
+                    );
+                  }
+                  items.push(
+                    <PaginationItem key={page}>
+                      <Button
+                        variant={currentPage === page ? "default" : "outline"}
+                        size="sm"
+                        className="w-9"
+                        onClick={() => setCurrentPage(page)}
+                      >
+                        {page}
+                      </Button>
+                    </PaginationItem>
+                  );
+                  return items;
+                })}
+
+              <PaginationItem>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                  className="gap-1"
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
+
       <div className="md:hidden space-y-4 pb-12">
         {isLoading ? (
           <div className="h-24 flex items-center justify-center">Loading orders...</div>
@@ -843,7 +938,7 @@ export default function OrdersPage() {
             No orders found.
           </div>
         ) : (
-          filteredOrdersList.map((order) => {
+          paginatedOrders.map((order) => {
             const lot = lots?.find(l => l.id === order.lotId);
             const variety = varieties?.find(v => v.id === lot?.varietyId);
             const category = categories?.find(c => c.id === lot?.categoryId);
