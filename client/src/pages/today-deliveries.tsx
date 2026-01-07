@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useOrders } from "@/hooks/use-orders";
 import { useLots } from "@/hooks/use-lots";
 import { useVarieties } from "@/hooks/use-varieties";
@@ -5,10 +6,13 @@ import { useCategories } from "@/hooks/use-categories";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { format, isToday, parseISO } from "date-fns";
-import { ShoppingCart, CheckCircle, Clock, Calendar, Layers } from "lucide-react";
+import { format, isSameDay, parseISO } from "date-fns";
+import { ShoppingCart, CheckCircle, Clock, Calendar as CalendarIcon, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useUpdateOrder } from "@/hooks/use-orders";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 export default function TodayDeliveriesPage() {
   const { data: orders, isLoading } = useOrders();
@@ -16,12 +20,12 @@ export default function TodayDeliveriesPage() {
   const { data: varieties } = useVarieties();
   const { data: categories } = useCategories();
   const { mutate: update } = useUpdateOrder();
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
-  const todayOrders = orders?.filter(order => {
+  const filteredOrders = orders?.filter(order => {
     try {
-      // Assuming deliveryDate is stored as "yyyy-MM-dd" or ISO string
       const deliveryDate = parseISO(order.deliveryDate);
-      return isToday(deliveryDate) && order.status === "BOOKED";
+      return isSameDay(deliveryDate, selectedDate) && order.status === "BOOKED";
     } catch (e) {
       return false;
     }
@@ -41,9 +45,38 @@ export default function TodayDeliveriesPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-display font-bold">Today's Deliveries</h1>
-        <p className="text-muted-foreground">Orders scheduled for delivery today, {format(new Date(), "eeee, dd MMMM yyyy")}.</p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-display font-bold">
+            {isSameDay(selectedDate, new Date()) ? "Today's Deliveries" : "Scheduled Deliveries"}
+          </h1>
+          <p className="text-muted-foreground">
+            Orders for {format(selectedDate, "eeee, dd MMMM yyyy")}.
+          </p>
+        </div>
+        
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant={"outline"}
+              className={cn(
+                "w-full md:w-[280px] justify-start text-left font-normal h-12 text-lg border-primary/20 hover:bg-primary/5",
+                !selectedDate && "text-muted-foreground"
+              )}
+            >
+              <CalendarIcon className="mr-2 h-5 w-5" />
+              {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="end">
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={(date) => date && setSelectedDate(date)}
+              initialFocus
+            />
+          </PopoverContent>
+        </Popover>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -54,7 +87,7 @@ export default function TodayDeliveriesPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-black text-primary">{todayOrders.length}</div>
+            <div className="text-4xl font-black text-primary">{filteredOrders.length}</div>
           </CardContent>
         </Card>
       </div>
@@ -71,17 +104,17 @@ export default function TodayDeliveriesPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {todayOrders.length === 0 ? (
+            {filteredOrders.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
                   <div className="flex flex-col items-center gap-2">
-                    <Calendar className="w-8 h-8 opacity-20" />
-                    No deliveries scheduled for today.
+                    <CalendarIcon className="w-8 h-8 opacity-20" />
+                    No deliveries scheduled for this date.
                   </div>
                 </TableCell>
               </TableRow>
             ) : (
-              todayOrders.map((order) => {
+              filteredOrders.map((order) => {
                 const lot = lots?.find(l => l.id === order.lotId);
                 const variety = varieties?.find(v => v.id === lot?.varietyId);
                 const category = categories?.find(c => c.id === lot?.categoryId);
@@ -132,12 +165,12 @@ export default function TodayDeliveriesPage() {
       </div>
 
       <div className="md:hidden space-y-4 pb-12">
-        {todayOrders.length === 0 ? (
+        {filteredOrders.length === 0 ? (
           <div className="py-12 text-center text-muted-foreground italic bg-muted/20 rounded-lg border-2 border-dashed">
-            No deliveries scheduled for today.
+            No deliveries scheduled for this date.
           </div>
         ) : (
-          todayOrders.map((order) => {
+          filteredOrders.map((order) => {
             const lot = lots?.find(l => l.id === order.lotId);
             const variety = varieties?.find(v => v.id === lot?.varietyId);
             const category = categories?.find(c => c.id === lot?.categoryId);
@@ -150,7 +183,9 @@ export default function TodayDeliveriesPage() {
                       <p className="font-black text-lg leading-tight">{order.customerName}</p>
                       <p className="text-sm font-mono text-muted-foreground">{order.phone}</p>
                     </div>
-                    <Badge className="bg-primary text-white font-bold">TODAY</Badge>
+                    <Badge className="bg-primary text-white font-bold">
+                      {isSameDay(selectedDate, new Date()) ? "TODAY" : format(selectedDate, "MMM dd")}
+                    </Badge>
                   </div>
                   
                   <div className="p-4 space-y-4">
@@ -195,3 +230,4 @@ export default function TodayDeliveriesPage() {
     </div>
   );
 }
+
