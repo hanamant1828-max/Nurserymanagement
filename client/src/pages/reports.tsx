@@ -48,7 +48,7 @@ export default function ReportsPage() {
     }
   };
 
-  const dailySowingData = lots?.filter(l => l.sowingDate === today) || [];
+  const dailySowingData = lots?.filter(l => isInRange(l.sowingDate)) || [];
   const pendingDeliveries = orders?.filter(o => o.status === "BOOKED" && isInRange(o.deliveryDate)) || [];
   const lotStockData = lots?.filter(l => isInRange(l.sowingDate)).map(l => ({
     ...l,
@@ -128,7 +128,7 @@ export default function ReportsPage() {
       <Tabs defaultValue="sowing" className="w-full">
         <TabsList className="grid w-full grid-cols-3 mb-8">
           <TabsTrigger value="sowing" className="flex items-center gap-2">
-            <Sprout className="w-4 h-4" /> Daily Sowing
+            <Sprout className="w-4 h-4" /> Sowing
           </TabsTrigger>
           <TabsTrigger value="deliveries" className="flex items-center gap-2">
             <Truck className="w-4 h-4" /> Pending Deliveries
@@ -142,10 +142,10 @@ export default function ReportsPage() {
           <Card className="border-none shadow-md">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle>Daily Sowing Report</CardTitle>
-                <p className="text-sm text-muted-foreground">Seeds sown today: {today}</p>
+                <CardTitle>Sowing Report</CardTitle>
+                <p className="text-sm text-muted-foreground">Detailed sowing data for the selected range.</p>
               </div>
-              <Button onClick={() => exportToExcel(dailySowingData, "Daily_Sowing")}>
+              <Button onClick={() => exportToExcel(dailySowingData, "Sowing_Report")}>
                 <FileSpreadsheet className="w-4 h-4 mr-2" /> Export Excel
               </Button>
             </CardHeader>
@@ -153,6 +153,7 @@ export default function ReportsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>Date</TableHead>
                     <TableHead>Lot Number</TableHead>
                     <TableHead>Variety</TableHead>
                     <TableHead>Seeds Sown</TableHead>
@@ -160,8 +161,9 @@ export default function ReportsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filterData(dailySowingData, ["lotNumber"]).map((lot) => (
+                  {filterData(dailySowingData, ["lotNumber", "sowingDate"]).map((lot) => (
                     <TableRow key={lot.id}>
+                      <TableCell>{lot.sowingDate}</TableCell>
                       <TableCell className="font-medium">{lot.lotNumber}</TableCell>
                       <TableCell>{(lot as any).variety?.name || "N/A"}</TableCell>
                       <TableCell>{lot.seedsSown}</TableCell>
@@ -170,7 +172,7 @@ export default function ReportsPage() {
                   ))}
                   {dailySowingData.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">No sowing recorded today.</TableCell>
+                      <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No sowing recorded in this range.</TableCell>
                     </TableRow>
                   )}
                 </TableBody>
