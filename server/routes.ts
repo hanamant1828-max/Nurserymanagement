@@ -129,8 +129,11 @@ export async function registerRoutes(
 
   app.post(api.orders.create.path, async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
-    // Simple validation for booking logic could go here
-    const order = await storage.createOrder(req.body);
+    const orderData = {
+      ...req.body,
+      createdBy: (req.user as any).id
+    };
+    const order = await storage.createOrder(orderData);
     res.status(201).json(order);
   });
 
@@ -138,7 +141,7 @@ export async function registerRoutes(
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const order = await storage.updateOrder(Number(req.params.id), req.body);
     await storage.createAuditLog({
-      userId: req.user!.id,
+      userId: (req.user as any).id,
       action: "UPDATE",
       entityType: "order",
       entityId: order.id,
@@ -152,7 +155,7 @@ export async function registerRoutes(
     const id = Number(req.params.id);
     await storage.deleteOrder(id);
     await storage.createAuditLog({
-      userId: req.user!.id,
+      userId: (req.user as any).id,
       action: "DELETE",
       entityType: "order",
       entityId: id,
@@ -163,26 +166,26 @@ export async function registerRoutes(
 
   // User Management
   app.get("/api/users", async (req, res) => {
-    if (!req.isAuthenticated() || req.user!.role !== "admin") return res.sendStatus(403);
+    if (!req.isAuthenticated() || (req.user as any).role !== "admin") return res.sendStatus(403);
     const users = await storage.getUsers();
     res.json(users);
   });
 
   app.post("/api/users", async (req, res) => {
-    if (!req.isAuthenticated() || req.user!.role !== "admin") return res.sendStatus(403);
+    if (!req.isAuthenticated() || (req.user as any).role !== "admin") return res.sendStatus(403);
     const user = await storage.createUser(req.body);
     res.status(201).json(user);
   });
 
   app.delete("/api/users/:id", async (req, res) => {
-    if (!req.isAuthenticated() || req.user!.role !== "admin") return res.sendStatus(403);
+    if (!req.isAuthenticated() || (req.user as any).role !== "admin") return res.sendStatus(403);
     await storage.deleteUser(Number(req.params.id));
     res.sendStatus(200);
   });
 
   // Audit Logs
   app.get("/api/audit-logs", async (req, res) => {
-    if (!req.isAuthenticated() || req.user!.role !== "admin") return res.sendStatus(403);
+    if (!req.isAuthenticated() || (req.user as any).role !== "admin") return res.sendStatus(403);
     const logs = await storage.getAuditLogs();
     res.json(logs);
   });
