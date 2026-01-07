@@ -190,22 +190,27 @@ export default function OrdersPage() {
         lots?.find(l => l.id === o.lotId)?.lotNumber?.toLowerCase().includes(search.toLowerCase()) ||
         varieties?.find(v => v.id === (lots?.find(l => l.id === o.lotId)?.varietyId))?.name?.toLowerCase().includes(search.toLowerCase());
       
-      // If "all" is selected (which shouldn't happen with the useEffect but for safety), show everything matched by search
-      if (pageCategoryId === "all") return matchesSearch;
-
       const lot = lots?.find(l => l.id === o.lotId);
       if (!lot) return false;
 
-      // Filtering logic
-      if (pageLotId !== "all") {
-        return matchesSearch && o.lotId.toString() === pageLotId;
+      // Ensure we compare as strings to avoid type issues
+      const catIdStr = lot.categoryId?.toString();
+      const pageCatIdStr = pageCategoryId?.toString();
+
+      // If category filter is "all" or matches, then apply variety/lot filters
+      if (pageCategoryId === "all" || catIdStr === pageCatIdStr) {
+        if (pageLotId !== "all") {
+          return matchesSearch && o.lotId.toString() === pageLotId.toString();
+        }
+        
+        if (pageVarietyId !== "all") {
+          return matchesSearch && lot.varietyId.toString() === pageVarietyId.toString();
+        }
+        
+        return matchesSearch;
       }
-      
-      if (pageVarietyId !== "all") {
-        return matchesSearch && lot.varietyId.toString() === pageVarietyId;
-      }
-      
-      return matchesSearch && lot.categoryId.toString() === pageCategoryId;
+
+      return false;
     });
   }, [orders, search, lots, varieties, pageLotId, pageVarietyId, pageCategoryId]);
 
