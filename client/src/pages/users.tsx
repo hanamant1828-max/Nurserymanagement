@@ -65,6 +65,20 @@ export default function UserManagementPage() {
               createUserMutation.mutate(Object.fromEntries(formData));
               e.currentTarget.reset();
             }} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input id="firstName" name="firstName" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input id="lastName" name="lastName" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phoneNumber">Phone Number</Label>
+                <Input id="phoneNumber" name="phoneNumber" />
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="username">Username</Label>
                 <Input id="username" name="username" required />
@@ -102,7 +116,9 @@ export default function UserManagementPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b bg-muted/50">
+                    <th className="h-10 px-4 text-left font-medium">Name</th>
                     <th className="h-10 px-4 text-left font-medium">Username</th>
+                    <th className="h-10 px-4 text-left font-medium">Phone</th>
                     <th className="h-10 px-4 text-left font-medium">Role</th>
                     <th className="h-10 px-4 text-right font-medium">Actions</th>
                   </tr>
@@ -110,7 +126,13 @@ export default function UserManagementPage() {
                 <tbody>
                   {users?.map((user) => (
                     <tr key={user.id} className="border-b hover:bg-muted/30">
-                      <td className="p-4 font-medium">{user.username}</td>
+                      <td className="p-4 font-medium">
+                        {user.firstName || user.lastName 
+                          ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
+                          : "-"}
+                      </td>
+                      <td className="p-4">{user.username}</td>
+                      <td className="p-4 text-muted-foreground">{user.phoneNumber || "-"}</td>
                       <td className="p-4">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
                           user.role === 'admin' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
