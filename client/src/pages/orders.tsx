@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useOrders, useCreateOrder, useUpdateOrder } from "@/hooks/use-orders";
 import { useLots } from "@/hooks/use-lots";
 import { useCategories } from "@/hooks/use-categories";
@@ -122,10 +122,6 @@ export default function OrdersPage() {
   const selectedVarietyId = form.watch("varietyId");
   const selectedLotId = form.watch("lotId");
 
-  const filteredVarieties = varieties?.filter(v => 
-    !selectedCategoryId || v.categoryId.toString() === selectedCategoryId
-  );
-
   const availableLots = lots?.filter(l => 
     (!selectedCategoryId || l.categoryId.toString() === selectedCategoryId) &&
     (!selectedVarietyId || l.varietyId.toString() === selectedVarietyId) &&
@@ -133,6 +129,14 @@ export default function OrdersPage() {
   );
 
   const selectedLot = lots?.find(l => l.id.toString() === selectedLotId);
+
+  // Auto-set delivery date from lot's expected ready date
+  useEffect(() => {
+    if (selectedLot?.expectedReadyDate) {
+      form.setValue("deliveryDate", new Date(selectedLot.expectedReadyDate));
+    }
+  }, [selectedLotId, selectedLot?.expectedReadyDate, form]);
+
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     if (selectedLot && data.bookedQty > selectedLot.available) {
@@ -408,20 +412,17 @@ export default function OrdersPage() {
                           name="deliveryDate"
                           render={({ field }) => (
                             <FormItem className="flex flex-col">
-                              <FormLabel>Delivery Date</FormLabel>
-                              <Popover>
-                                <PopoverTrigger asChild>
-                                  <FormControl>
-                                    <Button variant={"outline"} className={`h-11 w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}>
-                                      {field.value ? format(field.value, "dd MMM yyyy") : <span>Pick date</span>}
-                                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                    </Button>
-                                  </FormControl>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
-                                  <Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date < new Date()} initialFocus />
-                                </PopoverContent>
-                              </Popover>
+                              <FormLabel>Expected Delivery Date (From Lot)</FormLabel>
+                              <FormControl>
+                                <Button 
+                                  variant="outline" 
+                                  disabled 
+                                  className="h-11 w-full pl-3 text-left font-bold bg-muted/50"
+                                >
+                                  {field.value ? format(field.value, "dd MMM yyyy") : <span>No date set</span>}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
