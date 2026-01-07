@@ -68,6 +68,10 @@
   .nav-item.active {
     @apply bg-primary text-primary-foreground shadow-md shadow-primary/20;
   }
+
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
 }
 
 /* Custom scrollbar */

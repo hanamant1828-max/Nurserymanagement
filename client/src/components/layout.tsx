@@ -17,6 +17,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { BottomNav } from "@/components/bottom-nav";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
@@ -124,11 +125,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </Sheet>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto w-full">
+      <main className="flex-1 overflow-auto w-full pb-20 md:pb-0">
         <div className="container max-w-7xl mx-auto p-4 md:p-8 pt-16 lg:pt-8 min-h-screen animate-in fade-in duration-500">
           {children}
         </div>
       </main>
+
+      {/* Bottom Navigation for Mobile */}
+      <BottomNav />
     </div>
   );
 }

@@ -230,7 +230,7 @@ export default function TodayDeliveriesPage() {
                       <>
                         {categories?.find(c => c.id.toString() === pageCategoryId)?.image ? (
                           <img 
-                            src={categories.find(c => c.id.toString() === pageCategoryId)?.image} 
+                            src={categories.find(c => c.id.toString() === pageCategoryId)?.image ?? ""} 
                             className="w-6 h-6 rounded-sm object-cover border" 
                             alt="" 
                           />
