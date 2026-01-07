@@ -15,6 +15,7 @@ import CategoriesPage from "@/pages/categories";
 import VarietiesPage from "@/pages/varieties";
 import LotsPage from "@/pages/lots";
 import OrdersPage from "@/pages/orders";
+import TodayDeliveriesPage from "@/pages/today-deliveries";
 import CustomersPage from "@/pages/customers";
 import ReportsPage from "@/pages/reports";
 import NotFound from "@/pages/not-found";
@@ -66,6 +67,9 @@ function Router() {
       </Route>
       <Route path="/orders">
         {() => <ProtectedRoute component={OrdersPage} />}
+      </Route>
+      <Route path="/today-deliveries">
+        {() => <ProtectedRoute component={TodayDeliveriesPage} />}
       </Route>
       <Route path="/customers">
         {() => <ProtectedRoute component={CustomersPage} />}

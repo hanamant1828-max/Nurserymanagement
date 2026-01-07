@@ -6,6 +6,7 @@ import {
   Flower2, 
   Layers, 
   ShoppingCart, 
+  CalendarCheck,
   Users, 
   BarChart3,
   LogOut,
@@ -29,6 +30,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/varieties", label: "Varieties", icon: Flower2 },
     { href: "/lots", label: "Lots & Stock", icon: Sprout },
     { href: "/orders", label: "Orders", icon: ShoppingCart },
+    { href: "/today-deliveries", label: "Today's Deliveries", icon: CalendarCheck },
     { href: "/customers", label: "Customers", icon: Users },
     { href: "/reports", label: "Reports", icon: BarChart3 },
   ];
