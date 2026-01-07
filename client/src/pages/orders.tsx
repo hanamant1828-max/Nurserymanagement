@@ -591,6 +591,7 @@ export default function OrdersPage() {
               <TableHead className="w-20">ID</TableHead>
               <TableHead>Customer</TableHead>
               <TableHead>Plant Details</TableHead>
+              <TableHead>Taken By</TableHead>
               <TableHead className="text-right">Qty</TableHead>
               <TableHead>Delivery Date</TableHead>
               <TableHead>Status</TableHead>
@@ -599,10 +600,10 @@ export default function OrdersPage() {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow><TableCell colSpan={7} className="h-24 text-center">Loading orders...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={8} className="h-24 text-center">Loading orders...</TableCell></TableRow>
             ) : filteredOrdersList.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
+                <TableCell colSpan={8} className="h-32 text-center text-muted-foreground">
                   <div className="flex flex-col items-center gap-2">
                     <ShoppingCart className="w-8 h-8 opacity-20" />
                     No orders found.
@@ -610,59 +611,70 @@ export default function OrdersPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredOrdersList.map((order) => (
-                <TableRow key={order.id} className="group hover:bg-muted/30 transition-colors">
-                  <TableCell className="font-mono text-muted-foreground text-xs">#{order.id}</TableCell>
+              filteredOrdersList.map((order) => {
+                const lot = lots?.find(l => l.id === order.lotId);
+                const variety = varieties?.find(v => v.id === lot?.varietyId);
+                const category = categories?.find(c => c.id === lot?.categoryId);
+
+                return (
+                  <TableRow key={order.id} className="group hover:bg-muted/30 transition-colors">
+                    <TableCell className="font-mono text-muted-foreground text-xs">#{order.id}</TableCell>
+                    <TableCell>
+                      <div className="font-bold">{order.customerName}</div>
+                      <div className="text-xs text-muted-foreground">{order.phone}</div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        {category?.image ? (
+                          <img src={category.image} className="w-12 h-12 rounded-md object-cover border shadow-sm" alt="" />
+                        ) : (
+                          <div className="w-12 h-12 rounded-md bg-muted flex items-center justify-center border">
+                            <Layers className="w-6 h-6 text-muted-foreground/30" />
+                          </div>
+                        )}
+                        <div>
+                          <span className="font-bold text-sm block leading-tight">{variety?.name}</span>
+                          <p className="text-[10px] text-muted-foreground uppercase font-mono">{lot?.lotNumber}</p>
+                        </div>
+                      </div>
+                    </TableCell>
                   <TableCell>
-                    <div className="font-bold">{order.customerName}</div>
-                    <div className="text-xs text-muted-foreground">{order.phone}</div>
+                    {(() => {
+                      const orderWithCreator = order as any;
+                      return orderWithCreator.creator ? (
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
+                            {orderWithCreator.creator.username.charAt(0).toUpperCase()}
+                          </div>
+                          <span className="text-sm font-medium">{orderWithCreator.creator.username}</span>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground italic">System</span>
+                      );
+                    })()}
                   </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      {(() => {
-                        const lot = lots?.find(l => l.id === order.lotId);
-                        const variety = varieties?.find(v => v.id === lot?.varietyId);
-                        const category = categories?.find(c => c.id === lot?.categoryId);
-                        
-                        return (
-                          <>
-                            {category?.image ? (
-                              <img src={category.image} className="w-12 h-12 rounded-md object-cover border shadow-sm" alt="" />
-                            ) : (
-                              <div className="w-12 h-12 rounded-md bg-muted flex items-center justify-center border">
-                                <Layers className="w-6 h-6 text-muted-foreground/30" />
-                              </div>
-                            )}
-                            <div>
-                              <span className="font-bold text-sm block leading-tight">{variety?.name}</span>
-                              <p className="text-[10px] text-muted-foreground uppercase font-mono">{lot?.lotNumber}</p>
-                            </div>
-                          </>
-                        );
-                      })()}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right font-black text-primary">{order.bookedQty}</TableCell>
-                  <TableCell className="text-sm font-medium">{format(new Date(order.deliveryDate), "dd MMM yyyy")}</TableCell>
-                  <TableCell>
-                    <Badge variant={order.status === 'DELIVERED' ? 'secondary' : order.status === 'CANCELLED' ? 'destructive' : 'default'} className={order.status === 'DELIVERED' ? 'bg-green-100 text-green-700 border-green-200' : ''}>
-                      {order.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {order.status === 'BOOKED' && (
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="h-8 text-green-600 hover:text-green-700 hover:bg-green-50 border-green-200 hover:border-green-300 transition-all"
-                        onClick={() => markDelivered(order.id)}
-                      >
-                        <CheckCircle className="w-4 h-4 mr-1.5" /> Delivered
-                      </Button>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))
+                    <TableCell className="text-right font-black text-primary">{order.bookedQty}</TableCell>
+                    <TableCell className="text-sm font-medium">{format(new Date(order.deliveryDate), "dd MMM yyyy")}</TableCell>
+                    <TableCell>
+                      <Badge variant={order.status === 'DELIVERED' ? 'secondary' : order.status === 'CANCELLED' ? 'destructive' : 'default'} className={order.status === 'DELIVERED' ? 'bg-green-100 text-green-700 border-green-200' : ''}>
+                        {order.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {order.status === 'BOOKED' && (
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="h-8 text-green-600 hover:text-green-700 hover:bg-green-50 border-green-200 hover:border-green-300 transition-all"
+                          onClick={() => markDelivered(order.id)}
+                        >
+                          <CheckCircle className="w-4 h-4 mr-1.5" /> Delivered
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>
