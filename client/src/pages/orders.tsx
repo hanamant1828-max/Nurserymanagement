@@ -619,17 +619,27 @@ export default function OrdersPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      {order.lot?.category?.image ? (
-                        <img src={order.lot.category.image} className="w-10 h-10 rounded-md object-cover border shadow-sm" alt="" />
-                      ) : (
-                        <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center border">
-                          <Layers className="w-4 h-4 text-muted-foreground/30" />
-                        </div>
-                      )}
-                      <div>
-                        <span className="font-bold text-sm block leading-tight">{order.lot?.variety?.name}</span>
-                        <p className="text-[10px] text-muted-foreground uppercase font-mono">{order.lot?.lotNumber}</p>
-                      </div>
+                      {(() => {
+                        const lot = lots?.find(l => l.id === order.lotId);
+                        const variety = varieties?.find(v => v.id === lot?.varietyId);
+                        const category = categories?.find(c => c.id === lot?.categoryId);
+                        
+                        return (
+                          <>
+                            {category?.image ? (
+                              <img src={category.image} className="w-12 h-12 rounded-md object-cover border shadow-sm" alt="" />
+                            ) : (
+                              <div className="w-12 h-12 rounded-md bg-muted flex items-center justify-center border">
+                                <Layers className="w-6 h-6 text-muted-foreground/30" />
+                              </div>
+                            )}
+                            <div>
+                              <span className="font-bold text-sm block leading-tight">{variety?.name}</span>
+                              <p className="text-[10px] text-muted-foreground uppercase font-mono">{lot?.lotNumber}</p>
+                            </div>
+                          </>
+                        );
+                      })()}
                     </div>
                   </TableCell>
                   <TableCell className="text-right font-black text-primary">{order.bookedQty}</TableCell>
