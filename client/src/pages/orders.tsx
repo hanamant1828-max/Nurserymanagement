@@ -584,7 +584,7 @@ export default function OrdersPage() {
         </CardContent>
       </Card>
 
-      <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+      <div className="hidden md:block rounded-xl border bg-card shadow-sm overflow-hidden">
         <Table>
           <TableHeader className="bg-muted/50">
             <TableRow>
@@ -666,6 +666,94 @@ export default function OrdersPage() {
             )}
           </TableBody>
         </Table>
+      </div>
+
+      <div className="md:hidden space-y-4 pb-12">
+        {isLoading ? (
+          <div className="h-24 flex items-center justify-center">Loading orders...</div>
+        ) : filteredOrdersList.length === 0 ? (
+          <div className="py-12 text-center text-muted-foreground italic bg-muted/20 rounded-lg border-2 border-dashed">
+            No orders found.
+          </div>
+        ) : (
+          filteredOrdersList.map((order) => {
+            const lot = lots?.find(l => l.id === order.lotId);
+            const variety = varieties?.find(v => v.id === lot?.varietyId);
+            const category = categories?.find(c => c.id === lot?.categoryId);
+            return (
+              <Card key={order.id} className="overflow-hidden border-2 hover:border-primary/20 transition-all shadow-sm active:scale-[0.98]">
+                <CardContent className="p-0">
+                  <div className={`p-3 flex justify-between items-center ${order.status === 'BOOKED' ? 'bg-amber-500/10' : 'bg-emerald-500/10'}`}>
+                    <div className="flex items-center gap-3">
+                      <div className="bg-background p-2 rounded-lg shadow-sm">
+                        <ShoppingCart className={`w-5 h-5 ${order.status === 'BOOKED' ? 'text-amber-600' : 'text-emerald-600'}`} />
+                      </div>
+                      <div>
+                        <p className="font-black text-lg leading-tight">{order.customerName}</p>
+                        <p className="text-sm font-mono text-muted-foreground">{order.phone}</p>
+                      </div>
+                    </div>
+                    <Badge 
+                      className={`font-black text-xs px-2 py-1 rounded-md shadow-sm border-none ${
+                        order.status === 'BOOKED' 
+                          ? 'bg-amber-500 text-white' 
+                          : order.status === 'DELIVERED'
+                          ? 'bg-emerald-500 text-white'
+                          : 'bg-destructive text-destructive-foreground'
+                      }`}
+                    >
+                      {order.status}
+                    </Badge>
+                  </div>
+                  
+                  <div className="p-4 space-y-4">
+                    <div className="flex items-center gap-3">
+                      {category?.image ? (
+                        <img src={category.image} className="w-12 h-12 rounded-md object-cover border" alt="" />
+                      ) : (
+                        <div className="w-12 h-12 rounded-md bg-muted flex items-center justify-center border">
+                          <Layers className="w-6 h-6 text-muted-foreground/30" />
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Variety & Lot</p>
+                        <p className="font-bold text-sm leading-tight">{variety?.name}</p>
+                        <p className="text-xs font-mono text-muted-foreground bg-muted inline-block px-1 rounded">{lot?.lotNumber}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Qty</p>
+                        <p className="font-black text-2xl text-primary">{order.bookedQty}</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 pt-2 border-t border-dashed">
+                      <div className="space-y-1">
+                        <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Delivery Date</p>
+                        <p className="text-sm font-bold">{format(new Date(order.deliveryDate), "dd MMM yyyy")}</p>
+                      </div>
+                      {order.village && (
+                        <div className="space-y-1 text-right">
+                          <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Village</p>
+                          <p className="text-sm font-medium text-muted-foreground truncate italic">{order.village}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {order.status === "BOOKED" && (
+                      <Button 
+                        size="lg"
+                        onClick={() => markDelivered(order.id)}
+                        className="w-full mt-2 font-black text-base h-12 rounded-xl shadow-md shadow-emerald-500/20 bg-emerald-600 hover:bg-emerald-700 active-elevate-2"
+                      >
+                        <CheckCircle className="w-5 h-5 mr-2" /> Mark Delivered
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })
+        )}
       </div>
     </div>
   );
