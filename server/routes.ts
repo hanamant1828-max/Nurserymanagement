@@ -140,8 +140,10 @@ export async function registerRoutes(
     res.json(order);
   });
 
-  // Seed Data
-  await seedDatabase();
+  // Seed Data - Run in background to avoid blocking server startup
+  seedDatabase().catch(err => {
+    console.error("Failed to seed database:", err);
+  });
 
   return httpServer;
 }
