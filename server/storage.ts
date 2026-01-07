@@ -124,27 +124,23 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getLots(): Promise<(Lot & { category: Category; variety: Variety; orders: Order[]; available: number })[]> {
-    const allLots = await db.select().from(lots);
-    const results = [];
+    const allLots = await db.query.lots.findMany({
+      with: {
+        category: true,
+        variety: true,
+        orders: true,
+      },
+    });
 
-    for (const lot of allLots) {
-      const [category] = await db.select().from(categories).where(eq(categories.id, lot.categoryId));
-      const [variety] = await db.select().from(varieties).where(eq(varieties.id, lot.varietyId));
-      const lotOrders = await db.select().from(orders).where(eq(orders.lotId, lot.id));
-      
-      const totalBooked = lotOrders.reduce((sum, o) => sum + o.bookedQty, 0);
+    return allLots.map((lot) => {
+      const totalBooked = lot.orders.reduce((sum, o) => sum + o.bookedQty, 0);
       const available = lot.seedsSown - lot.damaged - totalBooked;
 
-      results.push({
+      return {
         ...lot,
-        category,
-        variety,
-        orders: lotOrders,
         available
-      });
-    }
-
-    return results;
+      };
+    });
   }
 
   async getLot(id: number): Promise<Lot | undefined> {
@@ -167,23 +163,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getOrders(): Promise<(Order & { lot: Lot & { variety: Variety } })[]> {
-    const allOrders = await db.select().from(orders);
-    const results = [];
-
-    for (const order of allOrders) {
-      const [lot] = await db.select().from(lots).where(eq(lots.id, order.lotId));
-      const [variety] = await db.select().from(varieties).where(eq(varieties.id, lot.varietyId));
-      
-      results.push({
-        ...order,
+    const allOrders = await db.query.orders.findMany({
+      with: {
         lot: {
-          ...lot,
-          variety
+          with: {
+            variety: true,
+          }
         }
-      });
-    }
+      }
+    });
 
-    return results;
+    return allOrders as any;
   }
 
   async createOrder(insertOrder: InsertOrder): Promise<Order> {

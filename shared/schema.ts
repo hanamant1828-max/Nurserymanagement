@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, date, decimal, json, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, date, decimal, json, timestamp, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
@@ -25,7 +25,9 @@ export const varieties = pgTable("varieties", {
   categoryId: integer("category_id").notNull(),
   name: text("name").notNull(),
   active: boolean("active").default(true).notNull(),
-});
+}, (table) => [
+  index("varieties_category_id_idx").on(table.categoryId),
+]);
 
 // 5. Lots (Sowing Lot Entry)
 export const lots = pgTable("lots", {
@@ -38,7 +40,10 @@ export const lots = pgTable("lots", {
   damaged: integer("damaged").default(0).notNull(),
   expectedReadyDate: text("expected_ready_date"),
   remarks: text("remarks"),
-});
+}, (table) => [
+  index("lots_category_id_idx").on(table.categoryId),
+  index("lots_variety_id_idx").on(table.varietyId),
+]);
 
 // 8. Orders (Order Booking)
 export const orders = pgTable("orders", {
@@ -53,7 +58,9 @@ export const orders = pgTable("orders", {
   deliveryDate: text("delivery_date").notNull(),
   status: text("status").default("BOOKED").notNull(), // BOOKED, DELIVERED, CANCELLED
   deliveredQty: integer("delivered_qty").default(0),
-});
+}, (table) => [
+  index("orders_lot_id_idx").on(table.lotId),
+]);
 
 // Relations
 export const categoriesRelations = relations(categories, ({ many }) => ({
