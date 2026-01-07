@@ -151,7 +151,7 @@ export default function OrdersPage() {
   const [step, setStep] = useState(1);
   const [search, setSearch] = useState("");
 
-  const [pageCategoryId, setPageCategoryId] = useState<string>("");
+  const [pageCategoryId, setPageCategoryId] = useState<string>("all");
   const [pageVarietyId, setPageVarietyId] = useState<string>("all");
   const [pageLotId, setPageLotId] = useState<string>("all");
 
@@ -160,53 +160,46 @@ export default function OrdersPage() {
     return [...categories].sort((a, b) => a.name.localeCompare(b.name));
   }, [categories]);
 
-  // Automatically select the first category alphabetically if none is selected
-  useEffect(() => {
-    if (!pageCategoryId && sortedCategories.length > 0) {
-      setPageCategoryId(sortedCategories[0].id.toString());
-    }
-  }, [sortedCategories, pageCategoryId]);
-
   const filteredVarietiesPage = varieties?.filter(v => 
-    !pageCategoryId || v.categoryId.toString() === pageCategoryId
+    pageCategoryId === "all" || v.categoryId.toString() === pageCategoryId
   );
 
   const filteredLotsPage = lots?.filter(l => 
-    (!pageCategoryId || l.categoryId.toString() === pageCategoryId) &&
+    (pageCategoryId === "all" || l.categoryId.toString() === pageCategoryId) &&
     (pageVarietyId === "all" || l.varietyId.toString() === pageVarietyId)
   );
 
   const filteredOrdersList = useMemo(() => {
-    if (!orders || !lots || !pageCategoryId) return [];
+    if (!orders) return [];
     
     // Only show BOOKED orders
     const bookedOrders = orders.filter(o => o.status === "BOOKED");
 
     return bookedOrders.filter(o => {
-      const lot = lots.find(l => l.id === o.lotId);
-      if (!lot) return false;
-
-      // Ensure we compare as strings to avoid type issues
-      const catIdStr = lot.categoryId?.toString();
-      const pageCatIdStr = pageCategoryId.toString();
-
-      if (catIdStr !== pageCatIdStr) return false;
-
       const matchesSearch = !search || 
         o.customerName?.toLowerCase().includes(search.toLowerCase()) ||
         o.phone?.toLowerCase().includes(search.toLowerCase()) ||
-        lot.lotNumber?.toLowerCase().includes(search.toLowerCase()) ||
-        varieties?.find(v => v.id === lot.varietyId)?.name?.toLowerCase().includes(search.toLowerCase());
+        lots?.find(l => l.id === o.lotId)?.lotNumber?.toLowerCase().includes(search.toLowerCase()) ||
+        varieties?.find(v => v.id === (lots?.find(l => l.id === o.lotId)?.varietyId))?.name?.toLowerCase().includes(search.toLowerCase());
       
-      if (pageLotId !== "all") {
-        return matchesSearch && o.lotId.toString() === pageLotId.toString();
+      if (!matchesSearch) return false;
+
+      // If any filter is set to something other than "all", apply it
+      if (pageCategoryId !== "all") {
+        const lot = lots?.find(l => l.id === o.lotId);
+        if (lot?.categoryId.toString() !== pageCategoryId) return false;
       }
-      
+
       if (pageVarietyId !== "all") {
-        return matchesSearch && lot.varietyId.toString() === pageVarietyId.toString();
+        const lot = lots?.find(l => l.id === o.lotId);
+        if (lot?.varietyId.toString() !== pageVarietyId) return false;
       }
-      
-      return matchesSearch;
+
+      if (pageLotId !== "all") {
+        if (o.lotId.toString() !== pageLotId) return false;
+      }
+
+      return true;
     });
   }, [orders, search, lots, varieties, pageLotId, pageVarietyId, pageCategoryId]);
 
@@ -660,7 +653,9 @@ export default function OrdersPage() {
                 <SelectValue placeholder="All Categories" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
+                <SelectItem value="all">
+                  <span className="font-bold text-primary">All Categories</span>
+                </SelectItem>
                 {categories?.map(c => (
                   <SelectItem key={c.id} value={c.id.toString()}>
                     <div className="flex items-center gap-3 py-1">
