@@ -2,18 +2,29 @@ import { useState } from "react";
 import { useLots } from "@/hooks/use-lots";
 import { useOrders } from "@/hooks/use-orders";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3, Download, Search, FileSpreadsheet, Truck, Sprout, ShoppingBag } from "lucide-react";
+import { BarChart3, Download, Search, FileSpreadsheet, Truck, Sprout, ShoppingBag, Calendar as CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, subMonths, isWithinInterval, startOfDay, endOfDay } from "date-fns";
 import * as XLSX from "xlsx";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
 
 export default function ReportsPage() {
   const { data: lots, isLoading: loadingLots } = useLots();
   const { data: orders, isLoading: loadingOrders } = useOrders();
   const [searchTerm, setSearchTerm] = useState("");
+  
+  const [dateRange, setDateRange] = useState<{
+    from: Date | undefined;
+    to: Date | undefined;
+  }>({
+    from: subMonths(new Date(), 1),
+    to: new Date(),
+  });
 
   const exportToExcel = (data: any[], fileName: string) => {
     const ws = XLSX.utils.json_to_sheet(data);
@@ -24,9 +35,22 @@ export default function ReportsPage() {
 
   const today = format(new Date(), "yyyy-MM-dd");
 
+  const isInRange = (dateStr: string) => {
+    if (!dateRange.from || !dateRange.to) return true;
+    try {
+      const date = parseISO(dateStr);
+      return isWithinInterval(date, {
+        start: startOfDay(dateRange.from),
+        end: endOfDay(dateRange.to)
+      });
+    } catch (e) {
+      return true;
+    }
+  };
+
   const dailySowingData = lots?.filter(l => l.sowingDate === today) || [];
-  const pendingDeliveries = orders?.filter(o => o.status === "BOOKED") || [];
-  const lotStockData = lots?.map(l => ({
+  const pendingDeliveries = orders?.filter(o => o.status === "BOOKED" && isInRange(o.deliveryDate)) || [];
+  const lotStockData = lots?.filter(l => isInRange(l.sowingDate)).map(l => ({
     ...l,
     available: (l as any).available || 0
   })) || [];
@@ -52,14 +76,52 @@ export default function ReportsPage() {
           <h1 className="text-3xl font-display font-bold">Reports</h1>
           <p className="text-muted-foreground">Detailed data analysis and export center.</p>
         </div>
-        <div className="relative w-full md:w-64">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input 
-            placeholder="Search report..." 
-            className="pl-9"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant={"outline"}
+                className={cn(
+                  "w-full sm:w-[300px] justify-start text-left font-normal",
+                  !dateRange && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {dateRange?.from ? (
+                  dateRange.to ? (
+                    <>
+                      {format(dateRange.from, "LLL dd, y")} -{" "}
+                      {format(dateRange.to, "LLL dd, y")}
+                    </>
+                  ) : (
+                    format(dateRange.from, "LLL dd, y")
+                  )
+                ) : (
+                  <span>Pick a date range</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="end">
+              <Calendar
+                initialFocus
+                mode="range"
+                defaultMonth={dateRange?.from}
+                selected={dateRange as any}
+                onSelect={(range: any) => setDateRange(range)}
+                numberOfMonths={2}
+              />
+            </PopoverContent>
+          </Popover>
+
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input 
+              placeholder="Search report..." 
+              className="pl-9"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
         </div>
       </div>
 
