@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useOrders } from "@/hooks/use-orders";
 import { useLots } from "@/hooks/use-lots";
 import { useVarieties } from "@/hooks/use-varieties";
@@ -8,8 +8,16 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format, isSameDay, parseISO } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ShoppingCart, CheckCircle, Clock, Calendar as CalendarIcon, Layers, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, ShoppingCart, CheckCircle, Clock, Calendar as CalendarIcon, Layers, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { useUpdateOrder } from "@/hooks/use-orders";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -26,14 +34,71 @@ export default function TodayDeliveriesPage() {
   const { mutate: update } = useUpdateOrder();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
-  const filteredOrders = orders?.filter(order => {
-    try {
-      const deliveryDate = parseISO(order.deliveryDate);
-      return isSameDay(deliveryDate, selectedDate) && order.status === "BOOKED";
-    } catch (e) {
-      return false;
-    }
-  }) || [];
+  const [pageCategoryId, setPageCategoryId] = useState<string>("all");
+  const [pageVarietyId, setPageVarietyId] = useState<string>("all");
+  const [pageLotId, setPageLotId] = useState<string>("all");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const sortedCategories = useMemo(() => {
+    if (!categories) return [];
+    return [...categories].sort((a, b) => a.name.localeCompare(b.name));
+  }, [categories]);
+
+  const filteredVarietiesPage = varieties?.filter(v => 
+    pageCategoryId === "all" || v.categoryId.toString() === pageCategoryId
+  );
+
+  const filteredLotsPage = lots?.filter(l => 
+    (pageCategoryId === "all" || l.categoryId.toString() === pageCategoryId) &&
+    (pageVarietyId === "all" || l.varietyId.toString() === pageVarietyId)
+  );
+
+  const filteredOrders = useMemo(() => {
+    if (!orders) return [];
+    
+    return orders.filter(order => {
+      try {
+        const deliveryDate = parseISO(order.deliveryDate);
+        const matchesDate = isSameDay(deliveryDate, selectedDate) && order.status === "BOOKED";
+        if (!matchesDate) return false;
+
+        // If any filter is set to something other than "all", apply it
+        if (pageCategoryId !== "all") {
+          const lot = lots?.find(l => l.id === order.lotId);
+          if (lot?.categoryId.toString() !== pageCategoryId) return false;
+        }
+
+        if (pageVarietyId !== "all") {
+          const lot = lots?.find(l => l.id === order.lotId);
+          if (lot?.varietyId.toString() !== pageVarietyId) return false;
+        }
+
+        if (pageLotId !== "all") {
+          if (order.lotId.toString() !== pageLotId) return false;
+        }
+
+        return true;
+      } catch (e) {
+        return false;
+      }
+    });
+  }, [orders, selectedDate, lots, pageLotId, pageVarietyId, pageCategoryId]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedDate, pageCategoryId, pageVarietyId, pageLotId]);
+
+  const totalPages = Math.ceil(filteredOrders.length / 25);
+  const paginatedOrders = filteredOrders.slice(
+    (currentPage - 1) * 25,
+    currentPage * 25
+  );
+
+  const totalPages = Math.ceil(filteredOrders.length / 25);
+  const paginatedOrders = filteredOrders.slice(
+    (currentPage - 1) * 25,
+    currentPage * 25
+  );
 
   const markDelivered = (id: number) => {
     confetti({
@@ -118,6 +183,105 @@ export default function TodayDeliveriesPage() {
         </Popover>
       </div>
 
+      <Card className="bg-muted/30 border-none shadow-none">
+        <CardContent className="p-4 flex flex-wrap gap-4 items-end">
+          <div className="space-y-1.5 flex-1 min-w-[200px]">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">Category Filter</label>
+            <Select onValueChange={(val) => {
+              setPageCategoryId(val);
+              setPageVarietyId("all");
+              setPageLotId("all");
+            }} value={pageCategoryId}>
+              <SelectTrigger className="h-11 bg-background border-muted-foreground/20">
+                <SelectValue placeholder="All Categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">
+                  <span className="font-bold text-primary">All Categories</span>
+                </SelectItem>
+                {categories?.map(c => (
+                  <SelectItem key={c.id} value={c.id.toString()}>
+                    <div className="flex items-center gap-3 py-1">
+                      {c.image ? (
+                        <img src={c.image} className="w-10 h-10 rounded-md object-cover border" alt="" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center border">
+                          <Layers className="w-5 h-5 text-muted-foreground/40" />
+                        </div>
+                      )}
+                      <span className="font-semibold text-base">{c.name}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1.5 flex-1 min-w-[200px]">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">Variety Filter</label>
+            <Select 
+              onValueChange={(val) => {
+                setPageVarietyId(val);
+                setPageLotId("all");
+              }} 
+              value={pageVarietyId}
+              disabled={pageCategoryId === "all"}
+            >
+              <SelectTrigger className="h-11 bg-background border-muted-foreground/20">
+                <SelectValue placeholder="All Varieties" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">
+                  <span className="text-base font-bold py-1">All Varieties</span>
+                </SelectItem>
+                {filteredVarietiesPage?.map(v => (
+                  <SelectItem key={v.id} value={v.id.toString()}>
+                    <span className="text-base font-bold py-1">{v.name}</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1.5 flex-1 min-w-[200px]">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">Lot Filter</label>
+            <Select 
+              onValueChange={setPageLotId} 
+              value={pageLotId}
+              disabled={pageVarietyId === "all"}
+            >
+              <SelectTrigger className="h-11 bg-background border-muted-foreground/20">
+                <SelectValue placeholder="All Lots" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">
+                  <span className="text-base font-bold py-1">All Lots</span>
+                </SelectItem>
+                {filteredLotsPage?.map(l => (
+                  <SelectItem key={l.id} value={l.id.toString()}>
+                    <span className="text-base font-bold py-1">{l.lotNumber}</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {(pageCategoryId !== "all" || pageVarietyId !== "all" || pageLotId !== "all") && (
+            <Button 
+              variant="ghost" 
+              onClick={() => {
+                setPageCategoryId("all");
+                setPageVarietyId("all");
+                setPageLotId("all");
+              }}
+              className="h-11 px-4 text-muted-foreground hover:text-foreground"
+            >
+              Clear Filters
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="bg-primary/5 border-primary/20">
           <CardHeader className="pb-2">
@@ -153,7 +317,7 @@ export default function TodayDeliveriesPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredOrders.map((order) => {
+              paginatedOrders.map((order) => {
                 const lot = lots?.find(l => l.id === order.lotId);
                 const variety = varieties?.find(v => v.id === lot?.varietyId);
                 const category = categories?.find(c => c.id === lot?.categoryId);
@@ -203,13 +367,86 @@ export default function TodayDeliveriesPage() {
         </Table>
       </div>
 
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between px-2 py-4 border-t bg-card rounded-b-xl border-x border-b">
+          <p className="text-sm text-muted-foreground">
+            Showing <span className="font-medium">{(currentPage - 1) * 25 + 1}</span> to{" "}
+            <span className="font-medium">
+              {Math.min(currentPage * 25, filteredOrders.length)}
+            </span> of{" "}
+            <span className="font-medium">{filteredOrders.length}</span> results
+          </p>
+          <Pagination className="mx-0 w-auto">
+            <PaginationContent>
+              <PaginationItem>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="gap-1"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </Button>
+              </PaginationItem>
+              
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(page => {
+                  return (
+                    page === 1 ||
+                    page === totalPages ||
+                    Math.abs(page - currentPage) <= 1
+                  );
+                })
+                .map((page, index, array) => {
+                  const items = [];
+                  if (index > 0 && page - array[index - 1] > 1) {
+                    items.push(
+                      <PaginationItem key={`ellipsis-${page}`}>
+                        <span className="px-2 text-muted-foreground">...</span>
+                      </PaginationItem>
+                    );
+                  }
+                  items.push(
+                    <PaginationItem key={page}>
+                      <Button
+                        variant={currentPage === page ? "default" : "outline"}
+                        size="sm"
+                        className="w-9"
+                        onClick={() => setCurrentPage(page)}
+                      >
+                        {page}
+                      </Button>
+                    </PaginationItem>
+                  );
+                  return items;
+                })}
+
+              <PaginationItem>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                  className="gap-1"
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
+
       <div className="md:hidden space-y-4 pb-12">
         {filteredOrders.length === 0 ? (
           <div className="py-12 text-center text-muted-foreground italic bg-muted/20 rounded-lg border-2 border-dashed">
             No deliveries scheduled for this date.
           </div>
         ) : (
-          filteredOrders.map((order) => {
+          paginatedOrders.map((order) => {
             const lot = lots?.find(l => l.id === order.lotId);
             const variety = varieties?.find(v => v.id === lot?.varietyId);
             const category = categories?.find(c => c.id === lot?.categoryId);
