@@ -166,6 +166,9 @@ export default function OrdersPage() {
   );
 
   const filteredOrdersList = orders?.filter(o => {
+    // Only show BOOKED orders
+    if (o.status !== "BOOKED") return false;
+
     const matchesSearch = !search || 
       o.customerName?.toLowerCase().includes(search.toLowerCase()) ||
       o.phone?.toLowerCase().includes(search.toLowerCase()) ||
@@ -272,6 +275,7 @@ export default function OrdersPage() {
           title: "Order Delivered",
           description: "The order has been successfully marked as delivered.",
         });
+        // Count will automatically update because orders are re-fetched on success
       },
       onError: (error: Error) => {
         toast({
