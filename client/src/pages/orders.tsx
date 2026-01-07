@@ -156,6 +156,16 @@ export default function OrdersPage() {
   const [pageVarietyId, setPageVarietyId] = useState<string>("all");
   const [pageLotId, setPageLotId] = useState<string>("all");
 
+  // Automatically select the first category alphabetically if "all" is selected
+  useEffect(() => {
+    if (pageCategoryId === "all" && categories && categories.length > 0) {
+      const sortedCategories = [...categories].sort((a, b) => 
+        a.name.localeCompare(b.name)
+      );
+      setPageCategoryId(sortedCategories[0].id.toString());
+    }
+  }, [categories, pageCategoryId]);
+
   const filteredVarietiesPage = varieties?.filter(v => 
     pageCategoryId === "all" || v.categoryId.toString() === pageCategoryId
   );
