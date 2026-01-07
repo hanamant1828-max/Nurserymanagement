@@ -41,8 +41,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <Sprout className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="font-display font-bold text-xl leading-none">Nursery</h1>
-            <p className="text-xs text-muted-foreground font-medium mt-1">Management System</p>
+            <h1 className="font-display font-bold text-lg leading-tight">Kisan Hi-Tech Nursery</h1>
+            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Kalloli</p>
           </div>
         </div>
       </div>

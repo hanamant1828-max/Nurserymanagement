@@ -86,9 +86,15 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-display font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Here's what's happening in your nursery today.</p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-display font-bold text-foreground tracking-tight">Kisan Hi-Tech Nursery</h1>
+          <p className="text-muted-foreground mt-1 font-medium">Kalloli, Tq: Mudalagi, Dist: Belagavi | Ph: 7348998635, 9663777255</p>
+        </div>
+        <div className="px-4 py-2 bg-primary/10 border border-primary/20 rounded-xl">
+          <p className="text-xs font-semibold text-primary uppercase tracking-wider">Email</p>
+          <p className="text-sm font-medium">chidanandkk@gmail.com</p>
+        </div>
       </div>
 
       {/* Stats Grid */}

@@ -44,8 +44,9 @@ export default function LoginPage() {
           <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center shadow-xl shadow-primary/20 mb-6 rotate-3 hover:rotate-6 transition-transform">
             <Sprout className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-display font-bold text-foreground">Welcome Back</h1>
-          <p className="text-muted-foreground mt-2">Sign in to manage your nursery</p>
+          <h1 className="text-3xl font-display font-bold text-foreground">Kisan Hi-Tech Nursery</h1>
+          <p className="text-muted-foreground mt-1 font-medium">Kalloli, Tq: Mudalagi, Dist: Belagavi</p>
+          <p className="text-xs text-muted-foreground mt-1">Ph: 7348998635, 9663777255</p>
         </div>
 
         <Card className="border-border/50 shadow-xl shadow-black/5 backdrop-blur-sm bg-white/80">
