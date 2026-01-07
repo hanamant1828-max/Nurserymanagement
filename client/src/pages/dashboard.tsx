@@ -1,9 +1,11 @@
 import { useLots } from "@/hooks/use-lots";
 import { useOrders } from "@/hooks/use-orders";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Sprout, ShoppingCart, Clock, Truck, TrendingUp, AlertCircle } from "lucide-react";
+import { Sprout, ShoppingCart, Clock, Truck, TrendingUp, AlertCircle, LayoutDashboard, List, Layers, Package, Users, BarChart3 } from "lucide-react";
 import { format, isToday, parseISO } from "date-fns";
 import { motion } from "framer-motion";
+import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
 import { 
   BarChart, 
   Bar, 
@@ -31,8 +33,12 @@ export default function Dashboard() {
   // Calculate Metrics
   const today = new Date();
   const sowingToday = lots?.filter(l => l.sowingDate === format(today, 'yyyy-MM-dd')).length || 0;
-  const activeLots = lots?.filter(l => l.available > 0).length || 0;
+  const activeLots = lots?.filter(l => (l as any).available > 0).length || 0;
   const pendingOrders = orders?.filter(o => o.status === 'BOOKED').length || 0;
+  const deliveriesToday = orders?.filter(o => 
+    o.status === 'BOOKED' && 
+    o.deliveryDate === format(today, 'yyyy-MM-dd')
+  ).length || 0;
   
   // Upcoming deliveries (next 7 days)
   const upcomingDeliveries = orders?.filter(o => {
@@ -52,9 +58,9 @@ export default function Dashboard() {
       bg: "bg-green-100"
     },
     { 
-      label: "Active Lots", 
-      value: activeLots, 
-      icon: LayersIcon, 
+      label: "Today's Deliveries", 
+      value: deliveriesToday, 
+      icon: Truck, 
       color: "text-blue-600",
       bg: "bg-blue-100"
     },
@@ -68,10 +74,20 @@ export default function Dashboard() {
     { 
       label: "Upcoming Deliveries", 
       value: upcomingDeliveries.length, 
-      icon: Truck, 
+      icon: Clock, 
       color: "text-purple-600",
       bg: "bg-purple-100"
     },
+  ];
+
+  const navButtons = [
+    { label: "Categories", href: "/categories", icon: List },
+    { label: "Varieties", href: "/varieties", icon: Layers },
+    { label: "Sowing Lots", href: "/lots", icon: Package },
+    { label: "Book Orders", href: "/orders", icon: ShoppingCart },
+    { label: "Today's Deliveries", href: "/today-deliveries", icon: Truck },
+    { label: "Customers", href: "/customers", icon: Users },
+    { label: "Reports", href: "/reports", icon: BarChart3 },
   ];
 
   // Prepare chart data (Sales by Variety)
@@ -120,6 +136,31 @@ export default function Dashboard() {
           </motion.div>
         ))}
       </div>
+
+      {/* Quick Navigation */}
+      <Card className="border-none shadow-md overflow-hidden bg-muted/30">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <LayoutDashboard className="w-5 h-5 text-primary" />
+            Quick Navigation
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
+            {navButtons.map((btn) => (
+              <Link key={btn.href} href={btn.href}>
+                <Button 
+                  variant="outline" 
+                  className="w-full h-auto py-4 flex flex-col gap-2 hover-elevate bg-background border-none shadow-sm"
+                >
+                  <btn.icon className="w-5 h-5 text-primary" />
+                  <span className="text-xs font-medium">{btn.label}</span>
+                </Button>
+              </Link>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Chart Section */}
