@@ -7,14 +7,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format, isSameDay, parseISO } from "date-fns";
-import { ShoppingCart, CheckCircle, Clock, Calendar as CalendarIcon, Layers } from "lucide-react";
+import { ShoppingCart, CheckCircle, Clock, Calendar as CalendarIcon, Layers, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useUpdateOrder } from "@/hooks/use-orders";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+import confetti from "canvas-confetti";
 
 export default function TodayDeliveriesPage() {
+  const { toast } = useToast();
   const { data: orders, isLoading } = useOrders();
   const { data: lots } = useLots();
   const { data: varieties } = useVarieties();
@@ -32,7 +35,28 @@ export default function TodayDeliveriesPage() {
   }) || [];
 
   const markDelivered = (id: number) => {
-    update({ id, status: "DELIVERED", deliveredQty: 0 });
+    confetti({
+      particleCount: 150,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#10b981', '#3b82f6', '#f59e0b']
+    });
+
+    update({ id, status: "DELIVERED", deliveredQty: 0 }, {
+      onSuccess: () => {
+        toast({
+          title: "Order Delivered",
+          description: "The order has been successfully marked as delivered.",
+        });
+      },
+      onError: (error: Error) => {
+        toast({
+          title: "Update Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
+    });
   };
 
   if (isLoading) {

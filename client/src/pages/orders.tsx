@@ -27,7 +27,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, ShoppingCart, CheckCircle, Layers, Check, ChevronsUpDown } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Plus, ShoppingCart, CheckCircle, Layers, Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -139,6 +140,7 @@ function SearchableSelect({
 }
 
 export default function OrdersPage() {
+  const { toast } = useToast();
   const { data: orders, isLoading } = useOrders();
   const { data: lots } = useLots();
   const { data: categories } = useCategories();
@@ -255,13 +257,26 @@ export default function OrdersPage() {
   };
 
   const markDelivered = (id: number) => {
+    // Trigger confetti immediately for better UX
+    confetti({
+      particleCount: 150,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#10b981', '#3b82f6', '#f59e0b']
+    });
+
     update({ id, status: "DELIVERED", deliveredQty: 0 }, {
       onSuccess: () => {
-        confetti({
-          particleCount: 150,
-          spread: 70,
-          origin: { y: 0.6 },
-          colors: ['#10b981', '#3b82f6', '#f59e0b']
+        toast({
+          title: "Order Delivered",
+          description: "The order has been successfully marked as delivered.",
+        });
+      },
+      onError: (error: Error) => {
+        toast({
+          title: "Update Failed",
+          description: error.message,
+          variant: "destructive",
         });
       }
     });
