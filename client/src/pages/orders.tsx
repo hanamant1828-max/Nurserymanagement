@@ -343,24 +343,24 @@ export default function OrdersPage() {
                   {step === 2 && (
                     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                       {selectedLot && (
-                         <div className="bg-primary/5 border border-primary/20 p-3 rounded-lg flex justify-between items-center shadow-sm">
+                         <div className="bg-primary/5 border border-primary/10 p-3 rounded-lg flex justify-between items-center shadow-sm mb-6">
                            <div className="flex items-center gap-4">
                              {selectedLot.category?.image && (
-                               <img src={selectedLot.category.image} className="w-12 h-12 rounded-md object-cover border shadow-sm" alt="" />
+                               <img src={selectedLot.category.image} className="w-14 h-14 rounded-md object-cover border border-primary/20 shadow-sm" alt="" />
                              )}
-                             <div>
-                               <p className="font-bold text-base leading-tight">{selectedLot.variety?.name}</p>
-                               <p className="text-xs text-muted-foreground font-mono">{selectedLot.lotNumber}</p>
+                             <div className="space-y-0.5">
+                               <p className="font-bold text-lg leading-tight text-foreground">{selectedLot.variety?.name}</p>
+                               <p className="text-xs text-muted-foreground font-mono bg-muted/50 px-1.5 py-0.5 rounded inline-block">{selectedLot.lotNumber}</p>
                              </div>
                            </div>
-                           <div className="flex items-center gap-3">
-                             <div className="text-right">
-                               <p className="text-[10px] uppercase text-muted-foreground font-semibold">Stock</p>
-                               <Badge className="bg-primary text-primary-foreground font-black text-sm px-2.5 py-0.5">
+                           <div className="flex items-center gap-4">
+                             <div className="text-center">
+                               <p className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider mb-1">Stock</p>
+                               <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white font-black text-sm px-3 py-1 rounded-md shadow-sm border-none">
                                  {selectedLot.available}
                                </Badge>
                              </div>
-                             <Button variant="outline" size="sm" onClick={() => setStep(1)} className="h-9 font-semibold">Change</Button>
+                             <Button variant="outline" size="sm" onClick={() => setStep(1)} className="h-10 font-bold px-4 rounded-md border-primary/20 hover:bg-primary/5 shadow-sm">Change</Button>
                            </div>
                          </div>
                       )}
@@ -371,8 +371,8 @@ export default function OrdersPage() {
                           name="customerName"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Customer Name</FormLabel>
-                              <FormControl><Input placeholder="Name" className="h-11" {...field} /></FormControl>
+                              <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Customer Name</FormLabel>
+                              <FormControl><Input placeholder="Name" className="h-12 text-lg bg-muted/30 border-muted focus-visible:ring-primary/20" {...field} /></FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -382,8 +382,8 @@ export default function OrdersPage() {
                           name="phone"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Mobile Number</FormLabel>
-                              <FormControl><Input placeholder="Phone" className="h-11" {...field} /></FormControl>
+                              <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Mobile Number</FormLabel>
+                              <FormControl><Input placeholder="Phone" className="h-12 text-lg bg-muted/30 border-muted focus-visible:ring-primary/20" {...field} /></FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -395,8 +395,8 @@ export default function OrdersPage() {
                         name="village"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Village / Area</FormLabel>
-                            <FormControl><Input placeholder="Address" className="h-11" {...field} /></FormControl>
+                            <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Village / Area</FormLabel>
+                            <FormControl><Input placeholder="Address" className="h-12 text-lg bg-muted/30 border-muted focus-visible:ring-primary/20" {...field} /></FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -408,9 +408,9 @@ export default function OrdersPage() {
                           name="bookedQty"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Quantity</FormLabel>
+                              <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Quantity</FormLabel>
                               <FormControl>
-                                <Input type="number" className="h-11" {...field} 
+                                <Input type="number" className="h-12 text-lg bg-muted/30 border-muted focus-visible:ring-primary/20" {...field} 
                                   max={selectedLot?.available} 
                                   onChange={e => field.onChange(parseInt(e.target.value) || 0)} 
                                 />
@@ -424,16 +424,18 @@ export default function OrdersPage() {
                           name="deliveryDate"
                           render={({ field }) => (
                             <FormItem className="flex flex-col">
-                              <FormLabel>Expected Delivery Date (From Lot)</FormLabel>
+                              <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Expected Delivery Date (From Lot)</FormLabel>
                               <FormControl>
-                                <Button 
-                                  variant="outline" 
-                                  disabled 
-                                  className="h-11 w-full pl-3 text-left font-bold bg-muted/50"
-                                >
-                                  {field.value ? format(field.value, "dd MMM yyyy") : <span>No date set</span>}
-                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
+                                <div className="relative">
+                                  <Button 
+                                    variant="outline" 
+                                    disabled 
+                                    className="h-12 w-full pl-10 text-left text-lg font-bold bg-muted/50 border-muted cursor-not-allowed"
+                                  >
+                                    {field.value ? format(field.value, "dd MMM yyyy") : <span>No date set</span>}
+                                  </Button>
+                                  <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground opacity-70" />
+                                </div>
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -447,8 +449,8 @@ export default function OrdersPage() {
                           name="advanceAmount"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Advance (₹)</FormLabel>
-                              <FormControl><Input type="number" className="h-11" {...field} /></FormControl>
+                              <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Advance (₹)</FormLabel>
+                              <FormControl><Input type="number" className="h-12 text-lg bg-muted/30 border-primary focus-visible:ring-primary/20 border-2" {...field} /></FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -458,9 +460,9 @@ export default function OrdersPage() {
                           name="paymentMode"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Payment Mode</FormLabel>
+                              <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Payment Mode</FormLabel>
                               <Select onValueChange={field.onChange} value={field.value || "Cash"}>
-                                <FormControl><SelectTrigger className="h-11"><SelectValue /></SelectTrigger></FormControl>
+                                <FormControl><SelectTrigger className="h-12 text-lg bg-muted/30 border-muted focus:ring-primary/20"><SelectValue /></SelectTrigger></FormControl>
                                 <SelectContent>
                                   <SelectItem value="Cash">Cash</SelectItem>
                                   <SelectItem value="PhonePe">PhonePe / UPI</SelectItem>
@@ -472,9 +474,9 @@ export default function OrdersPage() {
                         />
                       </div>
 
-                      <div className="flex gap-3 pt-2">
-                        <Button type="button" variant="outline" size="lg" onClick={() => setStep(1)} className="flex-1">Back</Button>
-                        <Button type="submit" size="lg" className="flex-[2] text-lg" disabled={creating}>Confirm Order</Button>
+                      <div className="flex gap-4 pt-4">
+                        <Button type="button" variant="outline" size="lg" onClick={() => setStep(1)} className="flex-1 h-14 text-lg font-bold rounded-xl border-primary/20 hover:bg-primary/5">Back</Button>
+                        <Button type="submit" size="lg" className="flex-[2] h-14 text-xl font-black rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-200" disabled={creating}>Confirm Order</Button>
                       </div>
                     </div>
                   )}
