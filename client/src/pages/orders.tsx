@@ -27,7 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, ShoppingCart, CheckCircle, Layers } from "lucide-react";
+import { Plus, ShoppingCart, CheckCircle, Layers, Check, ChevronsUpDown } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -38,6 +38,15 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 
 const formSchema = z.object({
   categoryId: z.string().optional(),
@@ -51,6 +60,82 @@ const formSchema = z.object({
   paymentMode: z.enum(["Cash", "PhonePe"]),
   deliveryDate: z.date(),
 });
+
+function SearchableSelect({ 
+  options, 
+  value, 
+  onValueChange, 
+  placeholder, 
+  emptyText = "No results found.",
+  disabled = false,
+  renderItem
+}: {
+  options: any[],
+  value: string,
+  onValueChange: (val: string) => void,
+  placeholder: string,
+  emptyText?: string,
+  disabled?: boolean,
+  renderItem: (item: any) => React.ReactNode
+}) {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between h-12 text-left font-normal"
+          disabled={disabled}
+        >
+          <div className="flex-1 truncate text-left">
+            {value ? (
+              <div className="flex items-center gap-2">
+                {renderItem(options.find((opt) => opt.id.toString() === value))}
+              </div>
+            ) : (
+              <span className="text-muted-foreground">{placeholder}</span>
+            )}
+          </div>
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+        <Command>
+          <CommandInput placeholder={`Search ${placeholder.toLowerCase()}...`} />
+          <CommandList>
+            <CommandEmpty>{emptyText}</CommandEmpty>
+            <CommandGroup>
+              {options.map((option) => (
+                <CommandItem
+                  key={option.id}
+                  value={option.name}
+                  onSelect={() => {
+                    onValueChange(option.id.toString())
+                    setOpen(false)
+                  }}
+                  className="flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-2">
+                    {renderItem(option)}
+                  </div>
+                  <Check
+                    className={cn(
+                      "h-4 w-4",
+                      value === option.id.toString() ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  )
+}
 
 export default function OrdersPage() {
   const { data: orders, isLoading } = useOrders();
@@ -207,33 +292,31 @@ export default function OrdersPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Select Category</FormLabel>
-                              <Select onValueChange={(val) => {
-                                field.onChange(val);
-                                form.setValue("varietyId", "");
-                                form.setValue("lotId", "");
-                              }} value={field.value || ""}>
-                                <FormControl>
-                                  <SelectTrigger className="h-12">
-                                    <SelectValue placeholder="Pick a Category" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {categories?.map(c => (
-                                    <SelectItem key={c.id} value={c.id.toString()}>
-                                      <div className="flex items-center gap-4 py-2">
-                                        {c.image ? (
-                                          <img src={c.image} className="w-12 h-12 rounded-md object-cover border shadow-sm" alt="" />
-                                        ) : (
-                                          <div className="w-12 h-12 rounded-md bg-muted flex items-center justify-center border">
-                                            <Layers className="w-6 h-6 text-muted-foreground" />
-                                          </div>
-                                        )}
-                                        <span className="font-bold text-lg">{c.name}</span>
-                                      </div>
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
+                              <FormControl>
+                                <SearchableSelect
+                                  options={categories || []}
+                                  value={field.value || ""}
+                                  onValueChange={(val) => {
+                                    field.onChange(val);
+                                    form.setValue("varietyId", "");
+                                    form.setValue("lotId", "");
+                                  }}
+                                  placeholder="Pick a Category"
+                                  renderItem={(c) => (
+                                    <div className="flex items-center gap-4 py-1">
+                                      {c?.image ? (
+                                        <img src={c.image} className="w-10 h-10 rounded-md object-cover border shadow-sm" alt="" />
+                                      ) : (
+                                        <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center border">
+                                          <Layers className="w-5 h-5 text-muted-foreground" />
+                                        </div>
+                                      )}
+                                      <span className="font-bold text-lg">{c?.name}</span>
+                                    </div>
+                                  )}
+                                />
+                              </FormControl>
+                              <FormMessage />
                             </FormItem>
                           )}
                         />
@@ -243,35 +326,34 @@ export default function OrdersPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Select Variety</FormLabel>
-                              <Select onValueChange={(val) => {
-                                field.onChange(val);
-                                form.setValue("lotId", "");
-                              }} value={field.value || ""} disabled={!selectedCategoryId}>
-                                <FormControl>
-                                  <SelectTrigger className="h-12">
-                                    <SelectValue placeholder="Pick a Variety" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {filteredVarieties?.map(v => {
+                              <FormControl>
+                                <SearchableSelect
+                                  options={filteredVarieties || []}
+                                  value={field.value || ""}
+                                  onValueChange={(val) => {
+                                    field.onChange(val);
+                                    form.setValue("lotId", "");
+                                  }}
+                                  placeholder="Pick a Variety"
+                                  disabled={!selectedCategoryId}
+                                  renderItem={(v) => {
                                     const cat = categories?.find(c => c.id === v.categoryId);
                                     return (
-                                      <SelectItem key={v.id} value={v.id.toString()}>
-                                        <div className="flex items-center gap-4 py-2">
-                                          {cat?.image ? (
-                                            <img src={cat.image} className="w-12 h-12 rounded-md object-cover border shadow-sm" alt="" />
-                                          ) : (
-                                            <div className="w-12 h-12 rounded-md bg-muted flex items-center justify-center border">
-                                              <Layers className="w-6 h-6 text-muted-foreground" />
-                                            </div>
-                                          )}
-                                          <span className="font-bold text-lg">{v.name}</span>
-                                        </div>
-                                      </SelectItem>
+                                      <div className="flex items-center gap-4 py-1">
+                                        {cat?.image ? (
+                                          <img src={cat.image} className="w-10 h-10 rounded-md object-cover border shadow-sm" alt="" />
+                                        ) : (
+                                          <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center border">
+                                            <Layers className="w-5 h-5 text-muted-foreground" />
+                                          </div>
+                                        )}
+                                        <span className="font-bold text-lg">{v?.name}</span>
+                                      </div>
                                     );
-                                  })}
-                                </SelectContent>
-                              </Select>
+                                  }}
+                                />
+                              </FormControl>
+                              <FormMessage />
                             </FormItem>
                           )}
                         />
