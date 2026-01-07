@@ -315,64 +315,76 @@ export default function VarietiesPage() {
       </div>
 
       {/* Mobile View */}
-      <div className="md:hidden space-y-4">
+      <div className="md:hidden grid grid-cols-1 sm:grid-cols-2 gap-4">
         {loadingVarieties ? (
-          <p className="text-center py-4">Loading varieties...</p>
+          [1, 2, 3, 4].map(i => (
+            <div key={i} className="h-48 bg-muted animate-pulse rounded-xl" />
+          ))
         ) : filteredVarietiesList.length === 0 ? (
-          <p className="text-center py-4 text-muted-foreground">No varieties found.</p>
+          <p className="text-center py-8 text-muted-foreground col-span-full">No varieties found.</p>
         ) : (
           filteredVarietiesList.map((variety) => {
             const category = getCategory(variety.categoryId);
             return (
-              <div key={variety.id} className="bg-card border rounded-lg p-4 space-y-3 shadow-sm">
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-3">
-                    {category?.image && (
-                      <img 
-                        src={category.image} 
-                        alt={category.name} 
-                        className="w-12 h-12 rounded-full object-cover border"
-                      />
-                    )}
-                    <div>
-                      <h3 className="font-bold text-lg">{variety.name}</h3>
-                      <p className="text-sm text-muted-foreground font-medium">
-                        {category?.name || "Unknown"}
-                      </p>
+              <div key={variety.id} className="bg-card border rounded-xl overflow-hidden shadow-sm flex flex-col">
+                <div className="aspect-video w-full bg-muted relative">
+                  {category?.image ? (
+                    <img 
+                      src={category.image} 
+                      alt={category.name} 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Flower2 className="w-12 h-12 text-muted-foreground/20" />
                     </div>
+                  )}
+                  <div className="absolute top-2 right-2">
+                    <Badge variant={variety.active ? "default" : "secondary"} className="shadow-sm">
+                      {variety.active ? "Active" : "Inactive"}
+                    </Badge>
                   </div>
-                  <Badge variant={variety.active ? "default" : "secondary"}>
-                    {variety.active ? "Active" : "Inactive"}
-                  </Badge>
                 </div>
-                <div className="flex justify-end gap-2 pt-2 border-t">
-                  <Button variant="outline" size="sm" onClick={() => handleEdit(variety)}>
-                    <Edit2 className="w-4 h-4 mr-1" /> Edit
-                  </Button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="outline" size="sm" className="text-destructive border-destructive/20">
-                        <Trash2 className="w-4 h-4 mr-1" /> Delete
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Variety</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to delete this variety?
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => handleDelete(variety.id)}
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        >
-                          Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                <div className="p-4 flex-1 flex flex-col justify-between space-y-4">
+                  <div>
+                    <div className="flex justify-between items-start mb-1">
+                      <h3 className="font-bold text-lg leading-tight">{variety.name}</h3>
+                      <span className="text-[10px] font-mono text-muted-foreground px-1.5 py-0.5 bg-muted rounded">#{variety.id}</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground font-medium flex items-center gap-1.5">
+                      <Layers className="w-3.5 h-3.5" />
+                      {category?.name || "Unknown Category"}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" className="flex-1 h-9" onClick={() => handleEdit(variety)}>
+                      <Edit2 className="w-3.5 h-3.5 mr-1.5" /> Edit
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="outline" size="sm" className="flex-1 h-9 text-destructive border-destructive/20 hover:bg-destructive/5">
+                          <Trash2 className="w-3.5 h-3.5 mr-1.5" /> Delete
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="w-[90vw] max-w-sm rounded-xl">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Variety</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete this variety?
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                          <AlertDialogCancel className="rounded-lg">Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDelete(variety.id)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-lg"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </div>
               </div>
             );
