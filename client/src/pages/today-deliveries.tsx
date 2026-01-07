@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format, isSameDay, parseISO } from "date-fns";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ShoppingCart, CheckCircle, Clock, Calendar as CalendarIcon, Layers, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useUpdateOrder } from "@/hooks/use-orders";
@@ -61,8 +62,22 @@ export default function TodayDeliveriesPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Clock className="w-8 h-8 animate-spin text-primary" />
+      <div className="space-y-8 animate-pulse">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-2">
+            <Skeleton className="h-10 w-64" />
+            <Skeleton className="h-4 w-48" />
+          </div>
+          <Skeleton className="h-12 w-full md:w-[280px]" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Skeleton className="h-32 w-full rounded-xl" />
+        </div>
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-24 w-full rounded-xl" />
+          ))}
+        </div>
       </div>
     );
   }
