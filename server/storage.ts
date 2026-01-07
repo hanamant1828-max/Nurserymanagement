@@ -191,7 +191,9 @@ export class DatabaseStorage implements IStorage {
           }
         },
         creator: true,
-      }
+      },
+      orderBy: (orders, { desc }) => [desc(orders.id)],
+      limit: 500,
     });
 
     return allOrders as any;

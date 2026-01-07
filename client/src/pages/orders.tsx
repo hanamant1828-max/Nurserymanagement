@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useOrders, useCreateOrder, useUpdateOrder } from "@/hooks/use-orders";
 import { useLots } from "@/hooks/use-lots";
 import { useCategories } from "@/hooks/use-categories";
@@ -175,37 +175,35 @@ export default function OrdersPage() {
     (pageVarietyId === "all" || l.varietyId.toString() === pageVarietyId)
   );
 
-  const filteredOrdersList = orders?.filter(o => {
-    // Only show BOOKED orders
-    if (o.status !== "BOOKED") return false;
+  const filteredOrdersList = useMemo(() => {
+    return orders?.filter(o => {
+      // Only show BOOKED orders
+      if (o.status !== "BOOKED") return false;
 
-    const matchesSearch = !search || 
-      o.customerName?.toLowerCase().includes(search.toLowerCase()) ||
-      o.phone?.toLowerCase().includes(search.toLowerCase()) ||
-      lots?.find(l => l.id === o.lotId)?.lotNumber?.toLowerCase().includes(search.toLowerCase()) ||
-      varieties?.find(v => v.id === (lots?.find(l => l.id === o.lotId)?.varietyId))?.name?.toLowerCase().includes(search.toLowerCase());
-    
-    // Strict hierarchical filtering:
-    // 1. If lot is selected, filter by lot
-    // 2. Else if variety is selected, filter by variety
-    // 3. Else if category is selected, filter by category
-    
-    if (pageLotId !== "all") {
-      return matchesSearch && o.lotId.toString() === pageLotId;
-    }
-    
-    if (pageVarietyId !== "all") {
-      const lot = lots?.find(l => l.id === o.lotId);
-      return matchesSearch && lot?.varietyId.toString() === pageVarietyId;
-    }
-    
-    if (pageCategoryId !== "all") {
-      const lot = lots?.find(l => l.id === o.lotId);
-      return matchesSearch && lot?.categoryId.toString() === pageCategoryId;
-    }
+      const matchesSearch = !search || 
+        o.customerName?.toLowerCase().includes(search.toLowerCase()) ||
+        o.phone?.toLowerCase().includes(search.toLowerCase()) ||
+        lots?.find(l => l.id === o.lotId)?.lotNumber?.toLowerCase().includes(search.toLowerCase()) ||
+        varieties?.find(v => v.id === (lots?.find(l => l.id === o.lotId)?.varietyId))?.name?.toLowerCase().includes(search.toLowerCase());
+      
+      // Strict hierarchical filtering:
+      if (pageLotId !== "all") {
+        return matchesSearch && o.lotId.toString() === pageLotId;
+      }
+      
+      if (pageVarietyId !== "all") {
+        const lot = lots?.find(l => l.id === o.lotId);
+        return matchesSearch && lot?.varietyId.toString() === pageVarietyId;
+      }
+      
+      if (pageCategoryId !== "all") {
+        const lot = lots?.find(l => l.id === o.lotId);
+        return matchesSearch && lot?.categoryId.toString() === pageCategoryId;
+      }
 
-    return matchesSearch;
-  }) || [];
+      return matchesSearch;
+    }) || [];
+  }, [orders, search, lots, varieties, pageLotId, pageVarietyId, pageCategoryId]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
