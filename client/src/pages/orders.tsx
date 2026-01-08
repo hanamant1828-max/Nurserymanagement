@@ -608,6 +608,11 @@ export default function OrdersPage() {
                                   onChange={e => field.onChange(parseInt(e.target.value) || 0)} 
                                 />
                               </FormControl>
+                              {selectedLot && (field.value > selectedLot.available) && (
+                                <p className="text-[10px] font-bold text-destructive uppercase tracking-tight mt-1 animate-pulse">
+                                  Quantity exceeds stock ({selectedLot.available} available)
+                                </p>
+                              )}
                               <FormMessage />
                             </FormItem>
                           )}
@@ -684,7 +689,14 @@ export default function OrdersPage() {
 
                       <div className="flex gap-4 pt-4">
                         <Button type="button" variant="outline" size="lg" onClick={() => setStep(1)} className="flex-1 h-14 text-lg font-bold rounded-xl border-primary/20 hover:bg-primary/5">Back</Button>
-                        <Button type="submit" size="lg" className="flex-[2] h-14 text-xl font-black rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-200" disabled={creating}>Confirm Order</Button>
+                        <Button 
+                          type="submit" 
+                          size="lg" 
+                          className="flex-[2] h-14 text-xl font-black rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-200" 
+                          disabled={creating || (selectedLot ? bookedQty > selectedLot.available : false)}
+                        >
+                          Confirm Order
+                        </Button>
                       </div>
                     </div>
                   )}
