@@ -67,9 +67,13 @@ const formSchema = z.object({
   phone: z.string().min(10, "Valid phone number required"),
   village: z.string().optional(),
   bookedQty: z.coerce.number().min(1, "Quantity must be > 0"),
+  totalAmount: z.coerce.number().min(0, "Total amount is required"),
   advanceAmount: z.coerce.number().min(0),
   paymentMode: z.enum(["Cash", "PhonePe"]),
   deliveryDate: z.date(),
+}).refine((data) => data.advanceAmount <= data.totalAmount, {
+  message: "Advance cannot be greater than Total Amount",
+  path: ["advanceAmount"],
 });
 
 function SearchableSelect({ 
@@ -325,8 +329,8 @@ export default function OrdersPage() {
       phone: data.phone,
       village: data.village || "",
       bookedQty: data.bookedQty,
-      totalAmount: data.totalAmount.toString(),
-      advanceAmount: data.advanceAmount.toString(),
+      totalAmount: (data.totalAmount ?? 0).toString(),
+      advanceAmount: (data.advanceAmount ?? 0).toString(),
       remainingBalance: remainingBalance.toString(),
       paymentStatus: paymentStatus,
       paymentMode: data.paymentMode,
