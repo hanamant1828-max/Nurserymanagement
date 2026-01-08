@@ -27,7 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Sprout, AlertTriangle, Eye, Calendar as CalendarIcon, Trash2 } from "lucide-react";
+import { Plus, Sprout, AlertTriangle, Eye, Calendar as CalendarIcon, Trash2, CheckCircle, Layers } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -388,13 +388,29 @@ export default function LotsPage() {
             setSelectedCategory(val);
             setSelectedVariety("all");
           }}>
-            <SelectTrigger className="bg-background">
+            <SelectTrigger className="bg-background h-12">
               <SelectValue placeholder="All Categories" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
+              <SelectItem value="all">
+                <div className="flex items-center gap-2 py-1">
+                  <CheckCircle className="w-6 h-6 text-muted-foreground/40" />
+                  <span className="font-medium">All Categories</span>
+                </div>
+              </SelectItem>
               {categories?.filter(c => c.active).map(c => (
-                <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
+                <SelectItem key={c.id} value={c.id.toString()}>
+                  <div className="flex items-center gap-2 py-1">
+                    {c.image ? (
+                      <img src={c.image} className="w-8 h-8 rounded-md object-cover border" alt="" />
+                    ) : (
+                      <div className="w-8 h-8 rounded-md bg-muted flex items-center justify-center border">
+                        <Layers className="w-4 h-4 text-muted-foreground/30" />
+                      </div>
+                    )}
+                    <span className="font-medium">{c.name}</span>
+                  </div>
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -402,7 +418,7 @@ export default function LotsPage() {
         <div className="space-y-2">
           <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Variety Filter</label>
           <Select value={selectedVariety} onValueChange={setSelectedVariety} disabled={selectedCategory === "all"}>
-            <SelectTrigger className="bg-background">
+            <SelectTrigger className="bg-background h-12">
               <SelectValue placeholder="All Varieties" />
             </SelectTrigger>
             <SelectContent>
@@ -416,7 +432,7 @@ export default function LotsPage() {
         <div className="space-y-2">
           <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Lot Filter</label>
           <Select value={search} onValueChange={setSearch}>
-            <SelectTrigger className="bg-background">
+            <SelectTrigger className="bg-background h-12">
               <SelectValue placeholder="All Lots" />
             </SelectTrigger>
             <SelectContent>
