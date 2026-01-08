@@ -50,6 +50,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { DateRange } from "react-day-picker";
+import { Pagination } from "@/components/pagination";
 
 // Schema for create lot form
 const formSchema = z.object({
@@ -85,6 +86,8 @@ export default function LotsPage() {
   });
 
   const [editingLot, setEditingLot] = useState<any>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 15;
 
   const filteredLotsList = lots?.filter(l => {
     const matchesSearch = search === "" || search === "all-lots" || 
@@ -110,6 +113,12 @@ export default function LotsPage() {
 
     return matchesSearch && matchesCategory && matchesVariety && matchesDate;
   }) || [];
+
+  const totalPages = Math.ceil(filteredLotsList.length / PAGE_SIZE);
+  const paginatedLots = filteredLotsList.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
+  );
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -736,6 +745,14 @@ export default function LotsPage() {
             )}
           </TableBody>
         </Table>
+
+        <Pagination 
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          totalRecords={filteredLotsList.length}
+          pageSize={PAGE_SIZE}
+        />
       </div>
 
       {/* Mobile View */}
