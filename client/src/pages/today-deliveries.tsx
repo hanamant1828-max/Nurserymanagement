@@ -94,8 +94,11 @@ export default function TodayDeliveriesPage() {
     return orders.filter(order => {
       try {
         const deliveryDate = parseISO(order.deliveryDate);
-        const matchesDate = isSameDay(deliveryDate, selectedDate) && order.status === "BOOKED";
+        const matchesDate = isSameDay(deliveryDate, selectedDate);
         if (!matchesDate) return false;
+
+        // Only show Booked and Delivered orders on the delivery schedule
+        if (order.status !== "BOOKED" && order.status !== "DELIVERED") return false;
 
         // If any filter is set to something other than "all", apply it
         if (pageCategoryId !== "all") {
@@ -507,14 +510,22 @@ export default function TodayDeliveriesPage() {
                       <div className="text-[9px] uppercase font-bold text-muted-foreground">{order.paymentMode}</div>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="h-8 text-emerald-600 border-emerald-200 hover:bg-emerald-50"
-                        onClick={() => markDelivered(order.id)}
-                      >
-                        <CheckCircle className="w-4 h-4 mr-1.5" /> Delivered
-                      </Button>
+                      <div className="flex justify-end gap-2">
+                        {order.status === "BOOKED" ? (
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="h-8 text-emerald-600 border-emerald-200 hover:bg-emerald-50"
+                            onClick={() => markDelivered(order.id)}
+                          >
+                            <CheckCircle className="w-4 h-4 mr-1.5" /> Delivered
+                          </Button>
+                        ) : (
+                          <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-200 h-8 px-3">
+                            <CheckCircle className="w-3.5 h-3.5 mr-1.5" /> Completed
+                          </Badge>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 );

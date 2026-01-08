@@ -199,11 +199,9 @@ export default function OrdersPage() {
   const filteredOrdersList = useMemo(() => {
     if (!orders) return [];
     
-    // Include both BOOKED and potentially recently DELIVERED orders for undo window
-    // But for the main list view, we usually only show BOOKED.
-    // However, the user wants "undo" and "disappearing", which implies they want to see it for a moment or have a way to undo.
-    // The current logic filters for "BOOKED" only.
-    const relevantOrders = orders.filter(o => o.status === "BOOKED");
+    // Include all orders by default unless they are cancelled/deleted
+    // We want to show BOOKED and DELIVERED by default
+    const relevantOrders = orders.filter(o => o.status === "BOOKED" || o.status === "DELIVERED");
 
     return relevantOrders.filter(o => {
       // Date filter
@@ -1067,16 +1065,22 @@ export default function OrdersPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      {order.status === 'BOOKED' && (
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          className="h-8 text-green-600 hover:text-green-700 hover:bg-green-50 border-green-200 hover:border-green-300 transition-all"
-                          onClick={() => markDelivered(order.id)}
-                        >
-                          <CheckCircle className="w-4 h-4 mr-1.5" /> Delivered
-                        </Button>
-                      )}
+                      <div className="flex justify-end gap-2">
+                        {order.status === 'BOOKED' ? (
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="h-8 text-green-600 hover:text-green-700 hover:bg-green-50 border-green-200 hover:border-green-300 transition-all"
+                            onClick={() => markDelivered(order.id)}
+                          >
+                            <CheckCircle className="w-4 h-4 mr-1.5" /> Delivered
+                          </Button>
+                        ) : order.status === 'DELIVERED' ? (
+                          <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200 h-8 px-3">
+                            <CheckCircle className="w-3.5 h-3.5 mr-1.5" /> Completed
+                          </Badge>
+                        ) : null}
+                      </div>
                     </TableCell>
                   </TableRow>
                 );
@@ -1231,7 +1235,7 @@ export default function OrdersPage() {
                       )}
                     </div>
 
-                    {order.status === "BOOKED" && (
+                    {order.status === "BOOKED" ? (
                       <div className="flex gap-2">
                         <Button 
                           variant="outline" 
@@ -1249,6 +1253,14 @@ export default function OrdersPage() {
                           <CheckCircle className="w-5 h-5 mr-2" /> Mark Delivered
                         </Button>
                       </div>
+                    ) : order.status === "DELIVERED" && (
+                      <Button 
+                        disabled
+                        size="lg"
+                        className="w-full font-black text-base h-12 rounded-xl bg-muted text-muted-foreground border-none"
+                      >
+                        <CheckCircle className="w-5 h-5 mr-2" /> Already Delivered
+                      </Button>
                     )}
                   </div>
                 </CardContent>
