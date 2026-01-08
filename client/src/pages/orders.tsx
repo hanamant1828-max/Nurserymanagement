@@ -499,6 +499,10 @@ export default function OrdersPage() {
                                         <div className="overflow-hidden">
                                           <p className="font-extrabold text-base truncate">{lot.variety?.name}</p>
                                           <p className="text-xs text-muted-foreground font-mono">{lot.lotNumber}</p>
+                                          <div className="flex gap-2 mt-1">
+                                            <span className="text-[10px] bg-muted px-1 rounded">Sown: {lot.sowingDate}</span>
+                                            <span className="text-[10px] bg-primary/10 text-primary px-1 rounded">Ready: {lot.expectedReadyDate}</span>
+                                          </div>
                                         </div>
                                       </div>
                                       <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 whitespace-nowrap text-sm px-2 py-1">
