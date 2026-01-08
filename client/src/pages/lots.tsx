@@ -653,7 +653,7 @@ export default function LotsPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredLotsList.map((lot) => {
+              paginatedLots.map((lot) => {
                 const isLowStock = lot.available < (lot.seedsSown * 0.1);
                 return (
                   <TableRow key={lot.id}>
@@ -762,7 +762,7 @@ export default function LotsPage() {
         ) : filteredLotsList.length === 0 ? (
           <p className="text-center py-4 text-muted-foreground">No lots found.</p>
         ) : (
-          filteredLotsList.map((lot) => {
+          paginatedLots.map((lot) => {
             const isLowStock = lot.available < (lot.seedsSown * 0.1);
             return (
               <div key={lot.id} className="bg-card border rounded-lg p-4 space-y-3 shadow-sm">
@@ -837,6 +837,16 @@ export default function LotsPage() {
               </div>
             );
           })
+        )}
+
+        {filteredLotsList.length > 0 && (
+          <Pagination 
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            totalRecords={filteredLotsList.length}
+            pageSize={PAGE_SIZE}
+          />
         )}
       </div>
     </div>
