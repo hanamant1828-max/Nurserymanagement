@@ -57,10 +57,13 @@ export const orders = pgTable("orders", {
   phone: text("phone").notNull(),
   village: text("village"),
   bookedQty: integer("booked_qty").notNull(),
+  totalAmount: decimal("total_amount").notNull(),
   advanceAmount: decimal("advance_amount").notNull(),
+  remainingBalance: decimal("remaining_balance").notNull(),
   paymentMode: text("payment_mode").notNull(), // Cash, PhonePe
   deliveryDate: text("delivery_date").notNull(),
   status: text("status").default("BOOKED").notNull(), // BOOKED, DELIVERED, CANCELLED
+  paymentStatus: text("payment_status").notNull(), // Pending, Partially Paid, Paid
   deliveredQty: integer("delivered_qty").default(0),
   createdBy: integer("created_by"),
 }, (table) => [

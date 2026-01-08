@@ -276,6 +276,11 @@ export default function OrdersPage() {
   
   const totalAmount = bookedQtyValue * unitPrice;
   const remainingBalance = totalAmount - advanceAmountValue;
+  const paymentStatus = advanceAmountValue === 0 
+    ? "Pending" 
+    : (advanceAmountValue < totalAmount) 
+      ? "Partially Paid" 
+      : "Paid";
 
   const [editingOrder, setEditingOrder] = useState<any>(null);
 
@@ -318,7 +323,10 @@ export default function OrdersPage() {
       phone: data.phone,
       village: data.village || "",
       bookedQty: data.bookedQty,
+      totalAmount: totalAmount.toString(),
       advanceAmount: data.advanceAmount.toString(),
+      remainingBalance: remainingBalance.toString(),
+      paymentStatus: paymentStatus,
       paymentMode: data.paymentMode,
       deliveryDate: format(data.deliveryDate, "yyyy-MM-dd"),
     };
@@ -720,24 +728,41 @@ export default function OrdersPage() {
                             </FormItem>
                           )}
                         />
-                        <FormField
-                          control={form.control}
-                          name="paymentMode"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Payment Mode</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value || "Cash"}>
-                                <FormControl><SelectTrigger className="h-12 text-lg bg-muted/30 border-muted focus:ring-primary/20"><SelectValue /></SelectTrigger></FormControl>
-                                <SelectContent>
-                                  <SelectItem value="Cash">Cash</SelectItem>
-                                  <SelectItem value="PhonePe">PhonePe / UPI</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        <FormItem>
+                          <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Payment Status</FormLabel>
+                          <div className="flex items-center h-12">
+                            <Badge 
+                              variant="outline" 
+                              className={cn(
+                                "text-base px-4 py-1.5 font-bold",
+                                paymentStatus === "Paid" ? "bg-emerald-100 text-emerald-700 border-emerald-200" :
+                                paymentStatus === "Partially Paid" ? "bg-amber-100 text-amber-700 border-amber-200" :
+                                "bg-slate-100 text-slate-700 border-slate-200"
+                              )}
+                            >
+                              {paymentStatus}
+                            </Badge>
+                          </div>
+                        </FormItem>
                       </div>
+
+                      <FormField
+                        control={form.control}
+                        name="paymentMode"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Payment Mode</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value || "Cash"}>
+                              <FormControl><SelectTrigger className="h-12 text-lg bg-muted/30 border-muted focus:ring-primary/20"><SelectValue /></SelectTrigger></FormControl>
+                              <SelectContent>
+                                <SelectItem value="Cash">Cash</SelectItem>
+                                <SelectItem value="PhonePe">PhonePe / UPI</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
                       <div className="bg-muted/30 p-4 rounded-lg border-2 border-dashed space-y-2">
                         <div className="flex justify-between items-center">
@@ -752,7 +777,7 @@ export default function OrdersPage() {
                           <span className="text-base font-bold text-foreground">Remaining Balance</span>
                           <span className={cn(
                             "text-xl font-black",
-                            remainingBalance < 0 ? "text-destructive" : "text-primary"
+                            remainingBalance < 0 ? "text-destructive" : remainingBalance === 0 ? "text-emerald-600" : "text-amber-600"
                           )}>
                             ₹{remainingBalance.toLocaleString()}
                           </span>
