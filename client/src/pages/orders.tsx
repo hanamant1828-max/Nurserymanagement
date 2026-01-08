@@ -199,10 +199,13 @@ export default function OrdersPage() {
   const filteredOrdersList = useMemo(() => {
     if (!orders) return [];
     
-    // Only show BOOKED orders
-    const bookedOrders = orders.filter(o => o.status === "BOOKED");
+    // Include both BOOKED and potentially recently DELIVERED orders for undo window
+    // But for the main list view, we usually only show BOOKED.
+    // However, the user wants "undo" and "disappearing", which implies they want to see it for a moment or have a way to undo.
+    // The current logic filters for "BOOKED" only.
+    const relevantOrders = orders.filter(o => o.status === "BOOKED");
 
-    return bookedOrders.filter(o => {
+    return relevantOrders.filter(o => {
       // Date filter
       const deliveryDate = new Date(o.deliveryDate);
       const isWithinDateRange = deliveryDate >= dateRange.from && deliveryDate <= dateRange.to;
@@ -362,9 +365,6 @@ export default function OrdersPage() {
   };
 
   const markDelivered = (id: number) => {
-    const confirm = window.confirm("Are you sure you want to mark this order as delivered?");
-    if (!confirm) return;
-
     // Trigger confetti immediately for better UX
     confetti({
       particleCount: 150,
@@ -378,11 +378,22 @@ export default function OrdersPage() {
         toast({
           title: "Order Delivered",
           description: "The order has been marked as delivered.",
+          duration: 5000,
           action: (
             <Button 
-              variant="outline" 
+              variant="default" 
               size="sm" 
-              onClick={() => update({ id, status: "BOOKED", deliveredQty: 0 })}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+              onClick={() => {
+                update({ id, status: "BOOKED", deliveredQty: 0 }, {
+                  onSuccess: () => {
+                    toast({
+                      title: "Undo Successful",
+                      description: "The order has been restored to Booked status.",
+                    });
+                  }
+                });
+              }}
             >
               Undo
             </Button>
