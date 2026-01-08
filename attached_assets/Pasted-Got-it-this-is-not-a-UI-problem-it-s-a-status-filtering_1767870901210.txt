@@ -1,0 +1,145 @@
+Got it 👍 — this is **not a UI problem**, it’s a **status + filtering logic issue**.
+
+Right now:
+👉 When you click **“Mark Delivered”**, the order is being **removed from the Orders list**
+👉 But you want the order to **remain visible**, only its status should change.
+
+Here is a **developer-friendly requirement** you can give directly to your team.
+
+---
+
+## 🔧 Requirement – “Mark Delivered” Should NOT Remove Order from List
+
+### ❌ Current Behavior (Bug)
+
+When the user clicks **Mark Delivered**:
+
+* Order status is updated to **Delivered**
+* The order **disappears from the Orders View**
+
+---
+
+## ✅ Expected Behavior
+
+### 1️⃣ Order Must Remain in Orders View
+
+After clicking **Mark Delivered**:
+
+* Order should **still be visible**
+* Only the **status should change** from:
+
+```
+Booked → Delivered
+```
+
+---
+
+## 🔄 Correct Functional Logic
+
+### Backend / Database
+
+```
+UPDATE Orders
+SET status = 'Delivered'
+WHERE order_id = @OrderId;
+```
+
+🚫 Do NOT delete the order
+🚫 Do NOT exclude it from the main orders query
+
+---
+
+### Frontend / API Filtering
+
+#### ❌ Current (Wrong – likely happening)
+
+```
+SELECT * FROM Orders WHERE status != 'Delivered'
+```
+
+#### ✅ Correct (Show All Orders)
+
+```
+SELECT * FROM Orders
+```
+
+OR if filtering is required:
+
+```
+SELECT * FROM Orders WHERE status IN ('Booked', 'Delivered', 'Pending')
+```
+
+---
+
+## 🖥 UI Behavior
+
+After clicking **Mark Delivered**:
+
+✔ Order remains in the list
+✔ Status badge updates to **“Delivered”**
+✔ “Mark Delivered” button should:
+
+* Be disabled
+* OR replaced with a label like **“Delivered”**
+
+---
+
+## 🧪 Example
+
+### Before Click:
+
+```
+Order ID: 101
+Status: Booked
+```
+
+### After Click:
+
+```
+Order ID: 101
+Status: Delivered
+```
+
+✔ Still visible in orders view
+❌ Must NOT disappear
+
+---
+
+## 🧑‍💻 Developer Action Items
+
+1. **Do not delete or hide the record**
+2. Ensure the orders list query:
+
+   * Does **not exclude Delivered orders**
+3. Update only:
+
+```
+status = 'Delivered'
+```
+
+4. Update UI state after action
+
+---
+
+## 🗂 Optional Enhancement (If You Want Filters)
+
+If later you want separation:
+
+* Add filter tabs:
+
+  * All Orders
+  * Pending
+  * Delivered
+  * Cancelled
+
+But **default view must show all orders**.
+
+---
+
+If you want, I can also provide:
+👉 SQL query fix
+👉 API response structure
+👉 React / Angular / .NET / Java / Python backend logic
+👉 Or convert this into a **JIRA / GitHub bug ticket**
+
+Just tell me your tech stack.
