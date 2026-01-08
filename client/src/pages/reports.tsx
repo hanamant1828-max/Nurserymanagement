@@ -9,6 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format, parseISO, subMonths, isWithinInterval, startOfDay, endOfDay } from "date-fns";
 import * as XLSX from "xlsx";
+import { jsPDF } from "jspdf";
+import "jspdf-autotable";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
@@ -31,6 +33,27 @@ export default function ReportsPage() {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Report");
     XLSX.writeFile(wb, `${fileName}_${format(new Date(), "yyyy-MM-dd")}.xlsx`);
+  };
+
+  const exportToPDF = (data: any[], fileName: string, headers: string[], keys: string[]) => {
+    const doc = new jsPDF();
+    doc.text(fileName.replace(/_/g, " "), 14, 15);
+    
+    const tableData = data.map(item => keys.map(key => {
+      if (key.includes('.')) {
+        const [obj, k] = key.split('.');
+        return item[obj]?.[k] || "N/A";
+      }
+      return item[key] || "N/A";
+    }));
+
+    (doc as any).autoTable({
+      head: [headers],
+      body: tableData,
+      startY: 20,
+    });
+
+    doc.save(`${fileName}_${format(new Date(), "yyyy-MM-dd")}.pdf`);
   };
 
   const today = format(new Date(), "yyyy-MM-dd");
@@ -170,9 +193,14 @@ export default function ReportsPage() {
                 <CardTitle>Sowing Report</CardTitle>
                 <p className="text-sm text-muted-foreground">Detailed sowing data for the selected range.</p>
               </div>
-              <Button onClick={() => exportToExcel(dailySowingData, "Sowing_Report")}>
-                <FileSpreadsheet className="w-4 h-4 mr-2" /> Export Excel
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={() => exportToPDF(dailySowingData, "Sowing_Report", ["Date", "Lot Number", "Variety", "Seeds Sown", "Ready Date"], ["sowingDate", "lotNumber", "variety.name", "seedsSown", "expectedReadyDate"])}>
+                  Download PDF
+                </Button>
+                <Button size="sm" onClick={() => exportToExcel(dailySowingData, "Sowing_Report")}>
+                  <FileSpreadsheet className="w-4 h-4 mr-2" /> Export Excel
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <Table>
@@ -213,9 +241,14 @@ export default function ReportsPage() {
                 <CardTitle>Pending Delivery Report</CardTitle>
                 <p className="text-sm text-muted-foreground">All booked orders awaiting delivery.</p>
               </div>
-              <Button onClick={() => exportToExcel(pendingDeliveries, "Pending_Deliveries")}>
-                <FileSpreadsheet className="w-4 h-4 mr-2" /> Export Excel
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={() => exportToPDF(pendingDeliveries, "Pending_Deliveries", ["Customer", "Lot", "Qty", "Delivery Date", "Village"], ["customerName", "lot.lotNumber", "bookedQty", "deliveryDate", "village"])}>
+                  Download PDF
+                </Button>
+                <Button size="sm" onClick={() => exportToExcel(pendingDeliveries, "Pending_Deliveries")}>
+                  <FileSpreadsheet className="w-4 h-4 mr-2" /> Export Excel
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <Table>
@@ -251,9 +284,14 @@ export default function ReportsPage() {
                 <CardTitle>Delivered Orders Report</CardTitle>
                 <p className="text-sm text-muted-foreground">All successfully delivered orders.</p>
               </div>
-              <Button onClick={() => exportToExcel(deliveredOrders, "Delivered_Orders")}>
-                <FileSpreadsheet className="w-4 h-4 mr-2" /> Export Excel
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={() => exportToPDF(deliveredOrders, "Delivered_Orders", ["Customer", "Lot", "Qty", "Delivery Date", "Village"], ["customerName", "lot.lotNumber", "bookedQty", "deliveryDate", "village"])}>
+                  Download PDF
+                </Button>
+                <Button size="sm" onClick={() => exportToExcel(deliveredOrders, "Delivered_Orders")}>
+                  <FileSpreadsheet className="w-4 h-4 mr-2" /> Export Excel
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <Table>
@@ -294,9 +332,14 @@ export default function ReportsPage() {
                 <CardTitle>Lot-wise Stock Report</CardTitle>
                 <p className="text-sm text-muted-foreground">Current availability across all lots.</p>
               </div>
-              <Button onClick={() => exportToExcel(lotStockData, "Stock_Report")}>
-                <FileSpreadsheet className="w-4 h-4 mr-2" /> Export Excel
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={() => exportToPDF(lotStockData, "Stock_Report", ["Lot Number", "Variety", "Seeds Sown", "Damaged", "Available"], ["lotNumber", "variety.name", "seedsSown", "damaged", "available"])}>
+                  Download PDF
+                </Button>
+                <Button size="sm" onClick={() => exportToExcel(lotStockData, "Stock_Report")}>
+                  <FileSpreadsheet className="w-4 h-4 mr-2" /> Export Excel
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <Table>
