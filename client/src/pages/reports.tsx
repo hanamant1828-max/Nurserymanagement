@@ -78,10 +78,14 @@ export default function ReportsPage() {
   // Delivery Report Data Processing
   const deliveryVarietyReport = Object.values(deliveredOrders.reduce((acc: any, order) => {
     const vId = order.lot.varietyId;
+    const lot = lots?.find(l => l.id === order.lotId);
+    const varietyName = (lot as any)?.variety?.name || "N/A";
+    const categoryName = (lot as any)?.category?.name || "N/A";
+
     if (!acc[vId]) {
       acc[vId] = { 
-        name: order.lot.variety.name, 
-        category: (lots?.find(l => l.id === order.lotId) as any)?.category?.name || "N/A",
+        name: varietyName, 
+        category: categoryName,
         orderCount: 0, 
         totalQty: 0, 
         totalAmount: 0,
@@ -151,7 +155,8 @@ export default function ReportsPage() {
 
   const varietyPerformance = Object.values(lots?.reduce((acc: any, lot) => {
     const vId = lot.varietyId;
-    if (!acc[vId]) acc[vId] = { name: lot.variety.name, sown: 0, damaged: 0, available: 0 };
+    const varietyName = (lot as any).variety?.name || "N/A";
+    if (!acc[vId]) acc[vId] = { name: varietyName, sown: 0, damaged: 0, available: 0 };
     acc[vId].sown += lot.seedsSown;
     acc[vId].damaged += lot.damaged;
     acc[vId].available += lot.available;
