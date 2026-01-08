@@ -1064,6 +1064,16 @@ export default function OrdersPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
+                        {order.status === 'BOOKED' && (
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="h-8"
+                            onClick={() => setEditingOrder(order)}
+                          >
+                            Edit
+                          </Button>
+                        )}
                         {order.status === 'BOOKED' ? (
                           <Button 
                             size="sm" 

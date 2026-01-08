@@ -1,0 +1,127 @@
+Got it 👍 — this is a responsive UI / CSS visibility issue.
+
+You are seeing:
+
+👉 Edit button appears in mobile view
+👉 Edit button does NOT appear in laptop / desktop view
+
+This means the button is being hidden by CSS for larger screen sizes.
+
+Here is a developer-friendly explanation + fix you can directly give to your tech team.
+
+🐞 Issue: Edit Button Hidden on Desktop, Visible on Mobile
+❌ Current Behavior
+
+On mobile → Edit button is visible
+
+On laptop / desktop → Edit button is missing
+
+This is due to responsive CSS rules or conditional rendering based on screen width.
+
+✅ Expected Behavior
+
+The Edit button should be:
+✔ Visible on both mobile and desktop
+✔ Same functionality across devices
+
+🔍 Most Likely Cause
+1️⃣ CSS Media Query Hiding Desktop View
+
+Your CSS may contain something like:
+
+@media (min-width: 1024px) {
+  .edit-btn {
+    display: none;
+  }
+}
+
+
+OR
+
+.hidden-desktop {
+  display: none;
+}
+
+2️⃣ Conditional Rendering in Frontend
+
+In React / Vue / JS, something like:
+
+{isMobile && <EditButton />}
+
+
+So on desktop:
+
+isMobile = false → Edit button not rendered
+
+🛠 Fix – Make Edit Button Visible on All Screens
+✅ CSS Fix
+
+Ensure the button is not hidden in desktop styles:
+
+.edit-btn {
+  display: inline-flex;
+}
+
+
+Remove or override any rule like:
+
+@media (min-width: 1024px) {
+  .edit-btn {
+    display: none;
+  }
+}
+
+✅ React / JS Fix
+
+Instead of:
+
+{isMobile && <EditButton />}
+
+
+Use:
+
+<EditButton />
+
+
+OR if different layouts are needed:
+
+{(isMobile || isDesktop) && <EditButton />}
+
+📱 UI Requirement (Clear for Dev Team)
+Edit Button Visibility
+
+Mobile: Show Edit button
+
+Desktop / Laptop: Show Edit button
+
+Do NOT hide based on screen size
+
+🧪 Expected Result
+Device	Edit Button
+Mobile	✅ Visible
+Laptop / Desktop	✅ Visible
+🧑‍💻 Developer Checklist
+
+✔ Search for .edit, .edit-btn, or similar classes in CSS
+✔ Check @media queries that hide elements
+✔ Check frontend conditions like isMobile, window.innerWidth, or breakpoints
+✔ Remove size-based hiding
+✔ Test on:
+
+Mobile
+
+Tablet
+
+Laptop
+
+Desktop
+
+🔒 Optional Enhancement (If Layout Was the Reason)
+
+If the button was hidden to avoid UI clutter on desktop, instead:
+
+Move Edit into Actions column
+
+Or show it as an icon button (✏️)
+
+But do not remove functionality.
