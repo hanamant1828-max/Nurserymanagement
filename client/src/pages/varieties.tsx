@@ -46,6 +46,7 @@ import { Badge } from "@/components/ui/badge";
 import { api } from "@shared/routes";
 import { type Variety } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
+import { Pagination } from "@/components/pagination";
 
 // Extend schema for form usage (categoryId needs to be string for Select)
 const formSchema = z.object({
@@ -61,12 +62,20 @@ export default function VarietiesPage() {
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 15;
 
   const filteredVarietiesList = varieties?.filter(v => {
     const categoryName = categories?.find(c => c.id === v.categoryId)?.name || "";
     return v.name.toLowerCase().includes(search.toLowerCase()) || 
            categoryName.toLowerCase().includes(search.toLowerCase());
   }) || [];
+
+  const totalPages = Math.ceil(filteredVarietiesList.length / PAGE_SIZE);
+  const paginatedVarieties = filteredVarietiesList.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
+  );
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -253,7 +262,7 @@ export default function VarietiesPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredVarietiesList.map((variety) => {
+              paginatedVarieties.map((variety) => {
                 const category = getCategory(variety.categoryId);
                 return (
                   <TableRow key={variety.id} className="group">
@@ -312,6 +321,14 @@ export default function VarietiesPage() {
             )}
           </TableBody>
         </Table>
+
+        <Pagination 
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          totalRecords={filteredVarietiesList.length}
+          pageSize={PAGE_SIZE}
+        />
       </div>
 
       {/* Mobile View */}
@@ -323,7 +340,7 @@ export default function VarietiesPage() {
         ) : filteredVarietiesList.length === 0 ? (
           <p className="text-center py-8 text-muted-foreground col-span-full">No varieties found.</p>
         ) : (
-          filteredVarietiesList.map((variety) => {
+          paginatedVarieties.map((variety) => {
             const category = getCategory(variety.categoryId);
             return (
               <div key={variety.id} className="bg-card border rounded-xl overflow-hidden shadow-sm flex flex-col">
@@ -389,6 +406,16 @@ export default function VarietiesPage() {
               </div>
             );
           })
+        )}
+
+        {filteredVarietiesList.length > 0 && (
+          <Pagination 
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            totalRecords={filteredVarietiesList.length}
+            pageSize={PAGE_SIZE}
+          />
         )}
       </div>
     </div>
