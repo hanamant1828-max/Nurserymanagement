@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useLots } from "@/hooks/use-lots";
 import { useOrders } from "@/hooks/use-orders";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3, Download, Search, FileSpreadsheet, Truck, Sprout, ShoppingBag, Calendar as CalendarIcon } from "lucide-react";
+import { BarChart3, Download, Search, FileSpreadsheet, Truck, Sprout, ShoppingBag, CheckCircle, Calendar as CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -50,6 +50,7 @@ export default function ReportsPage() {
 
   const dailySowingData = lots?.filter(l => isInRange(l.sowingDate)) || [];
   const pendingDeliveries = orders?.filter(o => o.status === "BOOKED" && isInRange(o.deliveryDate)) || [];
+  const deliveredOrders = orders?.filter(o => o.status === "DELIVERED" && isInRange(o.deliveryDate)) || [];
   const lotStockData = lots?.filter(l => isInRange(l.sowingDate)).map(l => ({
     ...l,
     available: (l as any).available || 0
@@ -147,12 +148,15 @@ export default function ReportsPage() {
       </div>
 
       <Tabs defaultValue="sowing" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 mb-8">
+        <TabsList className="grid w-full grid-cols-4 mb-8">
           <TabsTrigger value="sowing" className="flex items-center gap-2">
             <Sprout className="w-4 h-4" /> Sowing
           </TabsTrigger>
           <TabsTrigger value="deliveries" className="flex items-center gap-2">
             <Truck className="w-4 h-4" /> Pending Deliveries
+          </TabsTrigger>
+          <TabsTrigger value="delivered" className="flex items-center gap-2">
+            <CheckCircle className="w-4 h-4" /> Delivered Orders
           </TabsTrigger>
           <TabsTrigger value="stock" className="flex items-center gap-2">
             <ShoppingBag className="w-4 h-4" /> Lot Stock
@@ -234,6 +238,49 @@ export default function ReportsPage() {
                       <TableCell>{order.village}</TableCell>
                     </TableRow>
                   ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="delivered">
+          <Card className="border-none shadow-md">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Delivered Orders Report</CardTitle>
+                <p className="text-sm text-muted-foreground">All successfully delivered orders.</p>
+              </div>
+              <Button onClick={() => exportToExcel(deliveredOrders, "Delivered_Orders")}>
+                <FileSpreadsheet className="w-4 h-4 mr-2" /> Export Excel
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Customer</TableHead>
+                    <TableHead>Lot</TableHead>
+                    <TableHead>Qty</TableHead>
+                    <TableHead>Delivery Date</TableHead>
+                    <TableHead>Village</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filterData(deliveredOrders, ["customerName", "village"]).map((order) => (
+                    <TableRow key={order.id}>
+                      <TableCell className="font-medium">{order.customerName}</TableCell>
+                      <TableCell>{(order as any).lot?.lotNumber || "N/A"}</TableCell>
+                      <TableCell>{order.bookedQty}</TableCell>
+                      <TableCell>{order.deliveryDate}</TableCell>
+                      <TableCell>{order.village}</TableCell>
+                    </TableRow>
+                  ))}
+                  {deliveredOrders.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No delivered orders found in this range.</TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
             </CardContent>
