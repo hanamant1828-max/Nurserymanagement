@@ -461,12 +461,12 @@ export default function OrdersPage() {
                 <Plus className="w-5 h-5 mr-2" /> Book Order
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
+            <DialogContent className="max-w-2xl max-h-[95vh] overflow-y-auto p-4 sm:p-6">
+              <DialogHeader className="pb-2">
                 <DialogTitle>Book Order</DialogTitle>
               </DialogHeader>
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-2">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 mt-1">
                   {step === 1 && (
                     <div className="space-y-6 animate-in fade-in zoom-in duration-300">
                       <div className="grid grid-cols-2 gap-4">
