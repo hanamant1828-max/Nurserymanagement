@@ -155,7 +155,20 @@ export default function VarietiesPage() {
               <SelectItem value="all" className="py-2.5">All Categories</SelectItem>
               {categories?.filter(c => c.active).map(c => (
                 <SelectItem key={c.id} value={c.id.toString()} className="py-2.5">
-                  {c.name}
+                  <div className="flex items-center gap-3">
+                    {c.image ? (
+                      <img 
+                        src={c.image} 
+                        alt={c.name} 
+                        className="w-8 h-8 rounded-md object-cover border shadow-sm"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-md bg-muted flex items-center justify-center border shadow-sm">
+                        <Layers className="w-4 h-4 text-muted-foreground/30" />
+                      </div>
+                    )}
+                    <span className="font-medium">{c.name}</span>
+                  </div>
                 </SelectItem>
               ))}
             </SelectContent>
