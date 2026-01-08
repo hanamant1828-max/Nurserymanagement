@@ -430,128 +430,140 @@ export default function ReportsPage() {
         </TabsContent>
 
         <TabsContent value="delivery-reports">
-          <div className="space-y-6">
-            <Card className="border-none shadow-md">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle>Variety-wise Delivery Report</CardTitle>
-                  <p className="text-sm text-muted-foreground">Performance analysis per plant variety.</p>
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => exportToPDF(deliveryVarietyReport, "Variety_Delivery_Report", ["Variety", "Category", "Orders", "Qty", "Total (₹)"], ["name", "category", "orderCount", "totalQty", "totalAmount"])}>
-                    Download PDF
-                  </Button>
-                  <Button size="sm" onClick={() => exportToExcel(deliveryVarietyReport, "Variety_Delivery_Report")}>
-                    <FileSpreadsheet className="w-4 h-4 mr-2" /> Export Excel
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Variety Name</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead className="text-right">Orders</TableHead>
-                      <TableHead className="text-right">Quantity</TableHead>
-                      <TableHead className="text-right">Total Amount</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {deliveryVarietyReport.map((v: any, idx: number) => (
-                      <TableRow key={idx}>
-                        <TableCell className="font-medium">{v.name}</TableCell>
-                        <TableCell>{v.category}</TableCell>
-                        <TableCell className="text-right">{v.orderCount}</TableCell>
-                        <TableCell className="text-right">{v.totalQty}</TableCell>
-                        <TableCell className="text-right">₹{v.totalAmount.toLocaleString()}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+          <Tabs defaultValue="variety" className="w-full">
+            <TabsList className="mb-4">
+              <TabsTrigger value="variety">Variety-wise</TabsTrigger>
+              <TabsTrigger value="village">Village-wise</TabsTrigger>
+              <TabsTrigger value="category">Category-wise</TabsTrigger>
+            </TabsList>
 
-            <Card className="border-none shadow-md">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle>Village-wise Delivery Report</CardTitle>
-                  <p className="text-sm text-muted-foreground">Delivery analysis by location.</p>
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => exportToPDF(deliveryVillageReport, "Village_Delivery_Report", ["Village", "Orders", "Qty", "Collected (₹)", "Pending (₹)"], ["village", "orderCount", "totalQty", "paymentCollected", "pendingBalance"])}>
-                    Download PDF
-                  </Button>
-                  <Button size="sm" onClick={() => exportToExcel(deliveryVillageReport, "Village_Delivery_Report")}>
-                    <FileSpreadsheet className="w-4 h-4 mr-2" /> Export Excel
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Village Name</TableHead>
-                      <TableHead className="text-right">Orders</TableHead>
-                      <TableHead className="text-right">Quantity</TableHead>
-                      <TableHead className="text-right">Collected</TableHead>
-                      <TableHead className="text-right">Pending Balance</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {deliveryVillageReport.map((v: any, idx: number) => (
-                      <TableRow key={idx}>
-                        <TableCell className="font-medium">{v.village}</TableCell>
-                        <TableCell className="text-right">{v.orderCount}</TableCell>
-                        <TableCell className="text-right">{v.totalQty}</TableCell>
-                        <TableCell className="text-right text-green-600 font-bold">₹{v.paymentCollected.toLocaleString()}</TableCell>
-                        <TableCell className="text-right text-destructive font-bold">₹{v.pendingBalance.toLocaleString()}</TableCell>
+            <TabsContent value="variety">
+              <Card className="border-none shadow-md">
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle>Variety-wise Delivery Report</CardTitle>
+                    <p className="text-sm text-muted-foreground">Performance analysis per plant variety.</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={() => exportToPDF(deliveryVarietyReport, "Variety_Delivery_Report", ["Variety", "Category", "Orders", "Qty", "Total (₹)"], ["name", "category", "orderCount", "totalQty", "totalAmount"])}>
+                      Download PDF
+                    </Button>
+                    <Button size="sm" onClick={() => exportToExcel(deliveryVarietyReport, "Variety_Delivery_Report")}>
+                      <FileSpreadsheet className="w-4 h-4 mr-2" /> Export Excel
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Variety Name</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead className="text-right">Orders</TableHead>
+                        <TableHead className="text-right">Quantity</TableHead>
+                        <TableHead className="text-right">Total Amount</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+                    </TableHeader>
+                    <TableBody>
+                      {deliveryVarietyReport.map((v: any, idx: number) => (
+                        <TableRow key={idx}>
+                          <TableCell className="font-medium">{v.name}</TableCell>
+                          <TableCell>{v.category}</TableCell>
+                          <TableCell className="text-right">{v.orderCount}</TableCell>
+                          <TableCell className="text-right">{v.totalQty}</TableCell>
+                          <TableCell className="text-right">₹{v.totalAmount.toLocaleString()}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-            <Card className="border-none shadow-md">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle>Category-wise Delivery Report</CardTitle>
-                  <p className="text-sm text-muted-foreground">Revenue performance by product category.</p>
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => exportToPDF(deliveryCategoryReport, "Category_Delivery_Report", ["Category", "Orders", "Qty", "Revenue (₹)"], ["name", "orderCount", "totalQty", "totalRevenue"])}>
-                    Download PDF
-                  </Button>
-                  <Button size="sm" onClick={() => exportToExcel(deliveryCategoryReport, "Category_Delivery_Report")}>
-                    <FileSpreadsheet className="w-4 h-4 mr-2" /> Export Excel
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Category Name</TableHead>
-                      <TableHead className="text-right">Orders</TableHead>
-                      <TableHead className="text-right">Quantity</TableHead>
-                      <TableHead className="text-right">Total Revenue</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {deliveryCategoryReport.map((v: any, idx: number) => (
-                      <TableRow key={idx}>
-                        <TableCell className="font-medium">{v.name}</TableCell>
-                        <TableCell className="text-right">{v.orderCount}</TableCell>
-                        <TableCell className="text-right">{v.totalQty}</TableCell>
-                        <TableCell className="text-right font-black text-primary">₹{v.totalRevenue.toLocaleString()}</TableCell>
+            <TabsContent value="village">
+              <Card className="border-none shadow-md">
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle>Village-wise Delivery Report</CardTitle>
+                    <p className="text-sm text-muted-foreground">Delivery analysis by location.</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={() => exportToPDF(deliveryVillageReport, "Village_Delivery_Report", ["Village", "Orders", "Qty", "Collected (₹)", "Pending (₹)"], ["village", "orderCount", "totalQty", "paymentCollected", "pendingBalance"])}>
+                      Download PDF
+                    </Button>
+                    <Button size="sm" onClick={() => exportToExcel(deliveryVillageReport, "Village_Delivery_Report")}>
+                      <FileSpreadsheet className="w-4 h-4 mr-2" /> Export Excel
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Village Name</TableHead>
+                        <TableHead className="text-right">Orders</TableHead>
+                        <TableHead className="text-right">Quantity</TableHead>
+                        <TableHead className="text-right">Collected</TableHead>
+                        <TableHead className="text-right">Pending Balance</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </div>
+                    </TableHeader>
+                    <TableBody>
+                      {deliveryVillageReport.map((v: any, idx: number) => (
+                        <TableRow key={idx}>
+                          <TableCell className="font-medium">{v.village}</TableCell>
+                          <TableCell className="text-right">{v.orderCount}</TableCell>
+                          <TableCell className="text-right">{v.totalQty}</TableCell>
+                          <TableCell className="text-right text-green-600 font-bold">₹{v.paymentCollected.toLocaleString()}</TableCell>
+                          <TableCell className="text-right text-destructive font-bold">₹{v.pendingBalance.toLocaleString()}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="category">
+              <Card className="border-none shadow-md">
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle>Category-wise Delivery Report</CardTitle>
+                    <p className="text-sm text-muted-foreground">Revenue performance by product category.</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={() => exportToPDF(deliveryCategoryReport, "Category_Delivery_Report", ["Category", "Orders", "Qty", "Revenue (₹)"], ["name", "orderCount", "totalQty", "totalRevenue"])}>
+                      Download PDF
+                    </Button>
+                    <Button size="sm" onClick={() => exportToExcel(deliveryCategoryReport, "Category_Delivery_Report")}>
+                      <FileSpreadsheet className="w-4 h-4 mr-2" /> Export Excel
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Category Name</TableHead>
+                        <TableHead className="text-right">Orders</TableHead>
+                        <TableHead className="text-right">Quantity</TableHead>
+                        <TableHead className="text-right">Total Revenue</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {deliveryCategoryReport.map((v: any, idx: number) => (
+                        <TableRow key={idx}>
+                          <TableCell className="font-medium">{v.name}</TableCell>
+                          <TableCell className="text-right">{v.orderCount}</TableCell>
+                          <TableCell className="text-right">{v.totalQty}</TableCell>
+                          <TableCell className="text-right font-black text-primary">₹{v.totalRevenue.toLocaleString()}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         <TabsContent value="stock">

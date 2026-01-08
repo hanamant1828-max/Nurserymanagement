@@ -1,0 +1,110 @@
+UI Change Request – Convert Delivery Reports into Tabs
+🎯 Objective
+
+Currently, the following reports are displayed one below another:
+
+Variety-wise Delivery Report
+
+Village-wise Delivery Report
+
+Category-wise Delivery Report
+
+You want them to be:
+✔ Shown as separate tabs
+✔ Only one report visible at a time
+✔ These tabs should appear first in the Reports page
+
+❌ Current Layout (Problem)
+
+All reports are rendered together in vertical sections:
+
+[ Variety-wise Report ]
+[ Village-wise Report ]
+[ Category-wise Report ]
+
+
+This makes the page long and harder to navigate.
+
+✅ Expected Layout (Tabbed View)
+
+At the top of the Reports section, show tabs:
+
+[ Variety-wise ]   [ Village-wise ]   [ Category-wise ]
+
+
+Only the active tab’s report should be displayed.
+
+🧭 Default Behavior
+
+On page load:
+
+Active Tab = Variety-wise
+
+
+Clicking on a tab:
+
+Hides the other two reports
+
+Shows only the selected report
+
+🖥 UI Behavior
+Tabs (Top Section)
+
+Variety-wise
+
+Village-wise
+
+Category-wise
+
+Content Area
+
+Shows only one report table at a time based on the selected tab.
+
+🔄 Functional Logic
+Tab Switching (Frontend)
+selectedTab = 'VARIETY' | 'VILLAGE' | 'CATEGORY'
+
+
+Render conditionally:
+
+If selectedTab == 'VARIETY'  → Show Variety-wise report
+If selectedTab == 'VILLAGE'  → Show Village-wise report
+If selectedTab == 'CATEGORY' → Show Category-wise report
+
+📑 Export Buttons
+
+Each tab should still contain:
+
+Download PDF
+
+Export Excel
+
+And they should export only the currently active report.
+
+🧪 Example Flow
+
+1️⃣ User opens Reports page
+→ Variety-wise tab is active
+→ Variety report table is visible
+
+2️⃣ User clicks Village-wise
+→ Variety report hidden
+→ Village-wise report displayed
+
+3️⃣ User clicks Category-wise
+→ Only category report shown
+
+🧑‍💻 Developer Notes
+
+✔ Do not render all three reports at once
+✔ Use tab state / routing / conditional rendering
+✔ Keep filters (date range, search) working across all tabs
+✔ Maintain existing backend logic (only UI structure changes)
+
+📌 Optional Enhancement
+
+Later, you can:
+
+Add summary cards above tabs (Total Orders, Total Quantity, Revenue)
+
+Remember last selected tab in session
