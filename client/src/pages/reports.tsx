@@ -79,6 +79,32 @@ export default function ReportsPage() {
     available: (l as any).available || 0
   })) || [];
 
+  // New Report Data Processing
+  const varietyPerformance = Object.values(lots?.reduce((acc: any, lot) => {
+    const vId = lot.varietyId;
+    if (!acc[vId]) acc[vId] = { name: lot.variety.name, sown: 0, damaged: 0, available: 0 };
+    acc[vId].sown += lot.seedsSown;
+    acc[vId].damaged += lot.damaged;
+    acc[vId].available += lot.available;
+    return acc;
+  }, {}) || {});
+
+  const villageData = Object.values(orders?.reduce((acc: any, order) => {
+    const village = order.village || "Unknown";
+    if (!acc[village]) acc[village] = { village, orderCount: 0, totalQty: 0 };
+    acc[village].orderCount += 1;
+    acc[village].totalQty += order.bookedQty;
+    return acc;
+  }, {}) || {});
+
+  const paymentSummary = Object.values(orders?.reduce((acc: any, order) => {
+    const mode = order.paymentMode;
+    if (!acc[mode]) acc[mode] = { mode, count: 0, totalAdvance: 0 };
+    acc[mode].count += 1;
+    acc[mode].totalAdvance += Number(order.advanceAmount);
+    return acc;
+  }, {}) || {});
+
   const filterData = (data: any[], keys: string[]) => {
     if (!searchTerm) return data;
     return data.filter(item => 
@@ -171,18 +197,27 @@ export default function ReportsPage() {
       </div>
 
       <Tabs defaultValue="sowing" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 mb-8">
+        <TabsList className="grid w-full grid-cols-7 mb-8">
           <TabsTrigger value="sowing" className="flex items-center gap-2">
             <Sprout className="w-4 h-4" /> Sowing
           </TabsTrigger>
           <TabsTrigger value="deliveries" className="flex items-center gap-2">
-            <Truck className="w-4 h-4" /> Pending Deliveries
+            <Truck className="w-4 h-4" /> Pending
           </TabsTrigger>
           <TabsTrigger value="delivered" className="flex items-center gap-2">
-            <CheckCircle className="w-4 h-4" /> Delivered Orders
+            <CheckCircle className="w-4 h-4" /> Delivered
           </TabsTrigger>
           <TabsTrigger value="stock" className="flex items-center gap-2">
-            <ShoppingBag className="w-4 h-4" /> Lot Stock
+            <ShoppingBag className="w-4 h-4" /> Stock
+          </TabsTrigger>
+          <TabsTrigger value="variety" className="flex items-center gap-2">
+            <BarChart3 className="w-4 h-4" /> Varieties
+          </TabsTrigger>
+          <TabsTrigger value="villages" className="flex items-center gap-2">
+            <Search className="w-4 h-4" /> Villages
+          </TabsTrigger>
+          <TabsTrigger value="payments" className="flex items-center gap-2">
+            <Search className="w-4 h-4" /> Payments
           </TabsTrigger>
         </TabsList>
 
@@ -360,6 +395,125 @@ export default function ReportsPage() {
                       <TableCell>{lot.seedsSown}</TableCell>
                       <TableCell className="text-destructive">{lot.damaged}</TableCell>
                       <TableCell className="font-bold text-primary">{lot.available}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="variety">
+          <Card className="border-none shadow-md">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Variety Performance</CardTitle>
+                <p className="text-sm text-muted-foreground">Aggregated success rates per variety.</p>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={() => exportToPDF(varietyPerformance, "Variety_Performance", ["Variety", "Total Sown", "Total Damaged", "Total Available"], ["name", "sown", "damaged", "available"])}>
+                  Download PDF
+                </Button>
+                <Button size="sm" onClick={() => exportToExcel(varietyPerformance, "Variety_Performance")}>
+                  <FileSpreadsheet className="w-4 h-4 mr-2" /> Export Excel
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Variety Name</TableHead>
+                    <TableHead>Total Sown</TableHead>
+                    <TableHead>Total Damaged</TableHead>
+                    <TableHead>Total Available</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {varietyPerformance.map((v: any, idx: number) => (
+                    <TableRow key={idx}>
+                      <TableCell className="font-medium">{v.name}</TableCell>
+                      <TableCell>{v.sown}</TableCell>
+                      <TableCell className="text-destructive">{v.damaged}</TableCell>
+                      <TableCell className="font-bold text-primary">{v.available}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="villages">
+          <Card className="border-none shadow-md">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Village Distribution</CardTitle>
+                <p className="text-sm text-muted-foreground">Orders and quantity by village.</p>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={() => exportToPDF(villageData, "Village_Distribution", ["Village", "Order Count", "Total Quantity"], ["village", "orderCount", "totalQty"])}>
+                  Download PDF
+                </Button>
+                <Button size="sm" onClick={() => exportToExcel(villageData, "Village_Distribution")}>
+                  <FileSpreadsheet className="w-4 h-4 mr-2" /> Export Excel
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Village Name</TableHead>
+                    <TableHead>Total Orders</TableHead>
+                    <TableHead>Total Plants Booked</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {villageData.map((v: any, idx: number) => (
+                    <TableRow key={idx}>
+                      <TableCell className="font-medium">{v.village}</TableCell>
+                      <TableCell>{v.orderCount}</TableCell>
+                      <TableCell className="font-bold">{v.totalQty}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="payments">
+          <Card className="border-none shadow-md">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Payment Summary</CardTitle>
+                <p className="text-sm text-muted-foreground">Advances collected by payment mode.</p>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={() => exportToPDF(paymentSummary, "Payment_Summary", ["Mode", "Transaction Count", "Total Advance"], ["mode", "count", "totalAdvance"])}>
+                  Download PDF
+                </Button>
+                <Button size="sm" onClick={() => exportToExcel(paymentSummary, "Payment_Summary")}>
+                  <FileSpreadsheet className="w-4 h-4 mr-2" /> Export Excel
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Payment Mode</TableHead>
+                    <TableHead>Transactions</TableHead>
+                    <TableHead>Total Advance (₹)</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paymentSummary.map((p: any, idx: number) => (
+                    <TableRow key={idx}>
+                      <TableCell className="font-medium">{p.mode}</TableCell>
+                      <TableCell>{p.count}</TableCell>
+                      <TableCell className="font-bold text-green-600">₹{p.totalAdvance.toLocaleString()}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
