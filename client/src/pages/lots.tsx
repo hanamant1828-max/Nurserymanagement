@@ -76,12 +76,19 @@ export default function LotsPage() {
   const [damageDialogOpen, setDamageDialogOpen] = useState(false);
   const [selectedLotId, setSelectedLotId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedVariety, setSelectedVariety] = useState<string>("all");
 
-  const filteredLotsList = lots?.filter(l => 
-    l.lotNumber.toLowerCase().includes(search.toLowerCase()) ||
-    l.variety?.name.toLowerCase().includes(search.toLowerCase()) ||
-    l.category?.name.toLowerCase().includes(search.toLowerCase())
-  ) || [];
+  const filteredLotsList = lots?.filter(l => {
+    const matchesSearch = l.lotNumber.toLowerCase().includes(search.toLowerCase()) ||
+      l.variety?.name.toLowerCase().includes(search.toLowerCase()) ||
+      l.category?.name.toLowerCase().includes(search.toLowerCase());
+    
+    const matchesCategory = selectedCategory === "all" || l.categoryId.toString() === selectedCategory;
+    const matchesVariety = selectedVariety === "all" || l.varietyId.toString() === selectedVariety;
+
+    return matchesSearch && matchesCategory && matchesVariety;
+  }) || [];
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -186,267 +193,315 @@ export default function LotsPage() {
             className="w-full sm:w-64"
           />
           <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button size="lg" className="shadow-lg shadow-primary/20">
-              <Plus className="w-5 h-5 mr-2" /> New Sowing Entry
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>New Sowing Lot Entry</DialogTitle>
-            </DialogHeader>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Category Selection */}
-                  <FormField
-                    control={form.control}
-                    name="categoryId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Category</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select Category" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {categories?.filter(c => c.active).map(c => (
-                              <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Variety Selection */}
-                  <FormField
-                    control={form.control}
-                    name="varietyId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Variety</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!selectedCategoryId}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select Variety" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {filteredVarieties?.map(v => (
-                              <SelectItem key={v.id} value={v.id.toString()}>{v.name}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Lot Number */}
-                  <FormField
-                    control={form.control}
-                    name="lotNumber"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Lot Number</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Auto or Manual (e.g. L-101)" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Seeds Sown */}
-                  <FormField
-                    control={form.control}
-                    name="seedsSown"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Seeds Sown Quantity</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number" 
-                            {...field} 
-                            max={(() => {
-                              const lot = lots?.find(l => l.id === selectedLotId);
-                              return lot ? lot.seedsSown - lot.damaged : undefined;
-                            })()}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Sowing Date */}
-                  <FormField
-                    control={form.control}
-                    name="sowingDate"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-col">
-                        <FormLabel>Sowing Date</FormLabel>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <FormControl>
-                              <Button
-                                variant={"outline"}
-                                className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
-                              >
-                                {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                              </Button>
-                            </FormControl>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={field.value}
-                              onSelect={field.onChange}
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  {/* Expected Ready Date */}
-                  <FormField
-                    control={form.control}
-                    name="expectedReadyDate"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-col">
-                        <FormLabel>Expected Ready Date</FormLabel>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <FormControl>
-                              <Button
-                                variant={"outline"}
-                                className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
-                              >
-                                {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                              </Button>
-                            </FormControl>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={field.value}
-                              onSelect={field.onChange}
-                              initialFocus
-                              disabled={(date) => date < new Date()}
-                            />
-                          </PopoverContent>
-                        </Popover>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <FormField
-                  control={form.control}
-                  name="remarks"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Remarks</FormLabel>
-                      <FormControl>
-                        <Textarea placeholder="Any additional notes..." {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <Button type="submit" className="w-full" disabled={creating}>Save Lot Entry</Button>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
-        
-        {/* Damage Update Dialog */}
-        <Dialog open={damageDialogOpen} onOpenChange={setDamageDialogOpen}>
-            <DialogContent>
+            <DialogTrigger asChild>
+              <Button size="lg" className="shadow-lg shadow-primary/20">
+                <Plus className="w-5 h-5 mr-2" /> New Sowing Entry
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
               <DialogHeader>
-                <DialogTitle>Update Damage / Loss</DialogTitle>
-                {(() => {
-                  const lot = lots?.find(l => l.id === selectedLotId);
-                  if (lot) {
-                    return (
-                      <div className="flex flex-col gap-1 mt-2 p-3 bg-muted/30 rounded-lg border border-border/50">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Lot Number:</span>
-                          <span className="font-mono font-medium">{lot.lotNumber}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Sown Quantity:</span>
-                          <span className="font-semibold">{lot.seedsSown}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Current Damage:</span>
-                          <span className="text-destructive font-medium">{lot.damaged}</span>
-                        </div>
-                        <div className="flex justify-between text-sm border-t border-border/50 pt-1 mt-1">
-                          <span className="text-muted-foreground">Available Stock:</span>
-                          <span className="text-primary font-bold">{lot.available}</span>
-                        </div>
-                      </div>
-                    );
-                  }
-                  return null;
-                })()}
+                <DialogTitle>New Sowing Lot Entry</DialogTitle>
               </DialogHeader>
-              <Form {...damageForm}>
-                <form onSubmit={damageForm.handleSubmit(onSubmitDamage)} className="space-y-4">
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Category Selection */}
+                    <FormField
+                      control={form.control}
+                      name="categoryId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Category</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select Category" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {categories?.filter(c => c.active).map(c => (
+                                <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Variety Selection */}
+                    <FormField
+                      control={form.control}
+                      name="varietyId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Variety</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!selectedCategoryId}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select Variety" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {filteredVarieties?.map(v => (
+                                <SelectItem key={v.id} value={v.id.toString()}>{v.name}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Lot Number */}
+                    <FormField
+                      control={form.control}
+                      name="lotNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Lot Number</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Auto or Manual (e.g. L-101)" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Seeds Sown */}
+                    <FormField
+                      control={form.control}
+                      name="seedsSown"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Seeds Sown Quantity</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              {...field} 
+                              max={(() => {
+                                const lot = lots?.find(l => l.id === selectedLotId);
+                                return lot ? lot.seedsSown - lot.damaged : undefined;
+                              })()}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Sowing Date */}
+                    <FormField
+                      control={form.control}
+                      name="sowingDate"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormLabel>Sowing Date</FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant={"outline"}
+                                  className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
+                                >
+                                  {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    {/* Expected Ready Date */}
+                    <FormField
+                      control={form.control}
+                      name="expectedReadyDate"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormLabel>Expected Ready Date</FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant={"outline"}
+                                  className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
+                                >
+                                  {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                initialFocus
+                                disabled={(date) => date < new Date()}
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
                   <FormField
-                    control={damageForm.control}
-                    name="damaged"
+                    control={form.control}
+                    name="remarks"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Quantity Damaged (Add to existing)</FormLabel>
+                        <FormLabel>Remarks</FormLabel>
                         <FormControl>
-                          <Input 
-                            type="number" 
-                            {...field} 
-                            max={(() => {
-                              const lot = lots?.find(l => l.id === selectedLotId);
-                              return lot ? lot.seedsSown - lot.damaged : undefined;
-                            })()}
-                          />
+                          <Textarea placeholder="Any additional notes..." {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  <FormField
-                    control={damageForm.control}
-                    name="reason"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Reason</FormLabel>
-                        <FormControl>
-                          <Textarea placeholder="e.g. Pest attack, Rain damage" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button type="submit" variant="destructive" className="w-full" disabled={updating}>
-                    Record Damage
-                  </Button>
+
+                  <Button type="submit" className="w-full" disabled={creating}>Save Lot Entry</Button>
                 </form>
               </Form>
             </DialogContent>
-        </Dialog>
+          </Dialog>
         </div>
       </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-muted/30 rounded-xl border border-border/50">
+        <div className="space-y-2">
+          <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Category Filter</label>
+          <Select value={selectedCategory} onValueChange={(val) => {
+            setSelectedCategory(val);
+            setSelectedVariety("all");
+          }}>
+            <SelectTrigger className="bg-background">
+              <SelectValue placeholder="All Categories" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {categories?.filter(c => c.active).map(c => (
+                <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Variety Filter</label>
+          <Select value={selectedVariety} onValueChange={setSelectedVariety} disabled={selectedCategory === "all"}>
+            <SelectTrigger className="bg-background">
+              <SelectValue placeholder="All Varieties" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Varieties</SelectItem>
+              {varieties?.filter(v => v.categoryId.toString() === selectedCategory && v.active).map(v => (
+                <SelectItem key={v.id} value={v.id.toString()}>{v.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Lot Filter</label>
+          <Select value={search} onValueChange={setSearch}>
+            <SelectTrigger className="bg-background">
+              <SelectValue placeholder="All Lots" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All Lots</SelectItem>
+              {lots?.map(l => (
+                <SelectItem key={l.id} value={l.lotNumber}>{l.lotNumber}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Damage Update Dialog */}
+      <Dialog open={damageDialogOpen} onOpenChange={setDamageDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Update Damage / Loss</DialogTitle>
+            {(() => {
+              const lot = lots?.find(l => l.id === selectedLotId);
+              if (lot) {
+                return (
+                  <div className="flex flex-col gap-1 mt-2 p-3 bg-muted/30 rounded-lg border border-border/50">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Lot Number:</span>
+                      <span className="font-mono font-medium">{lot.lotNumber}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Sown Quantity:</span>
+                      <span className="font-semibold">{lot.seedsSown}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Current Damage:</span>
+                      <span className="text-destructive font-medium">{lot.damaged}</span>
+                    </div>
+                    <div className="flex justify-between text-sm border-t border-border/50 pt-1 mt-1">
+                      <span className="text-muted-foreground">Available Stock:</span>
+                      <span className="text-primary font-bold">{lot.available}</span>
+                    </div>
+                  </div>
+                );
+              }
+              return null;
+            })()}
+          </DialogHeader>
+          <Form {...damageForm}>
+            <form onSubmit={damageForm.handleSubmit(onSubmitDamage)} className="space-y-4">
+              <FormField
+                control={damageForm.control}
+                name="damaged"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Quantity Damaged (Add to existing)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        {...field} 
+                        max={(() => {
+                          const lot = lots?.find(l => l.id === selectedLotId);
+                          return lot ? lot.seedsSown - lot.damaged : undefined;
+                        })()}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={damageForm.control}
+                name="reason"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Reason</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="e.g. Pest attack, Rain damage" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit" variant="destructive" className="w-full" disabled={updating}>
+                Record Damage
+              </Button>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
 
       <div className="hidden md:block rounded-xl border bg-card shadow-sm overflow-hidden">
         <Table>
@@ -514,7 +569,7 @@ export default function LotsPage() {
                         </Button>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-destructive transition-colors">
+                            <Button data-testid={`button-delete-lot-${lot.id}`} variant="ghost" size="sm" className="text-muted-foreground hover:text-destructive transition-colors">
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </AlertDialogTrigger>
