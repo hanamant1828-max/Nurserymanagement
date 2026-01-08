@@ -141,10 +141,26 @@ export default function LotsPage() {
     if (selectedLotId) {
       const lot = lots?.find(l => l.id === selectedLotId);
       if (lot) {
-        // Add to existing damage
+        // Check if new total damage exceeds sown quantity
         const newDamage = lot.damaged + data.damaged;
+        if (newDamage > lot.seedsSown) {
+          damageForm.setError("damaged", {
+            type: "manual",
+            message: `Total damage (${newDamage}) cannot exceed sown quantity (${lot.seedsSown})`
+          });
+          return;
+        }
+
         update({ id: selectedLotId, damaged: newDamage }, { 
-          onSuccess: () => { setDamageDialogOpen(false); damageForm.reset(); setSelectedLotId(null); } 
+          onSuccess: () => { 
+            setDamageDialogOpen(false); 
+            damageForm.reset(); 
+            setSelectedLotId(null); 
+            toast({
+              title: "Success",
+              description: "Damage recorded successfully",
+            });
+          } 
         });
       }
     }
@@ -253,7 +269,14 @@ export default function LotsPage() {
                       <FormItem>
                         <FormLabel>Seeds Sown Quantity</FormLabel>
                         <FormControl>
-                          <Input type="number" {...field} />
+                          <Input 
+                            type="number" 
+                            {...field} 
+                            max={(() => {
+                              const lot = lots?.find(l => l.id === selectedLotId);
+                              return lot ? lot.seedsSown - lot.damaged : undefined;
+                            })()}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -363,7 +386,14 @@ export default function LotsPage() {
                       <FormItem>
                         <FormLabel>Quantity Damaged (Add to existing)</FormLabel>
                         <FormControl>
-                          <Input type="number" {...field} />
+                          <Input 
+                            type="number" 
+                            {...field} 
+                            max={(() => {
+                              const lot = lots?.find(l => l.id === selectedLotId);
+                              return lot ? lot.seedsSown - lot.damaged : undefined;
+                            })()}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
