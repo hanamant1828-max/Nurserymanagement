@@ -84,6 +84,8 @@ export default function LotsPage() {
     to: new Date(),
   });
 
+  const [editingLot, setEditingLot] = useState<any>(null);
+
   const filteredLotsList = lots?.filter(l => {
     const matchesSearch = search === "" || search === "all-lots" || 
       l.lotNumber.toLowerCase().includes(search.toLowerCase()) ||
@@ -129,6 +131,20 @@ export default function LotsPage() {
   const { mutate: deleteLot } = useDeleteLot();
   const { toast } = useToast();
 
+  const handleEdit = (lot: any) => {
+    setEditingLot(lot);
+    form.reset({
+      categoryId: lot.categoryId.toString(),
+      varietyId: lot.varietyId.toString(),
+      lotNumber: lot.lotNumber,
+      seedsSown: lot.seedsSown,
+      sowingDate: new Date(lot.sowingDate),
+      expectedReadyDate: lot.expectedReadyDate ? new Date(lot.expectedReadyDate) : undefined,
+      remarks: lot.remarks || "",
+    });
+    setOpen(true);
+  };
+
   const handleDelete = (id: number) => {
     deleteLot(id, {
       onSuccess: () => {
@@ -160,7 +176,18 @@ export default function LotsPage() {
       expectedReadyDate: data.expectedReadyDate ? format(data.expectedReadyDate, "yyyy-MM-dd") : undefined,
     };
     
-    create(payload, { onSuccess: () => { setOpen(false); form.reset(); } });
+    if (editingLot) {
+      update({ id: editingLot.id, ...payload }, { 
+        onSuccess: () => { 
+          setOpen(false); 
+          setEditingLot(null);
+          form.reset(); 
+          toast({ title: "Success", description: "Lot updated successfully" });
+        } 
+      });
+    } else {
+      create(payload, { onSuccess: () => { setOpen(false); form.reset(); } });
+    }
   };
   
   const onSubmitDamage = (data: z.infer<typeof damageSchema>) => {
@@ -211,7 +238,13 @@ export default function LotsPage() {
             onChange={(e) => setSearch(e.target.value)}
             className="w-full sm:w-64"
           />
-          <Dialog open={open} onOpenChange={setOpen}>
+          <Dialog open={open} onOpenChange={(v) => {
+            setOpen(v);
+            if (!v) {
+              setEditingLot(null);
+              form.reset();
+            }
+          }}>
             <DialogTrigger asChild>
               <Button size="lg" className="shadow-lg shadow-primary/20">
                 <Plus className="w-5 h-5 mr-2" /> New Sowing Entry
@@ -219,7 +252,7 @@ export default function LotsPage() {
             </DialogTrigger>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
-                <DialogTitle>New Sowing Lot Entry</DialogTitle>
+                <DialogTitle>{editingLot ? "Edit Sowing Lot" : "New Sowing Lot Entry"}</DialogTitle>
               </DialogHeader>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-4">
@@ -391,7 +424,9 @@ export default function LotsPage() {
                     )}
                   />
 
-                  <Button type="submit" className="w-full" disabled={creating}>Save Lot Entry</Button>
+                  <Button type="submit" className="w-full" disabled={creating || updating}>
+                    {editingLot ? "Update Lot Entry" : "Save Lot Entry"}
+                  </Button>
                 </form>
               </Form>
             </DialogContent>
@@ -640,7 +675,30 @@ export default function LotsPage() {
                         <Button 
                           variant="ghost" 
                           size="sm" 
-                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          className="h-8 w-8 text-primary"
+                          onClick={() => handleEdit(lot)}
+                          title="Edit Lot"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="lucide lucide-pencil"
+                          >
+                            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                            <path d="m15 5 4 4" />
+                          </svg>
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 w-8 text-amber-600 hover:text-amber-700 hover:bg-amber-50"
                           onClick={() => openDamageDialog(lot.id)}
                           title="Record Damage"
                         >

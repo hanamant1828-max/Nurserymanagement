@@ -1,0 +1,147 @@
+✏️ Feature Request – Add Edit Option in Lots & Stock
+🎯 Objective
+
+Allow users to edit a lot record directly from the Lots & Stock table.
+
+This will let them update:
+
+Sown quantity
+
+Damaged quantity
+
+Available stock
+
+Status
+
+Sowing / expected dates
+
+Any other lot-related details
+
+❌ Current Behavior
+
+In the Actions column, only:
+
+⚠ (Damage / Alert)
+
+🗑 (Delete)
+
+👉 There is no Edit option.
+
+✅ Expected Behavior
+1️⃣ Add an Edit Icon / Button in Actions Column
+
+Each row should show:
+
+✏ Edit   ⚠ Damage   🗑 Delete
+
+2️⃣ Edit Action Behavior
+
+When user clicks Edit:
+
+✔ Open Edit Lot form (modal / side panel / new page)
+✔ Pre-fill existing data:
+
+Lot No
+
+Variety
+
+Sowing Date
+
+Sown
+
+Damaged
+
+Available
+
+Status
+
+✔ User can update values and save.
+
+🔄 Backend Logic
+Fetch Existing Lot
+SELECT * FROM Lots WHERE lot_id = @LotId;
+
+Update Lot
+UPDATE Lots
+SET 
+    sowing_date = @SowingDate,
+    sown = @Sown,
+    damaged = @Damaged,
+    available = @Available,
+    status = @Status
+WHERE lot_id = @LotId;
+
+
+🚫 Do NOT create a new record
+🚫 Do NOT change lot number unless explicitly allowed
+
+🧮 Validation Rules
+✔ Available Stock
+Available = Sown - Damaged - Booked
+
+
+(If you auto-calculate)
+
+✔ Damaged
+Damaged ≤ Sown
+
+✔ Sown
+Sown >= (Damaged + Booked)
+
+
+If invalid:
+👉 Show error and disable Save.
+
+🖥 UI / UX Requirements
+
+Add Edit icon (✏) before Delete
+
+Tooltip: “Edit Lot”
+
+Show confirmation after update:
+
+"Lot updated successfully"
+
+🧪 Example Flow
+
+1️⃣ User clicks Edit on LOT-WA-1-1
+2️⃣ Modal opens with:
+
+Sown: 1000
+Damaged: 10
+Available: 940
+Status: Available
+
+
+3️⃣ User changes:
+
+Damaged → 20
+
+
+4️⃣ System recalculates:
+
+Available = 1000 - 20 - Booked
+
+
+5️⃣ Save → Row updates instantly
+
+🧑‍💻 Developer Checklist
+
+✔ Add Edit button in Actions column
+✔ Bind click → open edit form with existing values
+✔ Validate stock math before saving
+✔ Update record in DB
+✔ Refresh table after save
+
+📌 Optional Enhancements
+
+Audit log:
+
+"Lot LOT-WA-1-1 updated by Admin on 10-Jan-2026"
+
+
+Role-based access:
+
+Only Admin / Manager can Edit
+
+Inline editing for Damaged / Status
