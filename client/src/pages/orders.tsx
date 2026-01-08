@@ -241,6 +241,7 @@ export default function OrdersPage() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       bookedQty: 1,
+      totalAmount: 0,
       advanceAmount: 0,
       paymentMode: "Cash",
       deliveryDate: new Date(),
@@ -273,12 +274,12 @@ export default function OrdersPage() {
   // Recalculate based on current form values to ensure sync
   const bookedQtyValue = form.watch("bookedQty") || 0;
   const advanceAmountValue = form.watch("advanceAmount") || 0;
+  const totalAmountValue = form.watch("totalAmount") || 0;
   
-  const totalAmount = bookedQtyValue * unitPrice;
-  const remainingBalance = totalAmount - advanceAmountValue;
+  const remainingBalance = totalAmountValue - advanceAmountValue;
   const paymentStatus = advanceAmountValue === 0 
     ? "Pending" 
-    : (advanceAmountValue < totalAmount) 
+    : (advanceAmountValue < totalAmountValue) 
       ? "Partially Paid" 
       : "Paid";
 
@@ -302,6 +303,7 @@ export default function OrdersPage() {
         phone: editingOrder.phone,
         village: editingOrder.village || "",
         bookedQty: editingOrder.bookedQty,
+        totalAmount: Number(editingOrder.totalAmount),
         advanceAmount: Number(editingOrder.advanceAmount),
         paymentMode: editingOrder.paymentMode as any,
         deliveryDate: new Date(editingOrder.deliveryDate),
@@ -323,7 +325,7 @@ export default function OrdersPage() {
       phone: data.phone,
       village: data.village || "",
       bookedQty: data.bookedQty,
-      totalAmount: totalAmount.toString(),
+      totalAmount: data.totalAmount.toString(),
       advanceAmount: data.advanceAmount.toString(),
       remainingBalance: remainingBalance.toString(),
       paymentStatus: paymentStatus,
@@ -719,15 +721,47 @@ export default function OrdersPage() {
                       <div className="grid grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
-                          name="advanceAmount"
+                          name="totalAmount"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Advance (₹)</FormLabel>
-                              <FormControl><Input type="number" className="h-12 text-lg bg-muted/30 border-primary focus-visible:ring-primary/20 border-2" {...field} /></FormControl>
+                              <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Total Amount (₹)</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type="number" 
+                                  className="h-12 text-lg bg-muted/30 border-muted focus-visible:ring-primary/20 font-bold" 
+                                  {...field} 
+                                />
+                              </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
+
+                        <FormField
+                          control={form.control}
+                          name="advanceAmount"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Advance (₹)</FormLabel>
+                              <FormControl><Input type="number" className="h-12 text-lg bg-muted/30 border-primary focus-visible:ring-primary/20 border-2 font-bold" {...field} /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormItem>
+                          <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Remaining Balance</FormLabel>
+                          <div className={cn(
+                            "h-12 px-3 py-2 rounded-md border font-bold flex items-center text-lg",
+                            remainingBalance < 0 ? "text-destructive bg-destructive/5 border-destructive/20" : 
+                            remainingBalance === 0 ? "text-emerald-600 bg-emerald-50 border-emerald-200" : 
+                            "text-amber-600 bg-amber-50 border-amber-200"
+                          )}>
+                            ₹{remainingBalance.toLocaleString()}
+                          </div>
+                        </FormItem>
                         <FormItem>
                           <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Payment Status</FormLabel>
                           <div className="flex items-center h-12">
@@ -767,11 +801,11 @@ export default function OrdersPage() {
                       <div className="bg-muted/30 p-4 rounded-lg border-2 border-dashed space-y-2">
                         <div className="flex justify-between items-center">
                           <span className="text-sm text-muted-foreground font-medium">Total Amount</span>
-                          <span className="text-lg font-black text-foreground">₹{totalAmount.toLocaleString()}</span>
+                          <span className="text-lg font-black text-foreground">₹{(totalAmountValue || 0).toLocaleString()}</span>
                         </div>
                         <div className="flex justify-between items-center">
                           <span className="text-sm text-muted-foreground font-medium">Advance Paid</span>
-                          <span className="text-lg font-black text-emerald-600">- ₹{advanceAmountValue.toLocaleString()}</span>
+                          <span className="text-lg font-black text-emerald-600">- ₹{(advanceAmountValue || 0).toLocaleString()}</span>
                         </div>
                         <div className="border-t pt-2 mt-2 flex justify-between items-center">
                           <span className="text-base font-bold text-foreground">Remaining Balance</span>

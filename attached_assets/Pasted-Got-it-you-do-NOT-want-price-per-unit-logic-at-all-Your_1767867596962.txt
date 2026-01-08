@@ -1,0 +1,128 @@
+Got it — **you do NOT want price-per-unit logic at all** 👍
+Your flow is:
+
+❌ **Do NOT calculate:** `Quantity × PricePerUnit`
+✅ **Only use manually entered Total Amount**
+
+So the bug is happening because **Quantity is mistakenly being used as Total Amount**.
+
+Here is a **clean, developer-friendly requirement** you can directly share with your team:
+
+---
+
+## 🔧 Fix Requirement – Do NOT Use Quantity in Amount Calculation
+
+### ❌ Current Bug
+
+The system is treating **Quantity** as **Total Amount**.
+Example:
+
+```
+Quantity = 10000
+TotalAmount = 10000  ❌ (wrong)
+```
+
+---
+
+## ✅ Expected Logic (Manual Amount Entry Only)
+
+### 1️⃣ Amount Fields Must Be Independent
+
+* **Quantity** → Only for stock tracking and validation
+* **Total Amount** → Entered manually by the user
+* **Advance Amount** → Entered by the user
+* **Remaining Balance** → Auto-calculated
+
+---
+
+### 2️⃣ Correct Calculation Formula
+
+```
+RemainingBalance = TotalAmount - AdvanceAmount
+```
+
+⚠ **Quantity must NOT be used in any amount calculation.**
+
+---
+
+### 3️⃣ Validation Rules
+
+#### ✔ Quantity vs Stock
+
+```
+If (Quantity > AvailableStock)
+    Show error: "Quantity exceeds available stock"
+    Disable Confirm button
+```
+
+#### ✔ Advance vs Total
+
+```
+If (AdvanceAmount > TotalAmount)
+    Show error: "Advance cannot be greater than Total Amount"
+    Disable Confirm button
+```
+
+---
+
+### 4️⃣ UI / Form Behavior
+
+* **Total Amount** must be a separate input field.
+* Changing **Quantity** must:
+
+  * Only validate stock
+  * **Not update Total Amount**
+* **Remaining Balance** must:
+
+  * Be read-only
+  * Recalculate in real time when Total or Advance changes
+
+---
+
+## 🧪 Example (Correct)
+
+```
+Quantity = 10000
+TotalAmount = 25000
+Advance = 5000
+Remaining = 20000
+```
+
+✔ Quantity affects stock only
+✔ Amount fields work independently
+
+---
+
+## 🗂 Backend Fields (Reference)
+
+```
+quantity            INT
+total_amount        DECIMAL(10,2)
+advance_amount      DECIMAL(10,2)
+remaining_balance   DECIMAL(10,2)
+```
+
+---
+
+## 🧑‍💻 Developer Action
+
+✔ Remove any logic that assigns:
+
+```
+TotalAmount = Quantity
+```
+
+✔ Ensure only this calculation exists:
+
+```
+RemainingBalance = TotalAmount - AdvanceAmount
+```
+
+---
+
+If you want, I can also:
+👉 Convert this into **exact frontend JS / React / Angular logic**
+👉 Or backend validation in **.NET / Java / Python / SQL**
+👉 Or a **bug ticket format** for Jira/GitHub.
+
+Just tell me your tech stack.
