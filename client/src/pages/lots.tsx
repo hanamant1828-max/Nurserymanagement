@@ -521,7 +521,7 @@ export default function LotsPage() {
               <Calendar
                 mode="single"
                 selected={dateRange?.from}
-                onSelect={(date) => setDateRange(prev => ({ ...prev, from: date }))}
+                onSelect={(date) => setDateRange(prev => ({ from: date, to: prev?.to }))}
                 initialFocus
               />
             </PopoverContent>
@@ -543,7 +543,7 @@ export default function LotsPage() {
               <Calendar
                 mode="single"
                 selected={dateRange?.to}
-                onSelect={(date) => setDateRange(prev => ({ ...prev, to: date }))}
+                onSelect={(date) => setDateRange(prev => ({ from: prev?.from || new Date(), to: date }))}
                 initialFocus
               />
             </PopoverContent>

@@ -22,7 +22,7 @@ export function Pagination({
   const endRecord = Math.min(currentPage * pageSize, totalRecords);
 
   const getVisiblePages = () => {
-    const delta = 2;
+    const delta = 1;
     const range = [];
     for (
       let i = Math.max(2, currentPage - delta);
@@ -48,38 +48,37 @@ export function Pagination({
   };
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 px-2 border-t mt-4">
-      <div className="text-sm text-muted-foreground order-2 sm:order-1">
-        Showing <span className="font-medium">{startRecord}</span> to{" "}
-        <span className="font-medium">{endRecord}</span> of{" "}
-        <span className="font-medium">{totalRecords}</span> records
+    <div className="flex flex-col sm:flex-row items-center gap-4 py-4 px-4 border rounded-xl bg-card shadow-sm mt-6">
+      <div className="text-sm text-muted-foreground whitespace-nowrap">
+        Showing <br />
+        <span className="font-medium text-foreground">{startRecord} to {endRecord}</span> <br />
+        of <span className="font-medium text-foreground">{totalRecords}</span> results
       </div>
-      <div className="flex items-center space-x-2 order-1 sm:order-2">
+      <div className="flex items-center space-x-1.5 ml-auto">
         <Button
           variant="outline"
-          size="icon"
-          className="h-8 w-8"
-          onClick={() => onPageChange(1)}
-          disabled={currentPage === 1}
-          data-testid="button-pagination-first"
-        >
-          <ChevronsLeft className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="outline"
-          size="icon"
-          className="h-8 w-8"
+          className="h-9 px-3 gap-1 hidden sm:flex border-border/50"
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
           data-testid="button-pagination-prev"
         >
           <ChevronLeft className="h-4 w-4" />
+          <span>Previous</span>
+        </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-9 w-9 sm:hidden border-border/50"
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+        >
+          <ChevronLeft className="h-4 w-4" />
         </Button>
         
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
           {getVisiblePages().map((page, index) => (
             page === "..." ? (
-              <span key={`ellipsis-${index}`} className="px-2 text-muted-foreground">
+              <span key={`ellipsis-${index}`} className="px-1 text-muted-foreground">
                 ...
               </span>
             ) : (
@@ -87,7 +86,11 @@ export function Pagination({
                 key={`page-${page}`}
                 variant={currentPage === page ? "default" : "outline"}
                 size="sm"
-                className="h-8 min-w-[32px]"
+                className={`h-9 min-w-[36px] font-bold rounded-md ${
+                  currentPage === page 
+                    ? "bg-primary hover:bg-primary/90 text-primary-foreground border-primary" 
+                    : "border-border/50 hover:bg-muted"
+                }`}
                 onClick={() => onPageChange(page as number)}
                 data-testid={`button-pagination-page-${page}`}
               >
@@ -99,23 +102,22 @@ export function Pagination({
 
         <Button
           variant="outline"
-          size="icon"
-          className="h-8 w-8"
+          className="h-9 px-3 gap-1 hidden sm:flex border-border/50"
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
           data-testid="button-pagination-next"
         >
+          <span>Next</span>
           <ChevronRight className="h-4 w-4" />
         </Button>
         <Button
           variant="outline"
           size="icon"
-          className="h-8 w-8"
-          onClick={() => onPageChange(totalPages)}
+          className="h-9 w-9 sm:hidden border-border/50"
+          onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          data-testid="button-pagination-last"
         >
-          <ChevronsRight className="h-4 w-4" />
+          <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
     </div>
