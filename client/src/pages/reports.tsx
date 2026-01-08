@@ -76,69 +76,46 @@ export default function ReportsPage() {
   const deliveredOrders = orders?.filter(o => o.status === "DELIVERED" && isInRange(o.deliveryDate)) || [];
   
   // Delivery Report Data Processing
-  const deliveryVarietyReport = Object.values(deliveredOrders.reduce((acc: any, order) => {
-    const vId = order.lot.varietyId;
+  const deliveryVarietyReport = deliveredOrders.map(order => {
     const lot = lots?.find(l => l.id === order.lotId);
     const varietyName = (lot as any)?.variety?.name || "N/A";
     const categoryName = (lot as any)?.category?.name || "N/A";
 
-    if (!acc[vId]) {
-      acc[vId] = { 
-        name: varietyName, 
-        category: categoryName,
-        orderCount: 0, 
-        totalQty: 0, 
-        totalAmount: 0,
-        totalAdvance: 0,
-        remainingBalance: 0
-      };
-    }
-    acc[vId].orderCount += 1;
-    acc[vId].totalQty += order.bookedQty;
-    acc[vId].totalAmount += Number(order.totalAmount);
-    acc[vId].totalAdvance += Number(order.advanceAmount);
-    acc[vId].remainingBalance += Number(order.remainingBalance);
-    return acc;
-  }, {}) || {});
+    return {
+      name: varietyName,
+      category: categoryName,
+      customerName: order.customerName,
+      phone: order.phone,
+      orderCount: 1,
+      totalQty: order.bookedQty,
+      totalAmount: Number(order.totalAmount)
+    };
+  });
 
-  const deliveryVillageReport = Object.values(deliveredOrders.reduce((acc: any, order) => {
-    const village = order.village || "Unknown";
-    if (!acc[village]) {
-      acc[village] = { 
-        village, 
-        orderCount: 0, 
-        totalQty: 0, 
-        totalAmount: 0,
-        paymentCollected: 0,
-        pendingBalance: 0
-      };
-    }
-    acc[village].orderCount += 1;
-    acc[village].totalQty += order.bookedQty;
-    acc[village].totalAmount += Number(order.totalAmount);
-    acc[village].paymentCollected += Number(order.advanceAmount);
-    acc[village].pendingBalance += Number(order.remainingBalance);
-    return acc;
-  }, {}) || {});
+  const deliveryVillageReport = deliveredOrders.map(order => {
+    return {
+      village: order.village || "Unknown",
+      customerName: order.customerName,
+      phone: order.phone,
+      orderCount: 1,
+      totalQty: order.bookedQty,
+      paymentCollected: Number(order.advanceAmount),
+      pendingBalance: Number(order.remainingBalance)
+    };
+  });
 
-  const deliveryCategoryReport = Object.values(deliveredOrders.reduce((acc: any, order) => {
-    const catId = (lots?.find(l => l.id === order.lotId) as any)?.categoryId;
-    const catName = (lots?.find(l => l.id === order.lotId) as any)?.category?.name || "Unknown";
-    if (!acc[catId]) {
-      acc[catId] = { 
-        name: catName, 
-        orderCount: 0, 
-        totalQty: 0, 
-        totalAmount: 0,
-        totalRevenue: 0
-      };
-    }
-    acc[catId].orderCount += 1;
-    acc[catId].totalQty += order.bookedQty;
-    acc[catId].totalAmount += Number(order.totalAmount);
-    acc[catId].totalRevenue += Number(order.totalAmount); // For delivered orders, total amount is the revenue
-    return acc;
-  }, {}) || {});
+  const deliveryCategoryReport = deliveredOrders.map(order => {
+    const lot = lots?.find(l => l.id === order.lotId);
+    const catName = (lot as any)?.category?.name || "Unknown";
+    return {
+      name: catName,
+      customerName: order.customerName,
+      phone: order.phone,
+      orderCount: 1,
+      totalQty: order.bookedQty,
+      totalRevenue: Number(order.totalAmount)
+    };
+  });
 
   const paymentSummary = Object.values(orders?.reduce((acc: any, order) => {
     const mode = order.paymentMode;
@@ -445,7 +422,7 @@ export default function ReportsPage() {
                     <p className="text-sm text-muted-foreground">Performance analysis per plant variety.</p>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => exportToPDF(deliveryVarietyReport, "Variety_Delivery_Report", ["Variety", "Category", "Orders", "Qty", "Total (₹)"], ["name", "category", "orderCount", "totalQty", "totalAmount"])}>
+                    <Button variant="outline" size="sm" onClick={() => exportToPDF(deliveryVarietyReport, "Variety_Delivery_Report", ["Variety", "Category", "Customer", "Phone", "Orders", "Qty", "Total (₹)"], ["name", "category", "customerName", "phone", "orderCount", "totalQty", "totalAmount"])}>
                       Download PDF
                     </Button>
                     <Button size="sm" onClick={() => exportToExcel(deliveryVarietyReport, "Variety_Delivery_Report")}>
@@ -459,6 +436,8 @@ export default function ReportsPage() {
                       <TableRow>
                         <TableHead>Variety Name</TableHead>
                         <TableHead>Category</TableHead>
+                        <TableHead>Customer</TableHead>
+                        <TableHead>Phone</TableHead>
                         <TableHead className="text-right">Orders</TableHead>
                         <TableHead className="text-right">Quantity</TableHead>
                         <TableHead className="text-right">Total Amount</TableHead>
@@ -469,6 +448,8 @@ export default function ReportsPage() {
                         <TableRow key={idx}>
                           <TableCell className="font-medium">{v.name}</TableCell>
                           <TableCell>{v.category}</TableCell>
+                          <TableCell>{v.customerName}</TableCell>
+                          <TableCell>{v.phone}</TableCell>
                           <TableCell className="text-right">{v.orderCount}</TableCell>
                           <TableCell className="text-right">{v.totalQty}</TableCell>
                           <TableCell className="text-right">₹{v.totalAmount.toLocaleString()}</TableCell>
@@ -488,7 +469,7 @@ export default function ReportsPage() {
                     <p className="text-sm text-muted-foreground">Delivery analysis by location.</p>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => exportToPDF(deliveryVillageReport, "Village_Delivery_Report", ["Village", "Orders", "Qty", "Collected (₹)", "Pending (₹)"], ["village", "orderCount", "totalQty", "paymentCollected", "pendingBalance"])}>
+                    <Button variant="outline" size="sm" onClick={() => exportToPDF(deliveryVillageReport, "Village_Delivery_Report", ["Village", "Customer", "Phone", "Orders", "Qty", "Collected (₹)", "Pending (₹)"], ["village", "customerName", "phone", "orderCount", "totalQty", "paymentCollected", "pendingBalance"])}>
                       Download PDF
                     </Button>
                     <Button size="sm" onClick={() => exportToExcel(deliveryVillageReport, "Village_Delivery_Report")}>
@@ -501,6 +482,8 @@ export default function ReportsPage() {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Village Name</TableHead>
+                        <TableHead>Customer</TableHead>
+                        <TableHead>Phone</TableHead>
                         <TableHead className="text-right">Orders</TableHead>
                         <TableHead className="text-right">Quantity</TableHead>
                         <TableHead className="text-right">Collected</TableHead>
@@ -511,6 +494,8 @@ export default function ReportsPage() {
                       {deliveryVillageReport.map((v: any, idx: number) => (
                         <TableRow key={idx}>
                           <TableCell className="font-medium">{v.village}</TableCell>
+                          <TableCell>{v.customerName}</TableCell>
+                          <TableCell>{v.phone}</TableCell>
                           <TableCell className="text-right">{v.orderCount}</TableCell>
                           <TableCell className="text-right">{v.totalQty}</TableCell>
                           <TableCell className="text-right text-green-600 font-bold">₹{v.paymentCollected.toLocaleString()}</TableCell>
@@ -531,7 +516,7 @@ export default function ReportsPage() {
                     <p className="text-sm text-muted-foreground">Revenue performance by product category.</p>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => exportToPDF(deliveryCategoryReport, "Category_Delivery_Report", ["Category", "Orders", "Qty", "Revenue (₹)"], ["name", "orderCount", "totalQty", "totalRevenue"])}>
+                    <Button variant="outline" size="sm" onClick={() => exportToPDF(deliveryCategoryReport, "Category_Delivery_Report", ["Category", "Customer", "Phone", "Orders", "Qty", "Revenue (₹)"], ["name", "customerName", "phone", "orderCount", "totalQty", "totalRevenue"])}>
                       Download PDF
                     </Button>
                     <Button size="sm" onClick={() => exportToExcel(deliveryCategoryReport, "Category_Delivery_Report")}>
@@ -544,6 +529,8 @@ export default function ReportsPage() {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Category Name</TableHead>
+                        <TableHead>Customer</TableHead>
+                        <TableHead>Phone</TableHead>
                         <TableHead className="text-right">Orders</TableHead>
                         <TableHead className="text-right">Quantity</TableHead>
                         <TableHead className="text-right">Total Revenue</TableHead>
@@ -553,6 +540,8 @@ export default function ReportsPage() {
                       {deliveryCategoryReport.map((v: any, idx: number) => (
                         <TableRow key={idx}>
                           <TableCell className="font-medium">{v.name}</TableCell>
+                          <TableCell>{v.customerName}</TableCell>
+                          <TableCell>{v.phone}</TableCell>
                           <TableCell className="text-right">{v.orderCount}</TableCell>
                           <TableCell className="text-right">{v.totalQty}</TableCell>
                           <TableCell className="text-right font-black text-primary">₹{v.totalRevenue.toLocaleString()}</TableCell>
