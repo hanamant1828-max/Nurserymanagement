@@ -6,6 +6,7 @@ import { format, isToday, parseISO } from "date-fns";
 import { motion } from "framer-motion";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { 
   BarChart, 
   Bar, 
