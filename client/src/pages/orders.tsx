@@ -548,6 +548,10 @@ export default function OrdersPage() {
                              <div className="space-y-0.5">
                                <p className="font-bold text-lg leading-tight text-foreground">{selectedLot.variety?.name}</p>
                                <p className="text-xs text-muted-foreground font-mono bg-muted/50 px-1.5 py-0.5 rounded inline-block">{selectedLot.lotNumber}</p>
+                               <div className="flex gap-3 mt-1 text-[11px] font-medium">
+                                 <span className="text-muted-foreground">Sowing: {selectedLot.sowingDate}</span>
+                                 <span className="text-primary">Expected Ready: {selectedLot.expectedReadyDate}</span>
+                               </div>
                              </div>
                            </div>
                            <div className="flex items-center gap-4">
