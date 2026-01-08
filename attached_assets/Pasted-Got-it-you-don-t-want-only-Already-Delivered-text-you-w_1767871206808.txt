@@ -1,0 +1,165 @@
+Got it 👍 — you **don’t want only “Already Delivered” text**, you want an **UNDO option** so the user can revert the order back from *Delivered*.
+
+Here is a clean **developer-friendly requirement** you can directly give to your tech team:
+
+---
+
+## 🔁 Feature: Undo Delivered (Revert Order Status)
+
+### 🎯 Objective
+
+When an order is marked as **Delivered**, the system should:
+✔ Keep the order visible
+✔ Show an **Undo option** instead of only “Already Delivered”
+✔ Allow reverting the status back to **Booked / Pending**
+
+---
+
+## ❌ Current Behavior
+
+* Order status becomes: `Delivered`
+* Card shows only: **“Already Delivered”**
+* User **cannot revert** the action
+
+---
+
+## ✅ Expected Behavior
+
+### 1️⃣ UI Behavior
+
+When order status = `Delivered`:
+
+Instead of:
+
+```
+Already Delivered
+```
+
+Show:
+
+```
+[ ✔ Delivered ]   [ Undo ]
+```
+
+OR
+
+```
+Undo Delivery
+```
+
+---
+
+### 2️⃣ Undo Action Logic
+
+When user clicks **Undo**:
+
+✔ Order status should change from:
+
+```
+Delivered → Booked
+```
+
+(or `Pending`, based on your business logic)
+
+✔ Order should:
+
+* Remain visible in the Orders list
+* Show the original action button again:
+
+```
+[ Mark Delivered ]
+```
+
+---
+
+## 🔄 Backend Logic
+
+### Mark Delivered
+
+```sql
+UPDATE Orders
+SET status = 'Delivered'
+WHERE order_id = @OrderId;
+```
+
+### Undo Delivered
+
+```sql
+UPDATE Orders
+SET status = 'Booked'
+WHERE order_id = @OrderId;
+```
+
+🚫 Do NOT delete the order
+🚫 Do NOT remove it from list views
+
+---
+
+## 🧪 Example Flow
+
+### Before:
+
+```
+Status: Booked
+Button: Mark Delivered
+```
+
+### After Clicking "Mark Delivered":
+
+```
+Status: Delivered
+Button: Undo
+```
+
+### After Clicking "Undo":
+
+```
+Status: Booked
+Button: Mark Delivered
+```
+
+---
+
+## 🔒 Optional Safety (Recommended)
+
+Add confirmation before undo:
+
+```
+"Are you sure you want to undo this delivery?"
+[Yes] [Cancel]
+```
+
+---
+
+## 🧑‍💻 Developer Notes
+
+* **Do not hard-disable** delivered records.
+* UI must be **state-driven based on order_status**.
+* Undo should be available only if:
+
+```
+order_status == 'Delivered'
+```
+
+---
+
+## 📌 Optional Enhancements
+
+* Log status changes:
+
+```
+Delivered → Booked (Undone by User X on Date)
+```
+
+* Role-based permission:
+
+  * Only Admin / Manager can Undo
+
+---
+
+If you want, I can also give:
+👉 Exact **API endpoints** (`/mark-delivered`, `/undo-delivered`)
+👉 Frontend **React / Angular / JS logic**
+👉 Or SQL + C# / Java / Python backend code
+
+Just tell me your tech stack.

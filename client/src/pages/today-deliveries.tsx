@@ -157,6 +157,24 @@ export default function TodayDeliveriesPage() {
     });
   };
 
+  const undoDelivery = (id: number) => {
+    update({ id, status: "BOOKED", deliveredQty: 0 }, {
+      onSuccess: () => {
+        toast({
+          title: "Undo Successful",
+          description: "The order has been reverted to Booked status.",
+        });
+      },
+      onError: (error: Error) => {
+        toast({
+          title: "Undo Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
+    });
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-8 animate-pulse">
@@ -521,9 +539,23 @@ export default function TodayDeliveriesPage() {
                             <CheckCircle className="w-4 h-4 mr-1.5" /> Delivered
                           </Button>
                         ) : (
-                          <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-200 h-8 px-3">
-                            <CheckCircle className="w-3.5 h-3.5 mr-1.5" /> Completed
-                          </Badge>
+                          <div className="flex gap-2">
+                            <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-200 h-8 px-3">
+                              <CheckCircle className="w-3.5 h-3.5 mr-1.5" /> Completed
+                            </Badge>
+                            <Button 
+                              size="sm" 
+                              variant="ghost" 
+                              className="h-8 text-muted-foreground hover:text-destructive"
+                              onClick={() => {
+                                if (confirm("Are you sure you want to undo this delivery?")) {
+                                  undoDelivery(order.id);
+                                }
+                              }}
+                            >
+                              Undo
+                            </Button>
+                          </div>
                         )}
                       </div>
                     </TableCell>

@@ -375,32 +375,30 @@ export default function OrdersPage() {
       onSuccess: () => {
         toast({
           title: "Order Delivered",
-          description: "The order has been marked as delivered.",
-          duration: 5000,
-          action: (
-            <Button 
-              variant="default" 
-              size="sm" 
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
-              onClick={() => {
-                update({ id, status: "BOOKED", deliveredQty: 0 }, {
-                  onSuccess: () => {
-                    toast({
-                      title: "Undo Successful",
-                      description: "The order has been restored to Booked status.",
-                    });
-                  }
-                });
-              }}
-            >
-              Undo
-            </Button>
-          ),
+          description: "The order has been successfully delivered.",
         });
       },
       onError: (error: Error) => {
         toast({
           title: "Update Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
+    });
+  };
+
+  const undoDelivery = (id: number) => {
+    update({ id, status: "BOOKED", deliveredQty: 0 }, {
+      onSuccess: () => {
+        toast({
+          title: "Undo Successful",
+          description: "The order has been reverted to Booked status.",
+        });
+      },
+      onError: (error: Error) => {
+        toast({
+          title: "Undo Failed",
           description: error.message,
           variant: "destructive",
         });
@@ -1076,9 +1074,23 @@ export default function OrdersPage() {
                             <CheckCircle className="w-4 h-4 mr-1.5" /> Delivered
                           </Button>
                         ) : order.status === 'DELIVERED' ? (
-                          <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200 h-8 px-3">
-                            <CheckCircle className="w-3.5 h-3.5 mr-1.5" /> Completed
-                          </Badge>
+                          <div className="flex gap-2">
+                            <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200 h-8 px-3">
+                              <CheckCircle className="w-3.5 h-3.5 mr-1.5" /> Completed
+                            </Badge>
+                            <Button 
+                              size="sm" 
+                              variant="ghost" 
+                              className="h-8 text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-all"
+                              onClick={() => {
+                                if (confirm("Are you sure you want to undo this delivery?")) {
+                                  undoDelivery(order.id);
+                                }
+                              }}
+                            >
+                              Undo
+                            </Button>
+                          </div>
                         ) : null}
                       </div>
                     </TableCell>
@@ -1254,13 +1266,27 @@ export default function OrdersPage() {
                         </Button>
                       </div>
                     ) : order.status === "DELIVERED" && (
-                      <Button 
-                        disabled
-                        size="lg"
-                        className="w-full font-black text-base h-12 rounded-xl bg-muted text-muted-foreground border-none"
-                      >
-                        <CheckCircle className="w-5 h-5 mr-2" /> Already Delivered
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button 
+                          disabled
+                          size="lg"
+                          className="flex-[3] font-black text-base h-12 rounded-xl bg-muted text-muted-foreground border-none"
+                        >
+                          <CheckCircle className="w-5 h-5 mr-2" /> Delivered
+                        </Button>
+                        <Button 
+                          size="lg"
+                          variant="outline"
+                          className="flex-1 font-bold h-12 rounded-xl border-destructive/20 text-destructive hover:bg-destructive/5"
+                          onClick={() => {
+                            if (confirm("Are you sure you want to undo this delivery?")) {
+                              undoDelivery(order.id);
+                            }
+                          }}
+                        >
+                          Undo
+                        </Button>
+                      </div>
                     )}
                   </div>
                 </CardContent>
