@@ -62,13 +62,16 @@ export default function VarietiesPage() {
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 15;
 
   const filteredVarietiesList = varieties?.filter(v => {
     const categoryName = categories?.find(c => c.id === v.categoryId)?.name || "";
-    return v.name.toLowerCase().includes(search.toLowerCase()) || 
-           categoryName.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = v.name.toLowerCase().includes(search.toLowerCase()) || 
+                         categoryName.toLowerCase().includes(search.toLowerCase());
+    const matchesCategory = selectedCategory === "all" || v.categoryId.toString() === selectedCategory;
+    return matchesSearch && matchesCategory;
   }) || [];
 
   const totalPages = Math.ceil(filteredVarietiesList.length / PAGE_SIZE);
@@ -141,10 +144,27 @@ export default function VarietiesPage() {
           <p className="text-muted-foreground">Manage specific plant varieties under categories.</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-4">
+          <Select value={selectedCategory} onValueChange={(val) => {
+            setSelectedCategory(val);
+            setCurrentPage(1);
+          }}>
+            <SelectTrigger className="w-full sm:w-64 bg-background">
+              <SelectValue placeholder="All Categories" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {categories?.filter(c => c.active).map(c => (
+                <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Input 
             placeholder="Search varieties or categories..." 
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full sm:w-64"
           />
           <Dialog open={open} onOpenChange={(val) => { setOpen(val); if(!val) resetForm(); }}>
