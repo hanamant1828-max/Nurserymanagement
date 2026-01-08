@@ -165,10 +165,18 @@ export default function OrdersPage() {
   const [pageVarietyId, setPageVarietyId] = useState<string>("all");
   const [pageLotId, setPageLotId] = useState<string>("all");
 
+  const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>(() => {
+    const from = new Date();
+    from.setDate(from.getDate() - 30);
+    const to = new Date();
+    to.setDate(to.getDate() + 30);
+    return { from, to };
+  });
+
   // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, pageCategoryId, pageVarietyId, pageLotId]);
+  }, [search, pageCategoryId, pageVarietyId, pageLotId, dateRange]);
 
   const sortedCategories = useMemo(() => {
     if (!categories) return [];
@@ -191,6 +199,11 @@ export default function OrdersPage() {
     const bookedOrders = orders.filter(o => o.status === "BOOKED");
 
     return bookedOrders.filter(o => {
+      // Date filter
+      const deliveryDate = new Date(o.deliveryDate);
+      const isWithinDateRange = deliveryDate >= dateRange.from && deliveryDate <= dateRange.to;
+      if (!isWithinDateRange) return false;
+
       const matchesSearch = !search || 
         o.customerName?.toLowerCase().includes(search.toLowerCase()) ||
         o.phone?.toLowerCase().includes(search.toLowerCase()) ||
@@ -216,7 +229,7 @@ export default function OrdersPage() {
 
       return true;
     });
-  }, [orders, search, lots, varieties, pageLotId, pageVarietyId, pageCategoryId]);
+  }, [orders, search, lots, varieties, pageLotId, pageVarietyId, pageCategoryId, dateRange]);
 
   const totalPages = Math.ceil(filteredOrdersList.length / itemsPerPage);
   const paginatedOrders = filteredOrdersList.slice(
@@ -661,104 +674,142 @@ export default function OrdersPage() {
         </div>
       </div>
 
-      <Card className="bg-muted/30 border-none shadow-none">
-        <CardContent className="p-4 flex flex-wrap gap-4 items-end">
-          <div className="space-y-1.5 flex-1 min-w-[200px]">
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">Category Filter</label>
-            <Select onValueChange={(val) => {
-              setPageCategoryId(val);
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 bg-muted/30 p-4 rounded-xl mb-8">
+        <div className="space-y-1.5">
+          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">From Date</label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-full justify-start text-left font-normal h-11 bg-background border-muted-foreground/20">
+                <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
+                {dateRange.from ? format(dateRange.from, "PPP") : <span>Pick a date</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={dateRange.from}
+                onSelect={(date) => date && setDateRange(prev => ({ ...prev, from: date }))}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">To Date</label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-full justify-start text-left font-normal h-11 bg-background border-muted-foreground/20">
+                <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
+                {dateRange.to ? format(dateRange.to, "PPP") : <span>Pick a date</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={dateRange.to}
+                onSelect={(date) => date && setDateRange(prev => ({ ...prev, to: date }))}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">Category Filter</label>
+          <Select onValueChange={(val) => {
+            setPageCategoryId(val);
+            setPageVarietyId("all");
+            setPageLotId("all");
+          }} value={pageCategoryId}>
+            <SelectTrigger className="h-11 bg-background border-muted-foreground/20">
+              <SelectValue placeholder="All Categories" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">
+                <span className="font-bold text-primary">All Categories</span>
+              </SelectItem>
+              {categories?.map(c => (
+                <SelectItem key={c.id} value={c.id.toString()}>
+                  <div className="flex items-center gap-3 py-1">
+                    {c.image ? (
+                      <img src={c.image} className="w-10 h-10 rounded-md object-cover border" alt="" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center border">
+                        <Layers className="w-5 h-5 text-muted-foreground/40" />
+                      </div>
+                    )}
+                    <span className="font-semibold text-base">{c.name}</span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">Variety Filter</label>
+          <Select 
+            onValueChange={(val) => {
+              setPageVarietyId(val);
+              setPageLotId("all");
+            }} 
+            value={pageVarietyId}
+            disabled={pageCategoryId === "all"}
+          >
+            <SelectTrigger className="h-11 bg-background border-muted-foreground/20">
+              <SelectValue placeholder="All Varieties" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">
+                <span className="text-base font-bold py-1">All Varieties</span>
+              </SelectItem>
+              {filteredVarietiesPage?.map(v => (
+                <SelectItem key={v.id} value={v.id.toString()}>
+                  <span className="text-base font-bold py-1">{v.name}</span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">Lot Filter</label>
+          <Select 
+            onValueChange={setPageLotId} 
+            value={pageLotId}
+            disabled={pageVarietyId === "all"}
+          >
+            <SelectTrigger className="h-11 bg-background border-muted-foreground/20">
+              <SelectValue placeholder="All Lots" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">
+                <span className="text-base font-bold py-1">All Lots</span>
+              </SelectItem>
+              {filteredLotsPage?.map(l => (
+                <SelectItem key={l.id} value={l.id.toString()}>
+                  <span className="text-base font-bold py-1">{l.lotNumber}</span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        
+        {(pageCategoryId !== "all" || pageVarietyId !== "all" || pageLotId !== "all") && (
+          <Button 
+            variant="ghost" 
+            onClick={() => {
+              setPageCategoryId("all");
               setPageVarietyId("all");
               setPageLotId("all");
-            }} value={pageCategoryId}>
-              <SelectTrigger className="h-11 bg-background border-muted-foreground/20">
-                <SelectValue placeholder="All Categories" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">
-                  <span className="font-bold text-primary">All Categories</span>
-                </SelectItem>
-                {categories?.map(c => (
-                  <SelectItem key={c.id} value={c.id.toString()}>
-                    <div className="flex items-center gap-3 py-1">
-                      {c.image ? (
-                        <img src={c.image} className="w-10 h-10 rounded-md object-cover border" alt="" />
-                      ) : (
-                        <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center border">
-                          <Layers className="w-5 h-5 text-muted-foreground/40" />
-                        </div>
-                      )}
-                      <span className="font-semibold text-base">{c.name}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-1.5 flex-1 min-w-[200px]">
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">Variety Filter</label>
-            <Select 
-              onValueChange={(val) => {
-                setPageVarietyId(val);
-                setPageLotId("all");
-              }} 
-              value={pageVarietyId}
-              disabled={pageCategoryId === "all"}
-            >
-              <SelectTrigger className="h-11 bg-background border-muted-foreground/20">
-                <SelectValue placeholder="All Varieties" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">
-                  <span className="text-base font-bold py-1">All Varieties</span>
-                </SelectItem>
-                {filteredVarietiesPage?.map(v => (
-                  <SelectItem key={v.id} value={v.id.toString()}>
-                    <span className="text-base font-bold py-1">{v.name}</span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-1.5 flex-1 min-w-[200px]">
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">Lot Filter</label>
-            <Select 
-              onValueChange={setPageLotId} 
-              value={pageLotId}
-              disabled={pageVarietyId === "all"}
-            >
-              <SelectTrigger className="h-11 bg-background border-muted-foreground/20">
-                <SelectValue placeholder="All Lots" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">
-                  <span className="text-base font-bold py-1">All Lots</span>
-                </SelectItem>
-                {filteredLotsPage?.map(l => (
-                  <SelectItem key={l.id} value={l.id.toString()}>
-                    <span className="text-base font-bold py-1">{l.lotNumber}</span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          
-          {(pageCategoryId !== "all" || pageVarietyId !== "all" || pageLotId !== "all") && (
-            <Button 
-              variant="ghost" 
-              onClick={() => {
-                setPageCategoryId("all");
-                setPageVarietyId("all");
-                setPageLotId("all");
-              }}
-              className="h-11 px-4 text-muted-foreground hover:text-foreground"
-            >
-              Clear Filters
-            </Button>
-          )}
-        </CardContent>
-      </Card>
+            }}
+            className="h-11 px-4 text-muted-foreground hover:text-foreground col-span-full lg:col-auto"
+          >
+            Clear Filters
+          </Button>
+        )}
+      </div>
 
       <div className="hidden md:block rounded-xl border bg-card shadow-sm overflow-hidden">
         <Table>
