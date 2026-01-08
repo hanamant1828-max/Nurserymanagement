@@ -269,8 +269,13 @@ export default function OrdersPage() {
   const selectedLot = lots?.find(l => l.id.toString() === selectedLotId);
   const selectedCategory = categories?.find(c => c.id === selectedLot?.categoryId);
   const unitPrice = selectedCategory ? Number(selectedCategory.pricePerUnit) : 0;
-  const totalAmount = bookedQty * unitPrice;
-  const remainingBalance = totalAmount - advanceAmount;
+  
+  // Recalculate based on current form values to ensure sync
+  const bookedQtyValue = form.watch("bookedQty") || 0;
+  const advanceAmountValue = form.watch("advanceAmount") || 0;
+  
+  const totalAmount = bookedQtyValue * unitPrice;
+  const remainingBalance = totalAmount - advanceAmountValue;
 
   const [editingOrder, setEditingOrder] = useState<any>(null);
 
@@ -741,11 +746,16 @@ export default function OrdersPage() {
                         </div>
                         <div className="flex justify-between items-center">
                           <span className="text-sm text-muted-foreground font-medium">Advance Paid</span>
-                          <span className="text-lg font-black text-emerald-600">- ₹{advanceAmount.toLocaleString()}</span>
+                          <span className="text-lg font-black text-emerald-600">- ₹{advanceAmountValue.toLocaleString()}</span>
                         </div>
                         <div className="border-t pt-2 mt-2 flex justify-between items-center">
                           <span className="text-base font-bold text-foreground">Remaining Balance</span>
-                          <span className="text-xl font-black text-destructive">₹{remainingBalance.toLocaleString()}</span>
+                          <span className={cn(
+                            "text-xl font-black",
+                            remainingBalance < 0 ? "text-destructive" : "text-primary"
+                          )}>
+                            ₹{remainingBalance.toLocaleString()}
+                          </span>
                         </div>
                       </div>
 
