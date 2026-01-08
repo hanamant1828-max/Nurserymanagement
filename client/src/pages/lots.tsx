@@ -27,13 +27,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Sprout, AlertTriangle, Eye, Calendar as CalendarIcon, Trash2, CheckCircle, Layers } from "lucide-react";
+import { Plus, Sprout, AlertTriangle, Eye, Calendar as CalendarIcon, Trash2, CheckCircle, Layers, CalendarDays } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
+import { format, subDays, isAfter, isBefore, startOfDay, endOfDay, parseISO } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { useToast } from "@/hooks/use-toast";
@@ -49,6 +49,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { DateRange } from "react-day-picker";
 
 // Schema for create lot form
 const formSchema = z.object({
@@ -78,6 +79,10 @@ export default function LotsPage() {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedVariety, setSelectedVariety] = useState<string>("all");
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: subDays(new Date(), 15),
+    to: new Date(),
+  });
 
   const filteredLotsList = lots?.filter(l => {
     const matchesSearch = search === "" || search === "all-lots" || 
@@ -88,7 +93,20 @@ export default function LotsPage() {
     const matchesCategory = selectedCategory === "all" || l.categoryId.toString() === selectedCategory;
     const matchesVariety = selectedVariety === "all" || l.varietyId.toString() === selectedVariety;
 
-    return matchesSearch && matchesCategory && matchesVariety;
+    // Date range filtering
+    let matchesDate = true;
+    if (dateRange?.from) {
+      const sowingDate = parseISO(l.sowingDate);
+      const start = startOfDay(dateRange.from);
+      matchesDate = isAfter(sowingDate, start) || sowingDate.getTime() === start.getTime();
+      
+      if (matchesDate && dateRange.to) {
+        const end = endOfDay(dateRange.to);
+        matchesDate = isBefore(sowingDate, end) || sowingDate.getTime() === end.getTime();
+      }
+    }
+
+    return matchesSearch && matchesCategory && matchesVariety && matchesDate;
   }) || [];
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -381,7 +399,7 @@ export default function LotsPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-muted/30 rounded-xl border border-border/50">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 p-4 bg-muted/30 rounded-xl border border-border/50">
         <div className="space-y-2">
           <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Category Filter</label>
           <Select value={selectedCategory} onValueChange={(val) => {
@@ -442,6 +460,41 @@ export default function LotsPage() {
               ))}
             </SelectContent>
           </Select>
+        </div>
+        <div className="space-y-2">
+          <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Sowing Date Range</label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={`w-full h-12 justify-start text-left font-normal bg-background ${!dateRange && "text-muted-foreground"}`}
+              >
+                <CalendarDays className="mr-2 h-4 w-4 opacity-50" />
+                {dateRange?.from ? (
+                  dateRange.to ? (
+                    <>
+                      {format(dateRange.from, "LLL dd, y")} -{" "}
+                      {format(dateRange.to, "LLL dd, y")}
+                    </>
+                  ) : (
+                    format(dateRange.from, "LLL dd, y")
+                  )
+                ) : (
+                  <span>Pick a date range</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="end">
+              <Calendar
+                initialFocus
+                mode="range"
+                defaultMonth={dateRange?.from}
+                selected={dateRange}
+                onSelect={setDateRange}
+                numberOfMonths={2}
+              />
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
 
