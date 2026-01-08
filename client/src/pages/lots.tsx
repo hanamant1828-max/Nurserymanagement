@@ -376,6 +376,32 @@ export default function LotsPage() {
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Update Damage / Loss</DialogTitle>
+                {(() => {
+                  const lot = lots?.find(l => l.id === selectedLotId);
+                  if (lot) {
+                    return (
+                      <div className="flex flex-col gap-1 mt-2 p-3 bg-muted/30 rounded-lg border border-border/50">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Lot Number:</span>
+                          <span className="font-mono font-medium">{lot.lotNumber}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Sown Quantity:</span>
+                          <span className="font-semibold">{lot.seedsSown}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Current Damage:</span>
+                          <span className="text-destructive font-medium">{lot.damaged}</span>
+                        </div>
+                        <div className="flex justify-between text-sm border-t border-border/50 pt-1 mt-1">
+                          <span className="text-muted-foreground">Available Stock:</span>
+                          <span className="text-primary font-bold">{lot.available}</span>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
               </DialogHeader>
               <Form {...damageForm}>
                 <form onSubmit={damageForm.handleSubmit(onSubmitDamage)} className="space-y-4">
