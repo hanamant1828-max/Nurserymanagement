@@ -240,32 +240,34 @@ export default function ReportsPage() {
       </div>
 
       <Tabs defaultValue="sowing" className="w-full">
-        <TabsList className="grid w-full grid-cols-8 mb-8">
-          <TabsTrigger value="sowing" className="flex items-center gap-2">
-            <Sprout className="w-4 h-4" /> Sowing
-          </TabsTrigger>
-          <TabsTrigger value="deliveries" className="flex items-center gap-2">
-            <Truck className="w-4 h-4" /> Pending
-          </TabsTrigger>
-          <TabsTrigger value="delivered" className="flex items-center gap-2">
-            <CheckCircle className="w-4 h-4" /> Delivered
-          </TabsTrigger>
-          <TabsTrigger value="delivery-reports" className="flex items-center gap-2">
-            <BarChart3 className="w-4 h-4" /> Delivery Stats
-          </TabsTrigger>
-          <TabsTrigger value="stock" className="flex items-center gap-2">
-            <ShoppingBag className="w-4 h-4" /> Stock
-          </TabsTrigger>
-          <TabsTrigger value="variety" className="flex items-center gap-2">
-            <BarChart3 className="w-4 h-4" /> Varieties
-          </TabsTrigger>
-          <TabsTrigger value="villages" className="flex items-center gap-2">
-            <Search className="w-4 h-4" /> Villages
-          </TabsTrigger>
-          <TabsTrigger value="payments" className="flex items-center gap-2">
-            <Search className="w-4 h-4" /> Payments
-          </TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto pb-2 scrollbar-hide">
+          <TabsList className="inline-flex w-auto min-w-full md:grid md:w-full md:grid-cols-8 mb-4">
+            <TabsTrigger value="sowing" className="flex items-center gap-2 whitespace-nowrap">
+              <Sprout className="w-4 h-4" /> <span className="hidden md:inline">Sowing</span><span className="md:hidden">Sow</span>
+            </TabsTrigger>
+            <TabsTrigger value="deliveries" className="flex items-center gap-2 whitespace-nowrap">
+              <Truck className="w-4 h-4" /> <span className="hidden md:inline">Pending</span><span className="md:hidden">Wait</span>
+            </TabsTrigger>
+            <TabsTrigger value="delivered" className="flex items-center gap-2 whitespace-nowrap">
+              <CheckCircle className="w-4 h-4" /> <span className="hidden md:inline">Delivered</span><span className="md:hidden">Done</span>
+            </TabsTrigger>
+            <TabsTrigger value="delivery-reports" className="flex items-center gap-2 whitespace-nowrap">
+              <BarChart3 className="w-4 h-4" /> <span className="hidden md:inline">Delivery Stats</span><span className="md:hidden">Stats</span>
+            </TabsTrigger>
+            <TabsTrigger value="stock" className="flex items-center gap-2 whitespace-nowrap">
+              <ShoppingBag className="w-4 h-4" /> <span className="hidden md:inline">Stock</span><span className="md:hidden">Inv</span>
+            </TabsTrigger>
+            <TabsTrigger value="variety" className="flex items-center gap-2 whitespace-nowrap">
+              <BarChart3 className="w-4 h-4" /> <span className="hidden md:inline">Varieties</span><span className="md:hidden">Var.</span>
+            </TabsTrigger>
+            <TabsTrigger value="villages" className="flex items-center gap-2 whitespace-nowrap">
+              <Search className="w-4 h-4" /> <span className="hidden md:inline">Villages</span><span className="md:hidden">Vill.</span>
+            </TabsTrigger>
+            <TabsTrigger value="payments" className="flex items-center gap-2 whitespace-nowrap">
+              <Search className="w-4 h-4" /> <span className="hidden md:inline">Payments</span><span className="md:hidden">Pay</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="sowing">
           <Card className="border-none shadow-md">
