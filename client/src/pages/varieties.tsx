@@ -148,24 +148,26 @@ export default function VarietiesPage() {
             setSelectedCategory(val);
             setCurrentPage(1);
           }}>
-            <SelectTrigger className="w-full sm:w-64 bg-background">
+            <SelectTrigger className="w-full sm:w-64 bg-background h-11">
               <SelectValue placeholder="All Categories" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
+              <SelectItem value="all" className="py-2.5">All Categories</SelectItem>
               {categories?.filter(c => c.active).map(c => (
-                <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
+                <SelectItem key={c.id} value={c.id.toString()} className="py-2.5">
+                  {c.name}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
           <Input 
-            placeholder="Search varieties or categories..." 
+            placeholder="Search varieties..." 
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full sm:w-64"
+            className="w-full sm:w-64 h-11"
           />
           <Dialog open={open} onOpenChange={(val) => { setOpen(val); if(!val) resetForm(); }}>
             <DialogTrigger asChild>
