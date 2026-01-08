@@ -399,7 +399,7 @@ export default function LotsPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 p-4 bg-muted/30 rounded-xl border border-border/50">
+      <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 p-4 bg-muted/30 rounded-xl border border-border/50">
         <div className="space-y-2">
           <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Category Filter</label>
           <Select value={selectedCategory} onValueChange={(val) => {
@@ -462,36 +462,45 @@ export default function LotsPage() {
           </Select>
         </div>
         <div className="space-y-2">
-          <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Sowing Date Range</label>
+          <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">From Date</label>
           <Popover>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                className={`w-full h-12 justify-start text-left font-normal bg-background ${!dateRange && "text-muted-foreground"}`}
+                className={`w-full h-12 justify-start text-left font-normal bg-background ${!dateRange?.from && "text-muted-foreground"}`}
               >
                 <CalendarDays className="mr-2 h-4 w-4 opacity-50" />
-                {dateRange?.from ? (
-                  dateRange.to ? (
-                    <>
-                      {format(dateRange.from, "LLL dd, y")} -{" "}
-                      {format(dateRange.to, "LLL dd, y")}
-                    </>
-                  ) : (
-                    format(dateRange.from, "LLL dd, y")
-                  )
-                ) : (
-                  <span>Pick a date range</span>
-                )}
+                {dateRange?.from ? format(dateRange.from, "LLL dd, y") : <span>From Date</span>}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="end">
+            <PopoverContent className="w-auto p-0" align="start">
               <Calendar
+                mode="single"
+                selected={dateRange?.from}
+                onSelect={(date) => setDateRange(prev => ({ ...prev, from: date }))}
                 initialFocus
-                mode="range"
-                defaultMonth={dateRange?.from}
-                selected={dateRange}
-                onSelect={setDateRange}
-                numberOfMonths={2}
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+        <div className="space-y-2">
+          <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">To Date</label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={`w-full h-12 justify-start text-left font-normal bg-background ${!dateRange?.to && "text-muted-foreground"}`}
+              >
+                <CalendarDays className="mr-2 h-4 w-4 opacity-50" />
+                {dateRange?.to ? format(dateRange.to, "LLL dd, y") : <span>To Date</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={dateRange?.to}
+                onSelect={(date) => setDateRange(prev => ({ ...prev, to: date }))}
+                initialFocus
               />
             </PopoverContent>
           </Popover>
