@@ -80,7 +80,8 @@ export default function LotsPage() {
   const [selectedVariety, setSelectedVariety] = useState<string>("all");
 
   const filteredLotsList = lots?.filter(l => {
-    const matchesSearch = l.lotNumber.toLowerCase().includes(search.toLowerCase()) ||
+    const matchesSearch = search === "" || search === "all-lots" || 
+      l.lotNumber.toLowerCase().includes(search.toLowerCase()) ||
       l.variety?.name.toLowerCase().includes(search.toLowerCase()) ||
       l.category?.name.toLowerCase().includes(search.toLowerCase());
     
@@ -419,7 +420,7 @@ export default function LotsPage() {
               <SelectValue placeholder="All Lots" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Lots</SelectItem>
+              <SelectItem value="all-lots">All Lots</SelectItem>
               {lots?.map(l => (
                 <SelectItem key={l.id} value={l.lotNumber}>{l.lotNumber}</SelectItem>
               ))}
