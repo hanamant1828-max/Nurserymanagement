@@ -253,6 +253,8 @@ export default function OrdersPage() {
   const selectedCategoryId = form.watch("categoryId");
   const selectedVarietyId = form.watch("varietyId");
   const selectedLotId = form.watch("lotId");
+  const bookedQty = form.watch("bookedQty") || 0;
+  const advanceAmount = form.watch("advanceAmount") || 0;
 
   const filteredVarieties = varieties?.filter(v => 
     !selectedCategoryId || v.categoryId.toString() === selectedCategoryId
@@ -265,6 +267,10 @@ export default function OrdersPage() {
   );
 
   const selectedLot = lots?.find(l => l.id.toString() === selectedLotId);
+  const selectedCategory = categories?.find(c => c.id === selectedLot?.categoryId);
+  const unitPrice = selectedCategory ? Number(selectedCategory.pricePerUnit) : 0;
+  const totalAmount = bookedQty * unitPrice;
+  const remainingBalance = totalAmount - advanceAmount;
 
   // Auto-set delivery date from lot's expected ready date
   useEffect(() => {
@@ -659,6 +665,21 @@ export default function OrdersPage() {
                             </FormItem>
                           )}
                         />
+                      </div>
+
+                      <div className="bg-muted/30 p-4 rounded-lg border-2 border-dashed space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-muted-foreground font-medium">Total Amount</span>
+                          <span className="text-lg font-black text-foreground">₹{totalAmount.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-muted-foreground font-medium">Advance Paid</span>
+                          <span className="text-lg font-black text-emerald-600">- ₹{advanceAmount.toLocaleString()}</span>
+                        </div>
+                        <div className="border-t pt-2 mt-2 flex justify-between items-center">
+                          <span className="text-base font-bold text-foreground">Remaining Balance</span>
+                          <span className="text-xl font-black text-destructive">₹{remainingBalance.toLocaleString()}</span>
+                        </div>
                       </div>
 
                       <div className="flex gap-4 pt-4">

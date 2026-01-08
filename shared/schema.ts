@@ -19,6 +19,7 @@ export const categories = pgTable("categories", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   image: text("image"), // Base64 string
+  pricePerUnit: decimal("price_per_unit").default("1.00").notNull(),
   active: boolean("active").default(true).notNull(),
 });
 
