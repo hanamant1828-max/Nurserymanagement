@@ -255,10 +255,13 @@ async function seedDatabase() {
               phone: `90000000${k}`,
               village: "Seeded Village",
               bookedQty: 5,
+              totalAmount: "500",
               advanceAmount: "100",
+              remainingBalance: "400",
               paymentMode: "Cash",
               deliveryDate: "2026-02-15",
-              status: "BOOKED"
+              status: "BOOKED",
+              paymentStatus: "Partially Paid"
             });
           }
         }
