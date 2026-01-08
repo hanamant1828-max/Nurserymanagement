@@ -74,12 +74,81 @@ export default function ReportsPage() {
   const dailySowingData = lots?.filter(l => isInRange(l.sowingDate)) || [];
   const pendingDeliveries = orders?.filter(o => o.status === "BOOKED" && isInRange(o.deliveryDate)) || [];
   const deliveredOrders = orders?.filter(o => o.status === "DELIVERED" && isInRange(o.deliveryDate)) || [];
-  const lotStockData = lots?.filter(l => isInRange(l.sowingDate)).map(l => ({
+  
+  // Delivery Report Data Processing
+  const deliveryVarietyReport = Object.values(deliveredOrders.reduce((acc: any, order) => {
+    const vId = order.lot.varietyId;
+    if (!acc[vId]) {
+      acc[vId] = { 
+        name: order.lot.variety.name, 
+        category: (lots?.find(l => l.id === order.lotId) as any)?.category?.name || "N/A",
+        orderCount: 0, 
+        totalQty: 0, 
+        totalAmount: 0,
+        totalAdvance: 0,
+        remainingBalance: 0
+      };
+    }
+    acc[vId].orderCount += 1;
+    acc[vId].totalQty += order.bookedQty;
+    acc[vId].totalAmount += Number(order.totalAmount);
+    acc[vId].totalAdvance += Number(order.advanceAmount);
+    acc[vId].remainingBalance += Number(order.remainingBalance);
+    return acc;
+  }, {}) || {});
+
+  const deliveryVillageReport = Object.values(deliveredOrders.reduce((acc: any, order) => {
+    const village = order.village || "Unknown";
+    if (!acc[village]) {
+      acc[village] = { 
+        village, 
+        orderCount: 0, 
+        totalQty: 0, 
+        totalAmount: 0,
+        paymentCollected: 0,
+        pendingBalance: 0
+      };
+    }
+    acc[village].orderCount += 1;
+    acc[village].totalQty += order.bookedQty;
+    acc[village].totalAmount += Number(order.totalAmount);
+    acc[village].paymentCollected += Number(order.advanceAmount);
+    acc[village].pendingBalance += Number(order.remainingBalance);
+    return acc;
+  }, {}) || {});
+
+  const deliveryCategoryReport = Object.values(deliveredOrders.reduce((acc: any, order) => {
+    const catId = (lots?.find(l => l.id === order.lotId) as any)?.categoryId;
+    const catName = (lots?.find(l => l.id === order.lotId) as any)?.category?.name || "Unknown";
+    if (!acc[catId]) {
+      acc[catId] = { 
+        name: catName, 
+        orderCount: 0, 
+        totalQty: 0, 
+        totalAmount: 0,
+        totalRevenue: 0
+      };
+    }
+    acc[catId].orderCount += 1;
+    acc[catId].totalQty += order.bookedQty;
+    acc[catId].totalAmount += Number(order.totalAmount);
+    acc[catId].totalRevenue += Number(order.totalAmount); // For delivered orders, total amount is the revenue
+    return acc;
+  }, {}) || {});
+
+  const paymentSummary = Object.values(orders?.reduce((acc: any, order) => {
+    const mode = order.paymentMode;
+    if (!acc[mode]) acc[mode] = { mode, count: 0, totalAdvance: 0 };
+    acc[mode].count += 1;
+    acc[mode].totalAdvance += Number(order.advanceAmount);
+    return acc;
+  }, {}) || {});
+
+  const lotStockData = lots?.map(l => ({
     ...l,
-    available: (l as any).available || 0
+    available: l.available || 0
   })) || [];
 
-  // New Report Data Processing
   const varietyPerformance = Object.values(lots?.reduce((acc: any, lot) => {
     const vId = lot.varietyId;
     if (!acc[vId]) acc[vId] = { name: lot.variety.name, sown: 0, damaged: 0, available: 0 };
@@ -94,14 +163,6 @@ export default function ReportsPage() {
     if (!acc[village]) acc[village] = { village, orderCount: 0, totalQty: 0 };
     acc[village].orderCount += 1;
     acc[village].totalQty += order.bookedQty;
-    return acc;
-  }, {}) || {});
-
-  const paymentSummary = Object.values(orders?.reduce((acc: any, order) => {
-    const mode = order.paymentMode;
-    if (!acc[mode]) acc[mode] = { mode, count: 0, totalAdvance: 0 };
-    acc[mode].count += 1;
-    acc[mode].totalAdvance += Number(order.advanceAmount);
     return acc;
   }, {}) || {});
 
@@ -197,7 +258,7 @@ export default function ReportsPage() {
       </div>
 
       <Tabs defaultValue="sowing" className="w-full">
-        <TabsList className="grid w-full grid-cols-7 mb-8">
+        <TabsList className="grid w-full grid-cols-8 mb-8">
           <TabsTrigger value="sowing" className="flex items-center gap-2">
             <Sprout className="w-4 h-4" /> Sowing
           </TabsTrigger>
@@ -206,6 +267,9 @@ export default function ReportsPage() {
           </TabsTrigger>
           <TabsTrigger value="delivered" className="flex items-center gap-2">
             <CheckCircle className="w-4 h-4" /> Delivered
+          </TabsTrigger>
+          <TabsTrigger value="delivery-reports" className="flex items-center gap-2">
+            <BarChart3 className="w-4 h-4" /> Delivery Stats
           </TabsTrigger>
           <TabsTrigger value="stock" className="flex items-center gap-2">
             <ShoppingBag className="w-4 h-4" /> Stock
@@ -358,6 +422,131 @@ export default function ReportsPage() {
               </Table>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="delivery-reports">
+          <div className="space-y-6">
+            <Card className="border-none shadow-md">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Variety-wise Delivery Report</CardTitle>
+                  <p className="text-sm text-muted-foreground">Performance analysis per plant variety.</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => exportToPDF(deliveryVarietyReport, "Variety_Delivery_Report", ["Variety", "Category", "Orders", "Qty", "Total (₹)"], ["name", "category", "orderCount", "totalQty", "totalAmount"])}>
+                    Download PDF
+                  </Button>
+                  <Button size="sm" onClick={() => exportToExcel(deliveryVarietyReport, "Variety_Delivery_Report")}>
+                    <FileSpreadsheet className="w-4 h-4 mr-2" /> Export Excel
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Variety Name</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead className="text-right">Orders</TableHead>
+                      <TableHead className="text-right">Quantity</TableHead>
+                      <TableHead className="text-right">Total Amount</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {deliveryVarietyReport.map((v: any, idx: number) => (
+                      <TableRow key={idx}>
+                        <TableCell className="font-medium">{v.name}</TableCell>
+                        <TableCell>{v.category}</TableCell>
+                        <TableCell className="text-right">{v.orderCount}</TableCell>
+                        <TableCell className="text-right">{v.totalQty}</TableCell>
+                        <TableCell className="text-right">₹{v.totalAmount.toLocaleString()}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+
+            <Card className="border-none shadow-md">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Village-wise Delivery Report</CardTitle>
+                  <p className="text-sm text-muted-foreground">Delivery analysis by location.</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => exportToPDF(deliveryVillageReport, "Village_Delivery_Report", ["Village", "Orders", "Qty", "Collected (₹)", "Pending (₹)"], ["village", "orderCount", "totalQty", "paymentCollected", "pendingBalance"])}>
+                    Download PDF
+                  </Button>
+                  <Button size="sm" onClick={() => exportToExcel(deliveryVillageReport, "Village_Delivery_Report")}>
+                    <FileSpreadsheet className="w-4 h-4 mr-2" /> Export Excel
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Village Name</TableHead>
+                      <TableHead className="text-right">Orders</TableHead>
+                      <TableHead className="text-right">Quantity</TableHead>
+                      <TableHead className="text-right">Collected</TableHead>
+                      <TableHead className="text-right">Pending Balance</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {deliveryVillageReport.map((v: any, idx: number) => (
+                      <TableRow key={idx}>
+                        <TableCell className="font-medium">{v.village}</TableCell>
+                        <TableCell className="text-right">{v.orderCount}</TableCell>
+                        <TableCell className="text-right">{v.totalQty}</TableCell>
+                        <TableCell className="text-right text-green-600 font-bold">₹{v.paymentCollected.toLocaleString()}</TableCell>
+                        <TableCell className="text-right text-destructive font-bold">₹{v.pendingBalance.toLocaleString()}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+
+            <Card className="border-none shadow-md">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Category-wise Delivery Report</CardTitle>
+                  <p className="text-sm text-muted-foreground">Revenue performance by product category.</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => exportToPDF(deliveryCategoryReport, "Category_Delivery_Report", ["Category", "Orders", "Qty", "Revenue (₹)"], ["name", "orderCount", "totalQty", "totalRevenue"])}>
+                    Download PDF
+                  </Button>
+                  <Button size="sm" onClick={() => exportToExcel(deliveryCategoryReport, "Category_Delivery_Report")}>
+                    <FileSpreadsheet className="w-4 h-4 mr-2" /> Export Excel
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Category Name</TableHead>
+                      <TableHead className="text-right">Orders</TableHead>
+                      <TableHead className="text-right">Quantity</TableHead>
+                      <TableHead className="text-right">Total Revenue</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {deliveryCategoryReport.map((v: any, idx: number) => (
+                      <TableRow key={idx}>
+                        <TableCell className="font-medium">{v.name}</TableCell>
+                        <TableCell className="text-right">{v.orderCount}</TableCell>
+                        <TableCell className="text-right">{v.totalQty}</TableCell>
+                        <TableCell className="text-right font-black text-primary">₹{v.totalRevenue.toLocaleString()}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="stock">
