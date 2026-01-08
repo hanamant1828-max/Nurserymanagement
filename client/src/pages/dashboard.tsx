@@ -39,6 +39,9 @@ export default function Dashboard() {
     o.status === 'BOOKED' && 
     o.deliveryDate === format(today, 'yyyy-MM-dd')
   ).length || 0;
+
+  const totalRevenue = orders?.filter(o => o.status === 'DELIVERED')
+    .reduce((sum, o) => sum + Number(o.totalAmount), 0) || 0;
   
   // Upcoming deliveries (next 7 days)
   const upcomingDeliveries = orders?.filter(o => {
@@ -63,6 +66,13 @@ export default function Dashboard() {
       icon: Truck, 
       color: "text-blue-600",
       bg: "bg-blue-100"
+    },
+    { 
+      label: "Total Revenue", 
+      value: `₹${totalRevenue.toLocaleString()}`, 
+      icon: TrendingUp, 
+      color: "text-emerald-600",
+      bg: "bg-emerald-100"
     },
     { 
       label: "Pending Orders", 
@@ -114,21 +124,22 @@ export default function Dashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {stats.map((stat, idx) => (
           <motion.div 
             key={stat.label}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.1 }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: idx * 0.05 }}
           >
-            <Card className="border-none shadow-lg shadow-black/5 hover:shadow-xl transition-all duration-300 group">
-              <CardContent className="p-6 flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">{stat.label}</p>
-                  <h3 className="text-3xl font-bold font-display tracking-tight">{stat.value}</h3>
+            <Card className="border-none shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden relative group">
+              <div className={cn("absolute inset-0 opacity-5 transition-opacity group-hover:opacity-10", stat.bg)} />
+              <CardContent className="p-5 flex items-center justify-between relative z-10">
+                <div className="space-y-1">
+                  <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">{stat.label}</p>
+                  <h3 className="text-2xl font-black font-display tracking-tight text-foreground">{stat.value}</h3>
                 </div>
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform duration-300`}>
+                <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm group-hover:rotate-12 transition-all duration-300", stat.bg, stat.color)}>
                   {stat.icon && <stat.icon className="w-6 h-6" />}
                 </div>
               </CardContent>
@@ -138,29 +149,28 @@ export default function Dashboard() {
       </div>
 
       {/* Quick Navigation */}
-      <Card className="border-none shadow-md overflow-hidden bg-muted/30">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <LayoutDashboard className="w-5 h-5 text-primary" />
-            Quick Navigation
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
-            {navButtons.map((btn) => (
-              <Link key={btn.href} href={btn.href}>
-                <Button 
-                  variant="outline" 
-                  className="w-full h-auto py-4 flex flex-col gap-2 hover-elevate bg-background border-none shadow-sm"
-                >
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
+        {navButtons.map((btn, idx) => (
+          <motion.div
+            key={btn.href}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 + (idx * 0.03) }}
+          >
+            <Link href={btn.href}>
+              <Button 
+                variant="outline" 
+                className="w-full h-auto py-5 flex flex-col gap-2.5 hover-elevate active-elevate-2 bg-card border-2 border-transparent hover:border-primary/10 shadow-sm rounded-2xl"
+              >
+                <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
                   <btn.icon className="w-5 h-5 text-primary" />
-                  <span className="text-xs font-medium">{btn.label}</span>
-                </Button>
-              </Link>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+                </div>
+                <span className="text-xs font-bold tracking-tight">{btn.label}</span>
+              </Button>
+            </Link>
+          </motion.div>
+        ))}
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Chart Section */}
@@ -196,36 +206,51 @@ export default function Dashboard() {
         </Card>
 
         {/* Upcoming Deliveries List */}
-        <Card className="border-none shadow-md">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="w-5 h-5 text-accent" />
-              Next Deliveries
+        <Card className="border-none shadow-md overflow-hidden flex flex-col">
+          <CardHeader className="border-b bg-muted/10">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Clock className="w-4 h-4 text-orange-500" />
+              Upcoming Deliveries
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-0">
+          <CardContent className="p-0 flex-1">
             {upcomingDeliveries.length > 0 ? (
-              <div className="divide-y divide-border">
-                {upcomingDeliveries.slice(0, 5).map(order => (
-                  <div key={order.id} className="p-4 hover:bg-muted/30 transition-colors flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-sm">{order.customerName}</p>
-                      <p className="text-xs text-muted-foreground">{(order as any).lot?.variety?.name || "Unknown"} • {order.bookedQty || 0} qty</p>
+              <div className="divide-y divide-border/50">
+                {upcomingDeliveries.slice(0, 6).map(order => (
+                  <div key={order.id} className="p-4 hover:bg-muted/30 transition-colors flex items-center justify-between group">
+                    <div className="min-w-0">
+                      <p className="font-bold text-sm truncate">{order.customerName}</p>
+                      <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider truncate">
+                        {(order as any).lot?.variety?.name || "Unknown"}
+                      </p>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm font-bold text-primary">{order.deliveryDate ? format(parseISO(order.deliveryDate), 'MMM d') : "N/A"}</p>
-                      <p className="text-xs text-muted-foreground">Lot #{(order as any).lot?.lotNumber || "N/A"}</p>
+                    <div className="text-right shrink-0">
+                      <p className="text-sm font-black text-primary">
+                        {order.deliveryDate ? format(parseISO(order.deliveryDate), 'dd MMM') : "N/A"}
+                      </p>
+                      <p className="text-[10px] font-mono text-muted-foreground bg-muted px-1 rounded">
+                        #{order.id}
+                      </p>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="p-8 text-center text-muted-foreground text-sm flex flex-col items-center">
-                <AlertCircle className="w-8 h-8 mb-2 opacity-50" />
-                No deliveries scheduled for the next 7 days.
+              <div className="h-full flex flex-col items-center justify-center p-8 text-center text-muted-foreground opacity-60">
+                <AlertCircle className="w-10 h-10 mb-2" />
+                <p className="text-sm font-medium">No deliveries scheduled soon</p>
               </div>
             )}
           </CardContent>
+          {upcomingDeliveries.length > 0 && (
+            <div className="p-3 bg-muted/10 border-t">
+              <Link href="/orders">
+                <Button variant="ghost" size="sm" className="w-full text-xs font-bold text-primary hover:bg-primary/5">
+                  View All Orders
+                </Button>
+              </Link>
+            </div>
+          )}
         </Card>
       </div>
     </div>
