@@ -272,13 +272,34 @@ export default function OrdersPage() {
   const totalAmount = bookedQty * unitPrice;
   const remainingBalance = totalAmount - advanceAmount;
 
+  const [editingOrder, setEditingOrder] = useState<any>(null);
+
   // Auto-set delivery date from lot's expected ready date
   useEffect(() => {
-    if (selectedLot?.expectedReadyDate) {
+    if (selectedLot?.expectedReadyDate && !editingOrder) {
       form.setValue("deliveryDate", new Date(selectedLot.expectedReadyDate));
     }
-  }, [selectedLotId, selectedLot?.expectedReadyDate, form]);
+  }, [selectedLotId, selectedLot?.expectedReadyDate, form, editingOrder]);
 
+  // Handle editing order
+  useEffect(() => {
+    if (editingOrder) {
+      form.reset({
+        categoryId: lots?.find(l => l.id === editingOrder.lotId)?.categoryId.toString(),
+        varietyId: lots?.find(l => l.id === editingOrder.lotId)?.varietyId.toString(),
+        lotId: editingOrder.lotId.toString(),
+        customerName: editingOrder.customerName,
+        phone: editingOrder.phone,
+        village: editingOrder.village || "",
+        bookedQty: editingOrder.bookedQty,
+        advanceAmount: Number(editingOrder.advanceAmount),
+        paymentMode: editingOrder.paymentMode as any,
+        deliveryDate: new Date(editingOrder.deliveryDate),
+      });
+      setStep(2);
+      setOpen(true);
+    }
+  }, [editingOrder, lots, form]);
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     if (selectedLot && data.bookedQty > selectedLot.available) {
@@ -297,16 +318,34 @@ export default function OrdersPage() {
       deliveryDate: format(data.deliveryDate, "yyyy-MM-dd"),
     };
 
-    create(payload, { 
-      onSuccess: () => { 
-        setOpen(false); 
-        form.reset(); 
-        setStep(1); 
-      } 
-    });
+    if (editingOrder) {
+      update({ id: editingOrder.id, ...payload }, {
+        onSuccess: () => {
+          setOpen(false);
+          setEditingOrder(null);
+          form.reset();
+          setStep(1);
+          toast({
+            title: "Order Updated",
+            description: "The order has been successfully updated.",
+          });
+        }
+      });
+    } else {
+      create(payload, { 
+        onSuccess: () => { 
+          setOpen(false); 
+          form.reset(); 
+          setStep(1); 
+        } 
+      });
+    }
   };
 
   const markDelivered = (id: number) => {
+    const confirm = window.confirm("Are you sure you want to mark this order as delivered?");
+    if (!confirm) return;
+
     // Trigger confetti immediately for better UX
     confetti({
       particleCount: 150,
@@ -319,9 +358,17 @@ export default function OrdersPage() {
       onSuccess: () => {
         toast({
           title: "Order Delivered",
-          description: "The order has been successfully marked as delivered.",
+          description: "The order has been marked as delivered.",
+          action: (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => update({ id, status: "BOOKED", deliveredQty: 0 })}
+            >
+              Undo
+            </Button>
+          ),
         });
-        // Count will automatically update because orders are re-fetched on success
       },
       onError: (error: Error) => {
         toast({
@@ -382,7 +429,14 @@ export default function OrdersPage() {
             onChange={(e) => setSearch(e.target.value)}
             className="w-full sm:w-64"
           />
-          <Dialog open={open} onOpenChange={(v) => { setOpen(v); if(!v) setOpen(false); }}>
+          <Dialog open={open} onOpenChange={(v) => { 
+            setOpen(v); 
+            if(!v) {
+              setEditingOrder(null);
+              form.reset();
+              setStep(1);
+            }
+          }}>
             <DialogTrigger asChild>
               <Button size="lg" className="shadow-lg shadow-primary/20">
                 <Plus className="w-5 h-5 mr-2" /> Book Order
@@ -1094,13 +1148,23 @@ export default function OrdersPage() {
                     </div>
 
                     {order.status === "BOOKED" && (
-                      <Button 
-                        size="lg"
-                        onClick={() => markDelivered(order.id)}
-                        className="w-full mt-2 font-black text-base h-12 rounded-xl shadow-md shadow-emerald-500/20 bg-emerald-600 hover:bg-emerald-700 active-elevate-2"
-                      >
-                        <CheckCircle className="w-5 h-5 mr-2" /> Mark Delivered
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="lg"
+                          className="flex-1 font-bold h-12 rounded-xl"
+                          onClick={() => setEditingOrder(order)}
+                        >
+                          Edit
+                        </Button>
+                        <Button 
+                          size="lg"
+                          onClick={() => markDelivered(order.id)}
+                          className="flex-[2] font-black text-base h-12 rounded-xl shadow-md shadow-emerald-500/20 bg-emerald-600 hover:bg-emerald-700 active-elevate-2"
+                        >
+                          <CheckCircle className="w-5 h-5 mr-2" /> Mark Delivered
+                        </Button>
+                      </div>
                     )}
                   </div>
                 </CardContent>
