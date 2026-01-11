@@ -119,7 +119,11 @@ function SearchableSelect({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[calc(100vw-2rem)] sm:w-[--radix-popover-trigger-width] p-0" align="start" sideOffset={4}>
+      <PopoverContent 
+        className="w-[calc(100vw-2rem)] sm:w-[--radix-popover-trigger-width] p-0" 
+        align="start" 
+        sideOffset={4}
+      >
         <Command filter={(value, search) => {
           const option = options.find(opt => opt.id.toString() === value);
           if (!option) return 0;
@@ -132,7 +136,7 @@ function SearchableSelect({
           
           return matches ? 1 : 0;
         }}>
-          <CommandInput placeholder={`Search ${placeholder.toLowerCase()}...`} />
+          <CommandInput placeholder={`Search ${placeholder.toLowerCase()}...`} autoFocus />
           <CommandList className="max-h-[300px] overflow-y-auto">
             <CommandEmpty>{emptyText}</CommandEmpty>
             <CommandGroup>
@@ -895,83 +899,97 @@ export default function OrdersPage() {
 
         <div className="space-y-1.5">
           <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">Category Filter</label>
-          <Select onValueChange={(val) => {
-            setPageCategoryId(val);
-            setPageVarietyId("all");
-            setPageLotId("all");
-          }} value={pageCategoryId}>
-            <SelectTrigger className="h-11 bg-background border-muted-foreground/20">
-              <SelectValue placeholder="All Categories" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">
-                <span className="font-bold text-primary">All Categories</span>
-              </SelectItem>
-              {categories?.map(c => (
-                <SelectItem key={c.id} value={c.id.toString()}>
-                  <div className="flex items-center gap-3 py-1">
-                    {c.image ? (
-                      <img src={c.image} className="w-10 h-10 rounded-md object-cover border" alt="" />
-                    ) : (
-                      <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center border">
-                        <Layers className="w-5 h-5 text-muted-foreground/40" />
-                      </div>
-                    )}
-                    <span className="font-semibold text-base">{c.name}</span>
+          <SearchableSelect
+            options={[{ id: "all", name: "All Categories" }, ...(categories || [])]}
+            value={pageCategoryId}
+            onValueChange={(val) => {
+              setPageCategoryId(val);
+              setPageVarietyId("all");
+              setPageLotId("all");
+            }}
+            placeholder="All Categories"
+            searchFields={["name"]}
+            renderItem={(c) => (
+              <div className="flex items-center gap-3 py-1">
+                {c.id === "all" ? (
+                  <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center border border-primary/20">
+                    <Layers className="w-4 h-4 text-primary" />
                   </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+                ) : c.image ? (
+                  <img src={c.image} className="w-8 h-8 rounded-md object-cover border" alt="" />
+                ) : (
+                  <div className="w-8 h-8 rounded-md bg-muted flex items-center justify-center border">
+                    <Layers className="w-4 h-4 text-muted-foreground/40" />
+                  </div>
+                )}
+                <span className={cn("text-sm", c.id === "all" ? "font-bold text-primary" : "font-semibold")}>
+                  {c.name}
+                </span>
+              </div>
+            )}
+          />
         </div>
 
         <div className="space-y-1.5">
           <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">Variety Filter</label>
-          <Select 
+          <SearchableSelect
+            options={[{ id: "all", name: "All Varieties" }, ...(filteredVarietiesPage || [])]}
+            value={pageVarietyId}
             onValueChange={(val) => {
               setPageVarietyId(val);
               setPageLotId("all");
-            }} 
-            value={pageVarietyId}
+            }}
+            placeholder="All Varieties"
             disabled={pageCategoryId === "all"}
-          >
-            <SelectTrigger className="h-11 bg-background border-muted-foreground/20">
-              <SelectValue placeholder="All Varieties" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">
-                <span className="text-base font-bold py-1">All Varieties</span>
-              </SelectItem>
-              {filteredVarietiesPage?.map(v => (
-                <SelectItem key={v.id} value={v.id.toString()}>
-                  <span className="text-base font-bold py-1">{v.name}</span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            searchFields={["name"]}
+            renderItem={(v) => (
+              <div className="flex items-center gap-3 py-1">
+                {v.id === "all" ? (
+                  <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center border border-primary/20">
+                    <Layers className="w-4 h-4 text-primary" />
+                  </div>
+                ) : (
+                  <div className="w-8 h-8 rounded-md bg-muted flex items-center justify-center border">
+                    <Layers className="w-4 h-4 text-muted-foreground/40" />
+                  </div>
+                )}
+                <span className={cn("text-sm", v.id === "all" ? "font-bold text-primary" : "font-semibold")}>
+                  {v.name}
+                </span>
+              </div>
+            )}
+          />
         </div>
 
         <div className="space-y-1.5">
           <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">Lot Filter</label>
-          <Select 
-            onValueChange={setPageLotId} 
+          <SearchableSelect
+            options={[{ id: "all", name: "All Lots", lotNumber: "All Lots" }, ...(filteredLotsPage || [])]}
             value={pageLotId}
+            onValueChange={(val) => setPageLotId(val)}
+            placeholder="All Lots"
             disabled={pageVarietyId === "all"}
-          >
-            <SelectTrigger className="h-11 bg-background border-muted-foreground/20">
-              <SelectValue placeholder="All Lots" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">
-                <span className="text-base font-bold py-1">All Lots</span>
-              </SelectItem>
-              {filteredLotsPage?.map(l => (
-                <SelectItem key={l.id} value={l.id.toString()}>
-                  <span className="text-base font-bold py-1">{l.lotNumber}</span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            searchFields={["lotNumber"]}
+            renderItem={(l) => (
+              <div className="flex items-center gap-3 py-1">
+                {l.id === "all" ? (
+                  <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center border border-primary/20">
+                    <Layers className="w-4 h-4 text-primary" />
+                  </div>
+                ) : (
+                  <div className="w-8 h-8 rounded-md bg-muted flex items-center justify-center border">
+                    <Layers className="w-4 h-4 text-muted-foreground/40" />
+                  </div>
+                )}
+                <div className="flex flex-col">
+                  <span className={cn("text-sm leading-tight", l.id === "all" ? "font-bold text-primary" : "font-semibold")}>
+                    {l.id === "all" ? l.name : l.lotNumber}
+                  </span>
+                  {l.id !== "all" && <span className="text-[10px] text-muted-foreground">Stock: {l.available}</span>}
+                </div>
+              </div>
+            )}
+          />
         </div>
         
         {(pageCategoryId !== "all" || pageVarietyId !== "all" || pageLotId !== "all") && (
