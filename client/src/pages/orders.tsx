@@ -1274,6 +1274,8 @@ export default function OrdersPage() {
               <TableHead>Plant Details</TableHead>
               <TableHead>Taken By</TableHead>
               <TableHead className="text-right">Qty</TableHead>
+              <TableHead className="text-right">Rate</TableHead>
+              <TableHead className="text-right">Total</TableHead>
               <TableHead>Delivery Date</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -1335,6 +1337,8 @@ export default function OrdersPage() {
                     })()}
                   </TableCell>
                     <TableCell className="text-right font-black text-primary">{order.bookedQty}</TableCell>
+                    <TableCell className="text-right font-medium">₹{Number(order.perUnitPrice).toLocaleString()}</TableCell>
+                    <TableCell className="text-right font-black">₹{Number(order.totalAmount).toLocaleString()}</TableCell>
                     <TableCell className="text-sm font-medium">{format(new Date(order.deliveryDate), "dd MMM yyyy")}</TableCell>
                     <TableCell>
                       <Badge variant={order.status === 'DELIVERED' ? 'secondary' : order.status === 'CANCELLED' ? 'destructive' : 'default'} className={order.status === 'DELIVERED' ? 'bg-green-100 text-green-700 border-green-200' : ''}>
@@ -1513,9 +1517,13 @@ export default function OrdersPage() {
                         </div>
                       )}
                       <div className="flex-1">
-                        <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Variety & Lot</p>
+                        <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Category & Variety</p>
+                        <p className="text-[10px] font-bold text-primary truncate uppercase">{category?.name}</p>
                         <p className="font-bold text-sm leading-tight">{variety?.name}</p>
-                        <p className="text-xs font-mono text-muted-foreground bg-muted inline-block px-1 rounded">{lot?.lotNumber}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-xs font-mono text-muted-foreground bg-muted px-1 rounded">{lot?.lotNumber}</span>
+                          <span className="text-xs font-bold text-primary">₹{Number(order.perUnitPrice).toLocaleString()}/unit</span>
+                        </div>
                       </div>
                       <div className="text-right">
                         <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Qty</p>
@@ -1527,13 +1535,18 @@ export default function OrdersPage() {
                       <div className="space-y-1">
                         <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Delivery Date</p>
                         <p className="text-sm font-bold">{format(new Date(order.deliveryDate), "dd MMM yyyy")}</p>
+                        {order.village && (
+                          <p className="text-[10px] text-muted-foreground truncate italic">{order.village}</p>
+                        )}
                       </div>
-                      {order.village && (
-                        <div className="space-y-1 text-right">
-                          <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Village</p>
-                          <p className="text-sm font-medium text-muted-foreground truncate italic">{order.village}</p>
+                      <div className="space-y-1 text-right">
+                        <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Payment Details</p>
+                        <p className="text-base font-black text-emerald-600 leading-none">Total: ₹{Number(order.totalAmount).toLocaleString()}</p>
+                        <div className="flex flex-col text-[9px] font-bold mt-1">
+                          <span className="text-blue-600 leading-tight">Adv: ₹{Number(order.advanceAmount).toLocaleString()}</span>
+                          <span className="text-amber-600 leading-tight">Bal: ₹{Number(order.remainingBalance).toLocaleString()}</span>
                         </div>
-                      )}
+                      </div>
                     </div>
 
                     {order.status === "BOOKED" ? (

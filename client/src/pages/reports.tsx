@@ -383,7 +383,9 @@ export default function ReportsPage() {
                   <TableRow>
                     <TableHead>Customer</TableHead>
                     <TableHead>Lot</TableHead>
-                    <TableHead>Qty</TableHead>
+                    <TableHead className="text-right">Qty</TableHead>
+                    <TableHead className="text-right">Rate</TableHead>
+                    <TableHead className="text-right">Total Amount</TableHead>
                     <TableHead>Delivery Date</TableHead>
                     <TableHead>Village</TableHead>
                   </TableRow>
@@ -393,7 +395,9 @@ export default function ReportsPage() {
                     <TableRow key={order.id}>
                       <TableCell className="font-medium">{order.customerName}</TableCell>
                       <TableCell>{(order as any).lot?.lotNumber || "N/A"}</TableCell>
-                      <TableCell>{order.bookedQty}</TableCell>
+                      <TableCell className="text-right font-bold">{order.bookedQty}</TableCell>
+                      <TableCell className="text-right">₹{Number(order.perUnitPrice).toLocaleString()}</TableCell>
+                      <TableCell className="text-right font-bold text-emerald-600">₹{Number(order.totalAmount).toLocaleString()}</TableCell>
                       <TableCell>{order.deliveryDate}</TableCell>
                       <TableCell>{order.village}</TableCell>
                     </TableRow>

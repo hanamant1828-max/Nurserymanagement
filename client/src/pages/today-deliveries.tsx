@@ -674,27 +674,35 @@ export default function TodayDeliveriesPage() {
                         </div>
                       )}
                       <div className="flex-1">
-                        <p className="font-bold text-sm">{variety?.name}</p>
-                        <p className="text-xs font-mono text-muted-foreground">{lot?.lotNumber}</p>
+                        <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Category & Variety</p>
+                        <p className="text-[10px] font-bold text-primary truncate uppercase">{category?.name}</p>
+                        <p className="font-bold text-sm leading-tight">{variety?.name}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-xs font-mono text-muted-foreground bg-muted px-1 rounded">{lot?.lotNumber}</span>
+                          <span className="text-xs font-bold text-primary">₹{Number(order.perUnitPrice).toLocaleString()}/unit</span>
+                        </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-[10px] uppercase font-bold text-muted-foreground">Qty</p>
+                        <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Qty</p>
                         <p className="font-black text-2xl text-primary">{order.bookedQty}</p>
                       </div>
                     </div>
 
-                    <div className="flex justify-between items-center pt-2 border-t border-dashed">
+                    <div className="grid grid-cols-2 gap-4 pt-2 border-t border-dashed">
                        <div>
-                        <p className="text-[10px] uppercase font-bold text-muted-foreground">Advance</p>
-                        <p className="font-bold">₹{order.advanceAmount} <span className="text-[9px] opacity-70">({order.paymentMode})</span></p>
+                        <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Payment Details</p>
+                        <p className="text-sm font-black text-emerald-600">Total: ₹{Number(order.totalAmount).toLocaleString()}</p>
+                        <p className="text-[10px] font-bold text-blue-600 leading-tight">Adv: ₹{Number(order.advanceAmount).toLocaleString()} <span className="opacity-70">({order.paymentMode})</span></p>
                       </div>
-                      <Button 
-                        size="sm"
-                        onClick={() => markDelivered(order.id)}
-                        className="bg-emerald-600 hover:bg-emerald-700 h-10 px-4 font-bold"
-                      >
-                        <CheckCircle className="w-4 h-4 mr-1.5" /> Deliver
-                      </Button>
+                      <div className="flex items-end justify-end">
+                        <Button 
+                          size="sm"
+                          onClick={() => markDelivered(order.id)}
+                          className="bg-emerald-600 hover:bg-emerald-700 h-10 px-4 font-bold rounded-xl active-elevate-2 shadow-md shadow-emerald-500/10"
+                        >
+                          <CheckCircle className="w-4 h-4 mr-1.5" /> Deliver
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
