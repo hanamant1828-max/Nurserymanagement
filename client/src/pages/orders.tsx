@@ -66,6 +66,7 @@ const formSchema = z.object({
   customerName: z.string().min(1, "Customer name is required"),
   phone: z.string().min(10, "Valid phone number required"),
   village: z.string().optional(),
+  state: z.string().min(1, "State is required"),
   district: z.string().min(1, "District is required"),
   taluk: z.string().min(1, "Taluk is required"),
   bookedQty: z.coerce.number().min(1, "Quantity must be > 0"),
@@ -403,6 +404,7 @@ export default function OrdersPage() {
         lotId: editingOrder.lotId.toString(),
         customerName: editingOrder.customerName,
         phone: editingOrder.phone,
+        state: editingOrder.state || "",
         district: editingOrder.district || "",
         taluk: editingOrder.taluk || "",
         bookedQty: editingOrder.bookedQty,
@@ -427,6 +429,7 @@ export default function OrdersPage() {
       customerName: data.customerName,
       phone: data.phone,
       village: data.village || "",
+      state: data.state,
       district: data.district,
       taluk: data.taluk,
       bookedQty: data.bookedQty,
@@ -764,39 +767,26 @@ export default function OrdersPage() {
                       <div className="grid grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
-                          name="district"
+                          name="state"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">District</FormLabel>
+                              <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">State</FormLabel>
                               <Select 
                                 onValueChange={(val) => {
                                   field.onChange(val);
+                                  form.setValue("district", "");
                                   form.setValue("taluk", "");
                                 }} 
                                 value={field.value}
                               >
                                 <FormControl>
                                   <SelectTrigger className="h-12 text-lg bg-muted/30 border-muted focus:ring-primary/20">
-                                    <SelectValue placeholder="Select District" />
+                                    <SelectValue placeholder="Select State" />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <Command>
-                                    <CommandInput placeholder="Search district..." />
-                                    <CommandList>
-                                      <CommandEmpty>No district found.</CommandEmpty>
-                                      <CommandGroup heading="Karnataka">
-                                        {KARNATAKA_DISTRICTS.map(d => (
-                                          <SelectItem key={d.name} value={d.name}>{d.name}</SelectItem>
-                                        ))}
-                                      </CommandGroup>
-                                      <CommandGroup heading="Maharashtra">
-                                        {MAHARASHTRA_DISTRICTS.map(d => (
-                                          <SelectItem key={d.name} value={d.name}>{d.name}</SelectItem>
-                                        ))}
-                                      </CommandGroup>
-                                    </CommandList>
-                                  </Command>
+                                  <SelectItem value="Karnataka">Karnataka</SelectItem>
+                                  <SelectItem value="Maharashtra">Maharashtra</SelectItem>
                                 </SelectContent>
                               </Select>
                               <FormMessage />
@@ -805,11 +795,57 @@ export default function OrdersPage() {
                         />
                         <FormField
                           control={form.control}
+                          name="district"
+                          render={({ field }) => {
+                            const selectedState = form.watch("state");
+                            const districts = selectedState ? DISTRICTS_DATA[selectedState] : [];
+                            
+                            return (
+                              <FormItem>
+                                <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">District</FormLabel>
+                                <Select 
+                                  onValueChange={(val) => {
+                                    field.onChange(val);
+                                    form.setValue("taluk", "");
+                                  }} 
+                                  value={field.value}
+                                  disabled={!selectedState}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger className="h-12 text-lg bg-muted/30 border-muted focus:ring-primary/20">
+                                      <SelectValue placeholder="Select District" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <Command>
+                                      <CommandInput placeholder="Search district..." />
+                                      <CommandList>
+                                        <CommandEmpty>No district found.</CommandEmpty>
+                                        <CommandGroup>
+                                          {districts.map(d => (
+                                            <SelectItem key={d.name} value={d.name}>{d.name}</SelectItem>
+                                          ))}
+                                        </CommandGroup>
+                                      </CommandList>
+                                    </Command>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            );
+                          }}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
                           name="taluk"
                           render={({ field }) => {
+                            const selectedState = form.watch("state");
                             const selectedDistrictName = form.watch("district");
-                            const allDistricts = [...MAHARASHTRA_DISTRICTS, ...KARNATAKA_DISTRICTS];
-                            const selectedDistrict = allDistricts.find(d => d.name === selectedDistrictName);
+                            const districts = selectedState ? DISTRICTS_DATA[selectedState] : [];
+                            const selectedDistrict = districts.find(d => d.name === selectedDistrictName);
                             const taluks = selectedDistrict?.taluks || [];
 
                             return (
@@ -840,19 +876,20 @@ export default function OrdersPage() {
                             );
                           }}
                         />
+                        <div className="flex flex-col gap-2">
+                          <label className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Village / Area</label>
+                          <FormField
+                            control={form.control}
+                            name="village"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl><Input placeholder="Address" className="h-12 text-lg bg-muted/30 border-muted focus-visible:ring-primary/20" {...field} /></FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
                       </div>
-                      
-                      <FormField
-                        control={form.control}
-                        name="village"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Village / Area</FormLabel>
-                            <FormControl><Input placeholder="Address" className="h-12 text-lg bg-muted/30 border-muted focus-visible:ring-primary/20" {...field} /></FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
 
                       <div className="grid grid-cols-2 gap-4 pt-2">
                         <FormField
