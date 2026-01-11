@@ -83,7 +83,8 @@ function SearchableSelect({
   placeholder, 
   emptyText = "No results found.",
   disabled = false,
-  renderItem
+  renderItem,
+  searchFields = ["name"]
 }: {
   options: any[],
   value: string,
@@ -91,7 +92,8 @@ function SearchableSelect({
   placeholder: string,
   emptyText?: string,
   disabled?: boolean,
-  renderItem: (item: any) => React.ReactNode
+  renderItem: (item: any) => React.ReactNode,
+  searchFields?: string[]
 }) {
   const [open, setOpen] = useState(false)
 
@@ -118,7 +120,18 @@ function SearchableSelect({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-        <Command>
+        <Command filter={(value, search) => {
+          const option = options.find(opt => opt.id.toString() === value);
+          if (!option) return 0;
+          
+          const searchLower = search.toLowerCase();
+          const matches = searchFields.some(field => {
+            const val = option[field];
+            return val && val.toString().toLowerCase().includes(searchLower);
+          });
+          
+          return matches ? 1 : 0;
+        }}>
           <CommandInput placeholder={`Search ${placeholder.toLowerCase()}...`} />
           <CommandList className="max-h-[300px] overflow-y-auto">
             <CommandEmpty>{emptyText}</CommandEmpty>
@@ -126,7 +139,7 @@ function SearchableSelect({
               {options.map((option) => (
                 <CommandItem
                   key={option.id}
-                  value={option.name}
+                  value={option.id.toString()}
                   onSelect={() => {
                     onValueChange(option.id.toString())
                     setOpen(false)
@@ -493,6 +506,7 @@ export default function OrdersPage() {
                                     form.setValue("lotId", "");
                                   }}
                                   placeholder="Pick a Category"
+                                  searchFields={["name"]}
                                   renderItem={(c) => (
                                     <div className="flex items-center gap-4 py-1">
                                       {c?.image ? (
@@ -527,6 +541,7 @@ export default function OrdersPage() {
                                   }}
                                   placeholder="Pick a Variety"
                                   disabled={!selectedCategoryId}
+                                  searchFields={["name"]}
                                   renderItem={(v) => {
                                     const cat = categories?.find(c => c.id === v.categoryId);
                                     return (
@@ -559,45 +574,33 @@ export default function OrdersPage() {
                               <span>Select Stock Lot</span>
                               <span className="text-destructive text-xs font-normal">Required</span>
                             </FormLabel>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-64 overflow-y-auto p-1 rounded-md bg-muted/20 border">
-                              {availableLots?.map(lot => (
-                                <Card 
-                                  key={lot.id} 
-                                  className={`cursor-pointer transition-all border-2 ${field.value === lot.id.toString() ? 'border-primary bg-primary/5 ring-2 ring-primary/10' : 'hover:border-primary/50'}`}
-                                  onClick={() => field.onChange(lot.id.toString())}
-                                >
-                                  <CardContent className="p-4">
-                                    <div className="flex justify-between items-start gap-4">
-                                      <div className="flex items-center gap-4">
-                                        {lot.category?.image ? (
-                                          <img src={lot.category.image} className="w-14 h-14 rounded-md object-cover border" alt="" />
-                                        ) : (
-                                          <div className="w-14 h-14 rounded-md bg-muted flex items-center justify-center border">
-                                            <Layers className="w-7 h-7 text-muted-foreground/30" />
-                                          </div>
-                                        )}
-                                        <div className="overflow-hidden">
-                                          <p className="font-extrabold text-base truncate">{lot.variety?.name}</p>
-                                          <p className="text-xs text-muted-foreground font-mono">{lot.lotNumber}</p>
-                                          <div className="flex gap-2 mt-1">
-                                            <span className="text-[10px] bg-muted px-1 rounded">Sown: {lot.sowingDate}</span>
-                                            <span className="text-[10px] bg-primary/10 text-primary px-1 rounded">Ready: {lot.expectedReadyDate}</span>
-                                          </div>
-                                        </div>
+                            <FormControl>
+                              <SearchableSelect
+                                options={availableLots || []}
+                                value={field.value || ""}
+                                onValueChange={(val) => {
+                                  field.onChange(val);
+                                }}
+                                placeholder="Pick a Lot"
+                                disabled={!selectedVarietyId}
+                                searchFields={["lotNumber"]}
+                                renderItem={(lot) => (
+                                  <div className="flex items-center gap-4 py-1">
+                                    {lot.category?.image ? (
+                                      <img src={lot.category.image} className="w-8 h-8 rounded-md object-cover border shadow-sm" alt="" />
+                                    ) : (
+                                      <div className="w-8 h-8 rounded-md bg-muted flex items-center justify-center border">
+                                        <Layers className="w-4 h-4 text-muted-foreground" />
                                       </div>
-                                      <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 whitespace-nowrap text-sm px-2 py-1">
-                                        {lot.available}
-                                      </Badge>
+                                    )}
+                                    <div className="flex flex-col">
+                                      <span className="font-semibold text-sm leading-tight">{lot.lotNumber}</span>
+                                      <span className="text-[10px] text-muted-foreground">Available: {lot.available}</span>
                                     </div>
-                                  </CardContent>
-                                </Card>
-                              ))}
-                              {availableLots?.length === 0 && (
-                                <div className="col-span-full py-8 text-center text-muted-foreground">
-                                  {selectedVarietyId ? "No plants available for this variety." : "Select a variety to see available lots."}
-                                </div>
-                              )}
-                            </div>
+                                  </div>
+                                )}
+                              />
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
