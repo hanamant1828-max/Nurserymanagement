@@ -71,6 +71,7 @@ const formSchema = z.object({
   taluk: z.string().min(1, "Taluk is required"),
   bookedQty: z.coerce.number().min(1, "Quantity must be > 0"),
   perUnitPrice: z.coerce.number().min(0, "Price must be >= 0"),
+  discount: z.coerce.number().min(0, "Discount must be >= 0").default(0),
   totalAmount: z.coerce.number().min(0, "Total amount is required"),
   advanceAmount: z.coerce.number().min(0),
   paymentMode: z.enum(["Cash", "PhonePe"]),
@@ -360,13 +361,14 @@ export default function OrdersPage() {
   const selectedLotId = form.watch("lotId");
   const bookedQty = form.watch("bookedQty") || 0;
   const perUnitPrice = form.watch("perUnitPrice") || 0;
+  const discount = form.watch("discount") || 0;
   const advanceAmount = form.watch("advanceAmount") || 0;
 
-  // Auto-calculate total amount based on quantity and per unit price
+  // Auto-calculate total amount based on quantity, per unit price and discount
   useEffect(() => {
-    const total = bookedQty * perUnitPrice;
-    form.setValue("totalAmount", total);
-  }, [bookedQty, perUnitPrice, form]);
+    const total = (bookedQty * perUnitPrice) - discount;
+    form.setValue("totalAmount", Math.max(0, total));
+  }, [bookedQty, perUnitPrice, discount, form]);
 
   const filteredVarieties = varieties?.filter(v => 
     !selectedCategoryId || v.categoryId.toString() === selectedCategoryId

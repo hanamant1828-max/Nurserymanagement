@@ -75,7 +75,7 @@ export default function ReportsPage() {
   const pendingDeliveries = orders?.filter(o => o.status === "BOOKED" && isInRange(o.deliveryDate)) || [];
   const deliveredOrders = orders?.filter(o => o.status === "DELIVERED" && isInRange(o.deliveryDate)) || [];
   
-  // Delivery Report Data Processing
+  const filteredDeliveredOrders = filterData(deliveredOrders, ["customerName", "village"]);
   const deliveryVarietyReport = deliveredOrders.map(order => {
     const lot = lots?.find(l => l.id === order.lotId);
     const varietyName = (lot as any)?.variety?.name || "N/A";
