@@ -419,6 +419,7 @@ export default function OrdersPage() {
         taluk: editingOrder.taluk || "",
         perUnitPrice: Number(editingOrder.perUnitPrice) || 0,
         bookedQty: editingOrder.bookedQty,
+        discount: Number(editingOrder.discount) || 0,
         totalAmount: Number(editingOrder.totalAmount),
         advanceAmount: Number(editingOrder.advanceAmount),
         paymentMode: editingOrder.paymentMode as any,
