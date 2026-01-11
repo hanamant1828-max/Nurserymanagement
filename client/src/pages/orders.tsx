@@ -102,7 +102,7 @@ function SearchableSelect({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between h-12 text-left font-normal"
+          className="w-full justify-between h-10 text-left font-normal text-sm"
           disabled={disabled}
         >
           <div className="flex-1 truncate text-left">
@@ -131,7 +131,7 @@ function SearchableSelect({
                     onValueChange(option.id.toString())
                     setOpen(false)
                   }}
-                  className="flex items-center justify-between"
+                  className="flex items-center justify-between py-1"
                 >
                   <div className="flex items-center gap-2">
                     {renderItem(option)}
@@ -496,13 +496,13 @@ export default function OrdersPage() {
                                   renderItem={(c) => (
                                     <div className="flex items-center gap-4 py-1">
                                       {c?.image ? (
-                                        <img src={c.image} className="w-10 h-10 rounded-md object-cover border shadow-sm" alt="" />
+                                        <img src={c.image} className="w-8 h-8 rounded-md object-cover border shadow-sm" alt="" />
                                       ) : (
-                                        <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center border">
-                                          <Layers className="w-5 h-5 text-muted-foreground" />
+                                        <div className="w-8 h-8 rounded-md bg-muted flex items-center justify-center border">
+                                          <Layers className="w-4 h-4 text-muted-foreground" />
                                         </div>
                                       )}
-                                      <span className="font-bold text-lg">{c?.name}</span>
+                                      <span className="font-semibold text-sm">{c?.name}</span>
                                     </div>
                                   )}
                                 />
@@ -532,13 +532,13 @@ export default function OrdersPage() {
                                     return (
                                       <div className="flex items-center gap-4 py-1">
                                         {cat?.image ? (
-                                          <img src={cat.image} className="w-10 h-10 rounded-md object-cover border shadow-sm" alt="" />
+                                          <img src={cat.image} className="w-8 h-8 rounded-md object-cover border shadow-sm" alt="" />
                                         ) : (
-                                          <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center border">
-                                            <Layers className="w-5 h-5 text-muted-foreground" />
+                                          <div className="w-8 h-8 rounded-md bg-muted flex items-center justify-center border">
+                                            <Layers className="w-4 h-4 text-muted-foreground" />
                                           </div>
                                         )}
-                                        <span className="font-bold text-lg">{v?.name}</span>
+                                        <span className="font-semibold text-sm">{v?.name}</span>
                                       </div>
                                     );
                                   }}
