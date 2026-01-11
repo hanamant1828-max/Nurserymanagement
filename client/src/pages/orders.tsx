@@ -903,6 +903,47 @@ export default function OrdersPage() {
                         </div>
                       </div>
 
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="perUnitPrice"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Price per Unit (₹)</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type="number" 
+                                  step="0.01" 
+                                  className="h-12 text-lg bg-muted/30 border-muted focus-visible:ring-primary/20" 
+                                  {...field} 
+                                  data-testid="input-per-unit-price" 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="discount"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Discount (₹)</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type="number" 
+                                  step="0.01" 
+                                  className="h-12 text-lg bg-muted/30 border-muted focus-visible:ring-primary/20 text-orange-600 font-bold" 
+                                  {...field} 
+                                  data-testid="input-discount" 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
                       <div className="grid grid-cols-2 gap-4 pt-2">
                         <FormField
                           control={form.control}
@@ -959,8 +1000,10 @@ export default function OrdersPage() {
                               <FormControl>
                                 <Input 
                                   type="number" 
-                                  className="h-12 text-lg bg-muted/30 border-muted focus-visible:ring-primary/20 font-bold" 
+                                  readOnly 
+                                  className="h-12 text-lg bg-emerald-50 border-emerald-200 text-emerald-700 font-bold" 
                                   {...field} 
+                                  data-testid="input-total-amount" 
                                 />
                               </FormControl>
                               <FormMessage />

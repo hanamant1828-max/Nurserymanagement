@@ -388,7 +388,7 @@ export default function ReportsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filterData(deliveredOrders, ["customerName", "village"]).map((order) => (
+                  {filterData(filteredDeliveredOrders, ["customerName", "village"]).map((order) => (
                     <TableRow key={order.id}>
                       <TableCell className="font-medium">{order.customerName}</TableCell>
                       <TableCell>{(order as any).lot?.lotNumber || "N/A"}</TableCell>
@@ -397,7 +397,7 @@ export default function ReportsPage() {
                       <TableCell>{order.village}</TableCell>
                     </TableRow>
                   ))}
-                  {deliveredOrders.length === 0 && (
+                  {filteredDeliveredOrders.length === 0 && (
                     <TableRow>
                       <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No delivered orders found in this range.</TableCell>
                     </TableRow>
