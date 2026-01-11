@@ -783,19 +783,19 @@ export default function OrdersPage() {
                                 <SelectContent>
                                   <Command>
                                     <CommandInput placeholder="Search district..." />
-                                  <CommandList>
-                                    <CommandEmpty>No district found.</CommandEmpty>
-                                    <CommandGroup heading="Maharashtra">
-                                      {MAHARASHTRA_DISTRICTS.map(d => (
-                                        <SelectItem key={d.name} value={d.name}>{d.name}</SelectItem>
-                                      ))}
-                                    </CommandGroup>
-                                    <CommandGroup heading="Karnataka">
-                                      {KARNATAKA_DISTRICTS.map(d => (
-                                        <SelectItem key={d.name} value={d.name}>{d.name}</SelectItem>
-                                      ))}
-                                    </CommandGroup>
-                                  </CommandList>
+                                    <CommandList>
+                                      <CommandEmpty>No district found.</CommandEmpty>
+                                      <CommandGroup heading="Karnataka">
+                                        {KARNATAKA_DISTRICTS.map(d => (
+                                          <SelectItem key={d.name} value={d.name}>{d.name}</SelectItem>
+                                        ))}
+                                      </CommandGroup>
+                                      <CommandGroup heading="Maharashtra">
+                                        {MAHARASHTRA_DISTRICTS.map(d => (
+                                          <SelectItem key={d.name} value={d.name}>{d.name}</SelectItem>
+                                        ))}
+                                      </CommandGroup>
+                                    </CommandList>
                                   </Command>
                                 </SelectContent>
                               </Select>
