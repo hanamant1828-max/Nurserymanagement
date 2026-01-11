@@ -445,6 +445,7 @@ export default function OrdersPage() {
       taluk: data.taluk,
       perUnitPrice: data.perUnitPrice.toString(),
       bookedQty: data.bookedQty,
+      discount: (data.discount ?? 0).toString(),
       totalAmount: (data.totalAmount ?? 0).toString(),
       advanceAmount: (data.advanceAmount ?? 0).toString(),
       remainingBalance: remainingBalance.toString(),

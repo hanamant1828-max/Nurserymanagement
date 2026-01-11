@@ -71,6 +71,16 @@ export default function ReportsPage() {
     }
   };
 
+  const filterData = (data: any[], keys: string[]) => {
+    if (!searchTerm) return data;
+    return data.filter(item => 
+      keys.some(key => {
+        const val = item[key];
+        return val && val.toString().toLowerCase().includes(searchTerm.toLowerCase());
+      })
+    );
+  };
+
   const dailySowingData = lots?.filter(l => isInRange(l.sowingDate)) || [];
   const pendingDeliveries = orders?.filter(o => o.status === "BOOKED" && isInRange(o.deliveryDate)) || [];
   const deliveredOrders = orders?.filter(o => o.status === "DELIVERED" && isInRange(o.deliveryDate)) || [];
@@ -148,15 +158,6 @@ export default function ReportsPage() {
     return acc;
   }, {}) || {});
 
-  const filterData = (data: any[], keys: string[]) => {
-    if (!searchTerm) return data;
-    return data.filter(item => 
-      keys.some(key => {
-        const val = item[key];
-        return val && val.toString().toLowerCase().includes(searchTerm.toLowerCase());
-      })
-    );
-  };
 
   if (loadingLots || loadingOrders) {
     return <div className="p-8 text-center text-muted-foreground">Loading reports...</div>;

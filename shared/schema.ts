@@ -61,6 +61,7 @@ export const orders = pgTable("orders", {
   taluk: text("taluk"),
   perUnitPrice: decimal("per_unit_price").default("0.00").notNull(),
   bookedQty: integer("booked_qty").notNull(),
+  discount: decimal("discount").default("0.00").notNull(),
   totalAmount: decimal("total_amount").notNull(),
   advanceAmount: decimal("advance_amount").notNull(),
   remainingBalance: decimal("remaining_balance").notNull(),
