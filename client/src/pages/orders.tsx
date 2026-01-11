@@ -407,23 +407,25 @@ export default function OrdersPage() {
 
   // Handle editing order
   useEffect(() => {
-    if (editingOrder) {
+    if (editingOrder && lots) {
+      const orderLot = lots.find(l => l.id === editingOrder.lotId);
       form.reset({
-        categoryId: lots?.find(l => l.id === editingOrder.lotId)?.categoryId.toString(),
-        varietyId: lots?.find(l => l.id === editingOrder.lotId)?.varietyId.toString(),
+        categoryId: orderLot?.categoryId?.toString() || "",
+        varietyId: orderLot?.varietyId?.toString() || "",
         lotId: editingOrder.lotId.toString(),
-        customerName: editingOrder.customerName,
-        phone: editingOrder.phone,
+        customerName: editingOrder.customerName || "",
+        phone: editingOrder.phone || "",
         state: editingOrder.state || "",
         district: editingOrder.district || "",
         taluk: editingOrder.taluk || "",
+        village: editingOrder.village || "",
         perUnitPrice: Number(editingOrder.perUnitPrice) || 0,
-        bookedQty: editingOrder.bookedQty,
+        bookedQty: editingOrder.bookedQty || 0,
         discount: Number(editingOrder.discount) || 0,
-        totalAmount: Number(editingOrder.totalAmount),
-        advanceAmount: Number(editingOrder.advanceAmount),
-        paymentMode: editingOrder.paymentMode as any,
-        deliveryDate: new Date(editingOrder.deliveryDate),
+        totalAmount: Number(editingOrder.totalAmount) || 0,
+        advanceAmount: Number(editingOrder.advanceAmount) || 0,
+        paymentMode: (editingOrder.paymentMode as any) || "Cash",
+        deliveryDate: editingOrder.deliveryDate ? new Date(editingOrder.deliveryDate) : new Date(),
       });
       setStep(2);
       setOpen(true);
