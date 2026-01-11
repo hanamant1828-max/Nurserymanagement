@@ -59,6 +59,7 @@ export const orders = pgTable("orders", {
   state: text("state"),
   district: text("district"),
   taluk: text("taluk"),
+  perUnitPrice: decimal("per_unit_price").default("0.00").notNull(),
   bookedQty: integer("booked_qty").notNull(),
   totalAmount: decimal("total_amount").notNull(),
   advanceAmount: decimal("advance_amount").notNull(),

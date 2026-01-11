@@ -70,6 +70,7 @@ const formSchema = z.object({
   district: z.string().min(1, "District is required"),
   taluk: z.string().min(1, "Taluk is required"),
   bookedQty: z.coerce.number().min(1, "Quantity must be > 0"),
+  perUnitPrice: z.coerce.number().min(0, "Price must be >= 0"),
   totalAmount: z.coerce.number().min(0, "Total amount is required"),
   advanceAmount: z.coerce.number().min(0),
   paymentMode: z.enum(["Cash", "PhonePe"]),
@@ -358,7 +359,14 @@ export default function OrdersPage() {
   const selectedVarietyId = form.watch("varietyId");
   const selectedLotId = form.watch("lotId");
   const bookedQty = form.watch("bookedQty") || 0;
+  const perUnitPrice = form.watch("perUnitPrice") || 0;
   const advanceAmount = form.watch("advanceAmount") || 0;
+
+  // Auto-calculate total amount based on quantity and per unit price
+  useEffect(() => {
+    const total = bookedQty * perUnitPrice;
+    form.setValue("totalAmount", total);
+  }, [bookedQty, perUnitPrice, form]);
 
   const filteredVarieties = varieties?.filter(v => 
     !selectedCategoryId || v.categoryId.toString() === selectedCategoryId
@@ -407,6 +415,7 @@ export default function OrdersPage() {
         state: editingOrder.state || "",
         district: editingOrder.district || "",
         taluk: editingOrder.taluk || "",
+        perUnitPrice: Number(editingOrder.perUnitPrice) || 0,
         bookedQty: editingOrder.bookedQty,
         totalAmount: Number(editingOrder.totalAmount),
         advanceAmount: Number(editingOrder.advanceAmount),
@@ -432,6 +441,7 @@ export default function OrdersPage() {
       state: data.state,
       district: data.district,
       taluk: data.taluk,
+      perUnitPrice: data.perUnitPrice.toString(),
       bookedQty: data.bookedQty,
       totalAmount: (data.totalAmount ?? 0).toString(),
       advanceAmount: (data.advanceAmount ?? 0).toString(),
