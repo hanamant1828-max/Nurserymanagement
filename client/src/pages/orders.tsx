@@ -1275,7 +1275,9 @@ export default function OrdersPage() {
               <TableHead>Taken By</TableHead>
               <TableHead className="text-right">Qty</TableHead>
               <TableHead className="text-right">Rate</TableHead>
+              <TableHead className="text-right">Discount</TableHead>
               <TableHead className="text-right">Total</TableHead>
+              <TableHead className="text-right">Adv/Bal</TableHead>
               <TableHead>Delivery Date</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -1338,7 +1340,12 @@ export default function OrdersPage() {
                   </TableCell>
                     <TableCell className="text-right font-black text-primary">{order.bookedQty}</TableCell>
                     <TableCell className="text-right font-medium">₹{Number(order.perUnitPrice).toLocaleString()}</TableCell>
+                    <TableCell className="text-right text-orange-600 font-medium">₹{Number(order.discount).toLocaleString()}</TableCell>
                     <TableCell className="text-right font-black">₹{Number(order.totalAmount).toLocaleString()}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="font-bold text-blue-600">₹{Number(order.advanceAmount).toLocaleString()}</div>
+                      <div className="text-[10px] font-bold text-amber-600">₹{Number(order.remainingBalance).toLocaleString()}</div>
+                    </TableCell>
                     <TableCell className="text-sm font-medium">{format(new Date(order.deliveryDate), "dd MMM yyyy")}</TableCell>
                     <TableCell>
                       <Badge variant={order.status === 'DELIVERED' ? 'secondary' : order.status === 'CANCELLED' ? 'destructive' : 'default'} className={order.status === 'DELIVERED' ? 'bg-green-100 text-green-700 border-green-200' : ''}>

@@ -480,7 +480,9 @@ export default function TodayDeliveriesPage() {
               <TableHead>Customer</TableHead>
               <TableHead>Plant Details</TableHead>
               <TableHead className="text-right">Qty</TableHead>
-              <TableHead className="text-right">Advance</TableHead>
+              <TableHead className="text-right">Rate</TableHead>
+              <TableHead className="text-right">Total</TableHead>
+              <TableHead className="text-right">Adv/Bal</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -523,9 +525,11 @@ export default function TodayDeliveriesPage() {
                       </div>
                     </TableCell>
                     <TableCell className="text-right font-black text-primary text-lg">{order.bookedQty}</TableCell>
+                    <TableCell className="text-right font-medium">₹{Number(order.perUnitPrice).toLocaleString()}</TableCell>
+                    <TableCell className="text-right font-black">₹{Number(order.totalAmount).toLocaleString()}</TableCell>
                     <TableCell className="text-right">
-                      <div className="font-bold">₹{order.advanceAmount}</div>
-                      <div className="text-[9px] uppercase font-bold text-muted-foreground">{order.paymentMode}</div>
+                      <div className="font-bold text-blue-600">₹{Number(order.advanceAmount).toLocaleString()}</div>
+                      <div className="text-[10px] font-bold text-amber-600">₹{Number(order.remainingBalance).toLocaleString()}</div>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">

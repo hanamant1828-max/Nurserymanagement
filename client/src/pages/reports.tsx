@@ -382,10 +382,12 @@ export default function ReportsPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Customer</TableHead>
-                    <TableHead>Lot</TableHead>
+                    <TableHead>Variety</TableHead>
                     <TableHead className="text-right">Qty</TableHead>
                     <TableHead className="text-right">Rate</TableHead>
+                    <TableHead className="text-right">Discount</TableHead>
                     <TableHead className="text-right">Total Amount</TableHead>
+                    <TableHead className="text-right">Balance</TableHead>
                     <TableHead>Delivery Date</TableHead>
                     <TableHead>Village</TableHead>
                   </TableRow>
@@ -394,10 +396,15 @@ export default function ReportsPage() {
                   {filterData(filteredDeliveredOrders, ["customerName", "village"]).map((order) => (
                     <TableRow key={order.id}>
                       <TableCell className="font-medium">{order.customerName}</TableCell>
-                      <TableCell>{(order as any).lot?.lotNumber || "N/A"}</TableCell>
+                      <TableCell>
+                        <div className="font-bold">{(lots?.find(l => l.id === order.lotId) as any)?.variety?.name || "N/A"}</div>
+                        <div className="text-[10px] text-muted-foreground uppercase">{(lots?.find(l => l.id === order.lotId) as any)?.lotNumber || "N/A"}</div>
+                      </TableCell>
                       <TableCell className="text-right font-bold">{order.bookedQty}</TableCell>
                       <TableCell className="text-right">₹{Number(order.perUnitPrice).toLocaleString()}</TableCell>
+                      <TableCell className="text-right text-orange-600 font-medium">₹{Number(order.discount).toLocaleString()}</TableCell>
                       <TableCell className="text-right font-bold text-emerald-600">₹{Number(order.totalAmount).toLocaleString()}</TableCell>
+                      <TableCell className="text-right font-bold text-amber-600">₹{Number(order.remainingBalance).toLocaleString()}</TableCell>
                       <TableCell>{order.deliveryDate}</TableCell>
                       <TableCell>{order.village}</TableCell>
                     </TableRow>
