@@ -66,6 +66,8 @@ const formSchema = z.object({
   customerName: z.string().min(1, "Customer name is required"),
   phone: z.string().min(10, "Valid phone number required"),
   village: z.string().optional(),
+  district: z.string().min(1, "District is required"),
+  taluk: z.string().min(1, "Taluk is required"),
   bookedQty: z.coerce.number().min(1, "Quantity must be > 0"),
   totalAmount: z.coerce.number().min(0, "Total amount is required"),
   advanceAmount: z.coerce.number().min(0),
@@ -168,6 +170,84 @@ function SearchableSelect({
     </Popover>
   )
 }
+
+const MAHARASHTRA_DISTRICTS = [
+  { name: "Ahmednagar", taluks: ["Ahmednagar", "Akole", "Jamkhed", "Karjat", "Kopargaon", "Nevasa", "Parner", "Pathardi", "Rahata", "Rahuri", "Sangamner", "Shevgaon", "Shrigonda", "Shrirampur"] },
+  { name: "Akola", taluks: ["Akola", "Akot", "Balapur", "Barshitakli", "Murtijapur", "Patur", "Telhara"] },
+  { name: "Amravati", taluks: ["Achalpur", "Amravati", "Anjangaon Surji", "Chandur Railway", "Chandurbazar", "Chikhaldara", "Daryapur", "Dhamangaon Railway", "Dharni", "Morshi", "Nandgaon Khandeshwar", "Teosa", "Warud"] },
+  { name: "Aurangabad", taluks: ["Aurangabad", "Paithan", "Phulambri", "Sillod", "Soegaon", "Vaijapur", "Gangapur", "Khultabad", "Kannad"] },
+  { name: "Beed", taluks: ["Beed", "Ashti", "Gevrai", "Ambajogai", "Kaij", "Parli", "Majalgaon", "Patoda", "Shirur", "Wadwani", "Dharur"] },
+  { name: "Bhandara", taluks: ["Bhandara", "Tumsar", "Pauni", "Mohadi", "Sakoli", "Lakhani", "Lakhandur"] },
+  { name: "Buldhana", taluks: ["Buldhana", "Chikhli", "Deulgaon Raja", "Jalgaon Jamod", "Khamgaon", "Lonar", "Malkapur", "Mehekar", "Motala", "Nandura", "Sangrampur", "Shegaon", "Sindkhed Raja"] },
+  { name: "Chandrapur", taluks: ["Chandrapur", "Bhadravati", "Brahmapuri", "Chimur", "Gondpipri", "Jiwati", "Korpana", "Mul", "Nagbhir", "Pombhurna", "Rajura", "Sawali", "Sindewahi", "Warora", "Ballarpur"] },
+  { name: "Dhule", taluks: ["Dhule", "Sakri", "Sindkheda", "Shirpur"] },
+  { name: "Gadchiroli", taluks: ["Gadchiroli", "Dhanora", "Chamorshi", "Mulchera", "Desaiganj", "Armori", "Kurkheda", "Korchi", "Aheri", "Etapalli", "Bhamragad", "Sironcha"] },
+  { name: "Gondia", taluks: ["Gondia", "Arjuni Morgaon", "Deori", "Sadak Arjuni", "Salekasa", "Amgaon", "Goregaon", "Tirora"] },
+  { name: "Hingoli", taluks: ["Hingoli", "Sengon", "Kalumnuri", "Basmath", "Aundha Nagnath"] },
+  { name: "Jalgaon", taluks: ["Jalgaon", "Jamner", "Erandol", "Dharangaon", "Bhadgaon", "Chalisgaon", "Pachora", "Parola", "Bodwad", "Yawal", "Raver", "Muktainagar", "Amalner", "Chopda", "Bhusawal"] },
+  { name: "Jalna", taluks: ["Jalna", "Badnapur", "Bhokardan", "Jafrabad", "Ambad", "Ghansawangi", "Partur", "Mantha"] },
+  { name: "Kolhapur", taluks: ["Karvir", "Panhala", "Shahuwadi", "Kagal", "Hatkanangle", "Shirol", "Radhanagari", "Gaganbawada", "Bhudaragad", "Ajara", "Gadhinglaj", "Chandgad"] },
+  { name: "Latur", taluks: ["Latur", "Udgir", "Ahmedpur", "Ausa", "Nilanga", "Renapur", "Chakur", "Deoni", "Shirur Anantpal", "Jalkot"] },
+  { name: "Mumbai City", taluks: ["Mumbai City"] },
+  { name: "Mumbai Suburban", taluks: ["Kurla", "Andheri", "Borivali"] },
+  { name: "Nagpur", taluks: ["Nagpur Urban", "Nagpur Rural", "Kamptee", "Hingna", "Katol", "Narkhed", "Savner", "Kalmeshwar", "Ramtek", "Mouda", "Kuhi", "Bhiwapur", "Umred", "Parseoni"] },
+  { name: "Nanded", taluks: ["Nanded", "Ardhapur", "Mudkhed", "Bhokar", "Umri", "Loha", "Kandhar", "Kinwat", "Himayatnagar", "Hadgaon", "Mahur", "Deglur", "Mukhed", "Dharmabad", "Biloli", "Naigaon"] },
+  { name: "Nandurbar", taluks: ["Nandurbar", "Navapur", "Shahada", "Taloda", "Akkalkuwa", "Akrani"] },
+  { name: "Nashik", taluks: ["Nashik", "Sinnar", "Igatpuri", "Trimbakeshwar", "Niphad", "Yeola", "Chandwad", "Nandgaon", "Kalwan", "Baglan", "Surgana", "Peint", "Dindori", "Deola", "Malegaon"] },
+  { name: "Osmanabad", taluks: ["Osmanabad", "Tuljapur", "Omerga", "Lohara", "Kalamb", "Bhum", "Paranda", "Washi"] },
+  { name: "Palghar", taluks: ["Palghar", "Vada", "Talasari", "Jawhar", "Mokhada", "Dahanu", "Vikramgad", "Vasai"] },
+  { name: "Parbhani", taluks: ["Parbhani", "Jintur", "Sailu", "Manwath", "Pathri", "Sonpeth", "Gangakhed", "Palam", "Purna"] },
+  { name: "Pune", taluks: ["Pune City", "Haveli", "Khed", "Ambegaon", "Junner", "Shirur", "Daund", "Indapur", "Baramati", "Purandar", "Bhor", "Velhe", "Mawal", "Mulshi"] },
+  { name: "Raigad", taluks: ["Alibag", "Pen", "Murud", "Panvel", "Uran", "Karjat", "Khalapur", "Mangaon", "Tala", "Roha", "Sudhagad", "Mahad", "Poladpur", "Shrivardhan", "Mhasla"] },
+  { name: "Ratnagiri", taluks: ["Ratnagiri", "Sangameshwar", "Lanja", "Rajapur", "Chiplun", "Guhagar", "Dapoli", "Mandangad", "Khed"] },
+  { name: "Sangli", taluks: ["Miraj", "Tasgaon", "Khanapur-Vita", "Valva-Islampur", "Shirala", "Atpadi", "Kavathe-Mahankal", "Jat", "Kadegaon", "Palus"] },
+  { name: "Satara", taluks: ["Satara", "Wai", "Jawali", "Koregaon", "Karad", "Patan", "Mahabaleshwar", "Khandala", "Khatav", "Phaltan", "Maun"] },
+  { name: "Sindhudurg", taluks: ["Sawantwadi", "Kudal", "Vengurla", "Malvan", "Devgad", "Kankavli", "Vaibhavwadi", "Dodamarg"] },
+  { name: "Solapur", taluks: ["North Solapur", "South Solapur", "Akkalkot", "Barshi", "Mangalwedha", "Pandharpur", "Sangola", "Madha", "Karmala", "Mohol", "Malshiras"] },
+  { name: "Thane", taluks: ["Thane", "Kalyan", "Murbad", "Bhiwandi", "Shahapur", "Ulhasnagar", "Ambarnath"] },
+  { name: "Wardha", taluks: ["Wardha", "Deoli", "Seloo", "Arvi", "Ashti", "Karanja", "Hinganghat", "Samudrapur"] },
+  { name: "Washim", taluks: ["Washim", "Risod", "Malegaon", "Mangrulpir", "Karanja", "Manora"] },
+  { name: "Yavatmal", taluks: ["Yavatmal", "Babulgaon", "Kalamb", "Darwha", "Digras", "Arni", "Ner", "Pusad", "Umarkhed", "Mahagaon", "Kelapur", "Ghatanji", "Pandharkawada", "Zari Jamni", "Wani", "Maregaon", "Ralegaon"] }
+];
+
+const KARNATAKA_DISTRICTS = [
+  { name: "Bagalkot", taluks: ["Bagalkot", "Badami", "Bilgi", "Hungund", "Jamkhandi", "Mudhol", "Ilkal", "Rabkavi Banhatti", "Guledgudda"] },
+  { name: "Ballari", taluks: ["Ballari", "Hosapete", "Kampli", "Hoovina Hadagali", "Kudligi", "Sandur", "Siruguppa", "Kurugodu", "Kotturu"] },
+  { name: "Belagavi", taluks: ["Belagavi", "Athani", "Bailhongal", "Chikkodi", "Gokak", "Hukkeri", "Khanapur", "Ramdurg", "Saundatti", "Raybag", "Kittur", "Nippani", "Kagwad", "Mudalgi"] },
+  { name: "Bengaluru Rural", taluks: ["Devanahalli", "Doddaballapura", "Hoskote", "Nelamangala"] },
+  { name: "Bengaluru Urban", taluks: ["Bengaluru North", "Bengaluru South", "Bengaluru East", "Yelahanka", "Anekal"] },
+  { name: "Bidar", taluks: ["Bidar", "Basavakalyan", "Bhalki", "Homnabad", "Aurad", "Chitgoppa", "Kamalnagar", "Hulsoor"] },
+  { name: "Chamarajanagar", taluks: ["Chamarajanagar", "Gundlupet", "Kollegal", "Yelandur", "Hanur"] },
+  { name: "Chikkaballapur", taluks: ["Chikkaballapur", "Bagepalli", "Chintamani", "Gauribidanur", "Gudibanda", "Sidlaghatta"] },
+  { name: "Chikkamagaluru", taluks: ["Chikkamagaluru", "Kadur", "Koppa", "Mudigere", "Narasimharajapura", "Sringeri", "Tarikere", "Ajjampura"] },
+  { name: "Chitradurga", taluks: ["Chitradurga", "Challakere", "Hiriyur", "Holalkere", "Hosadurga", "Molakalmuru"] },
+  { name: "Dakshina Kannada", taluks: ["Mangaluru", "Bantwal", "Beltangadi", "Puttur", "Sullia", "Moodabidri", "Kadaba"] },
+  { name: "Davanagere", taluks: ["Davanagere", "Harihar", "Channagiri", "Honnali", "Jagalur"] },
+  { name: "Dharwad", taluks: ["Dharwad", "Hubballi", "Hubballi City", "Kalghatgi", "Navalgund", "Kundgol", "Alnavar", "Annigeri"] },
+  { name: "Gadag", taluks: ["Gadag-Betageri", "Mundargi", "Nargund", "Ron", "Shirahatti", "Gajendragad", "Lakshmeshwar"] },
+  { name: "Hassan", taluks: ["Hassan", "Arasikere", "Arkalgud", "Belur", "Channarayapatna", "Holonarasipura", "Sakleshpur", "Alur"] },
+  { name: "Haveri", taluks: ["Haveri", "Byadgi", "Hangal", "Hirekerur", "Ranebennur", "Savanur", "Shiggaon", "Rattihalli"] },
+  { name: "Kalaburagi", taluks: ["Kalaburagi", "Afzalpur", "Aland", "Chincholi", "Chitapur", "Jevargi", "Sedam", "Shahabad", "Kalagi", "Kamalapura", "Yedrami"] },
+  { name: "Kodagu", taluks: ["Madikeri", "Somwarpet", "Virajpet", "Kushalnagar", "Ponnampet"] },
+  { name: "Kolar", taluks: ["Kolar", "Bangarapet", "Malur", "Mulbagal", "Srinivaspur", "Kolar Gold Fields"] },
+  { name: "Koppal", taluks: ["Koppal", "Gangavathi", "Kushtagi", "Yelbarga", "Kanakagiri", "Karatagi", "Kukanoor"] },
+  { name: "Mandya", taluks: ["Mandya", "Maddur", "Malavalli", "Srirangapatna", "Nagamangala", "Krishnarajapet", "Pandavapura"] },
+  { name: "Mysuru", taluks: ["Mysuru", "Hunsur", "Krishnarajanagara", "Nanjanagudu", "Piriyapatna", "T.Narsipura", "Sargur", "Saligrama"] },
+  { name: "Raichur", taluks: ["Raichur", "Devadurga", "Lingsugur", "Manvi", "Sindhanur", "Maski", "Sirwar"] },
+  { name: "Ramanagara", taluks: ["Ramanagara", "Channapatna", "Kanakapura", "Magadi"] },
+  { name: "Shivamogga", taluks: ["Shivamogga", "Bhadravathi", "Hosanagara", "Sagara", "Shikaripura", "Soraba", "Thirthahalli"] },
+  { name: "Tumakuru", taluks: ["Tumakuru", "Chikkanayakanahalli", "Gubbi", "Koratagere", "Kunigal", "Madhugiri", "Pavagada", "Sira", "Tiptur", "Turuvekere"] },
+  { name: "Udupi", taluks: ["Udupi", "Karkala", "Kundapura", "Byndoor", "Brahmavara", "Kapu", "Hebri"] },
+  { name: "Uttara Kannada", taluks: ["Karwar", "Ankola", "Kumta", "Honnavar", "Bhatkal", "Sirsi", "Siddapur", "Yellapur", "Mundgod", "Haliyal", "Joida", "Dandeli"] },
+  { name: "Vijayapura", taluks: ["Vijayapura", "Indi", "Muddebihal", "Sindgi", "Basavana Bagewadi", "Babaleshwar", "Chadchan", "Tikota", "Talikoti", "Devara Hippargi", "Almel", "Kolhar"] },
+  { name: "Yadgir", taluks: ["Yadgir", "Shahapur", "Shorapur", "Gurmitkal", "Hunasagi", "Wadgera"] },
+  { name: "Vijayanagara", taluks: ["Hosapete", "Kampli", "Hagaribommanahalli", "Kotturu", "Hadagali", "Harapanahalli"] }
+];
+
+const DISTRICTS_DATA: Record<string, typeof MAHARASHTRA_DISTRICTS> = {
+  "Maharashtra": MAHARASHTRA_DISTRICTS,
+  "Karnataka": KARNATAKA_DISTRICTS
+};
 
 export default function OrdersPage() {
   const { toast } = useToast();
@@ -323,7 +403,8 @@ export default function OrdersPage() {
         lotId: editingOrder.lotId.toString(),
         customerName: editingOrder.customerName,
         phone: editingOrder.phone,
-        village: editingOrder.village || "",
+        district: editingOrder.district || "",
+        taluk: editingOrder.taluk || "",
         bookedQty: editingOrder.bookedQty,
         totalAmount: Number(editingOrder.totalAmount),
         advanceAmount: Number(editingOrder.advanceAmount),
@@ -346,6 +427,8 @@ export default function OrdersPage() {
       customerName: data.customerName,
       phone: data.phone,
       village: data.village || "",
+      district: data.district,
+      taluk: data.taluk,
       bookedQty: data.bookedQty,
       totalAmount: (data.totalAmount ?? 0).toString(),
       advanceAmount: (data.advanceAmount ?? 0).toString(),
@@ -675,6 +758,87 @@ export default function OrdersPage() {
                               <FormMessage />
                             </FormItem>
                           )}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="district"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">District</FormLabel>
+                              <Select 
+                                onValueChange={(val) => {
+                                  field.onChange(val);
+                                  form.setValue("taluk", "");
+                                }} 
+                                value={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger className="h-12 text-lg bg-muted/30 border-muted focus:ring-primary/20">
+                                    <SelectValue placeholder="Select District" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <Command>
+                                    <CommandInput placeholder="Search district..." />
+                                    <CommandList>
+                                      <CommandEmpty>No district found.</CommandEmpty>
+                                      <CommandGroup label="Maharashtra">
+                                        {MAHARASHTRA_DISTRICTS.map(d => (
+                                          <SelectItem key={d.name} value={d.name}>{d.name}</SelectItem>
+                                        ))}
+                                      </CommandGroup>
+                                      <CommandGroup label="Karnataka">
+                                        {KARNATAKA_DISTRICTS.map(d => (
+                                          <SelectItem key={d.name} value={d.name}>{d.name}</SelectItem>
+                                        ))}
+                                      </CommandGroup>
+                                    </CommandList>
+                                  </Command>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="taluk"
+                          render={({ field }) => {
+                            const selectedDistrictName = form.watch("district");
+                            const allDistricts = [...MAHARASHTRA_DISTRICTS, ...KARNATAKA_DISTRICTS];
+                            const selectedDistrict = allDistricts.find(d => d.name === selectedDistrictName);
+                            const taluks = selectedDistrict?.taluks || [];
+
+                            return (
+                              <FormItem>
+                                <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Taluk</FormLabel>
+                                <Select onValueChange={field.onChange} value={field.value} disabled={!selectedDistrictName}>
+                                  <FormControl>
+                                    <SelectTrigger className="h-12 text-lg bg-muted/30 border-muted focus:ring-primary/20">
+                                      <SelectValue placeholder="Select Taluk" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <Command>
+                                      <CommandInput placeholder="Search taluk..." />
+                                      <CommandList>
+                                        <CommandEmpty>No taluk found.</CommandEmpty>
+                                        <CommandGroup>
+                                          {taluks.map(t => (
+                                            <SelectItem key={t} value={t}>{t}</SelectItem>
+                                          ))}
+                                        </CommandGroup>
+                                      </CommandList>
+                                    </Command>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            );
+                          }}
                         />
                       </div>
                       

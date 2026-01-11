@@ -56,6 +56,8 @@ export const orders = pgTable("orders", {
   customerName: text("customer_name").notNull(),
   phone: text("phone").notNull(),
   village: text("village"),
+  district: text("district"),
+  taluk: text("taluk"),
   bookedQty: integer("booked_qty").notNull(),
   totalAmount: decimal("total_amount").notNull(),
   advanceAmount: decimal("advance_amount").notNull(),
