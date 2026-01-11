@@ -1270,27 +1270,27 @@ export default function OrdersPage() {
       <div className="hidden md:block rounded-xl border bg-card shadow-sm overflow-hidden">
         <Table>
           <TableHeader className="bg-muted/50">
-            <TableRow>
-              <TableHead className="w-20">ID</TableHead>
-              <TableHead>Customer</TableHead>
-              <TableHead>Plant Details</TableHead>
-              <TableHead>Taken By</TableHead>
-              <TableHead className="text-right">Qty</TableHead>
-              <TableHead className="text-right">Rate</TableHead>
-              <TableHead className="text-right">Discount</TableHead>
-              <TableHead className="text-right">Total</TableHead>
-              <TableHead className="text-right">Adv/Bal</TableHead>
-              <TableHead>Delivery Date</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+            <TableRow className="hover:bg-transparent border-b">
+              <TableHead className="w-[80px] font-bold text-muted-foreground uppercase tracking-wider h-12">ID</TableHead>
+              <TableHead className="font-bold text-muted-foreground uppercase tracking-wider h-12">Customer</TableHead>
+              <TableHead className="font-bold text-muted-foreground uppercase tracking-wider h-12">Plant Details</TableHead>
+              <TableHead className="font-bold text-muted-foreground uppercase tracking-wider h-12 text-center">Taken By</TableHead>
+              <TableHead className="font-bold text-muted-foreground uppercase tracking-wider text-center h-12">Qty</TableHead>
+              <TableHead className="font-bold text-muted-foreground uppercase tracking-wider text-center h-12">Rate</TableHead>
+              <TableHead className="font-bold text-muted-foreground uppercase tracking-wider text-center h-12">Discount</TableHead>
+              <TableHead className="font-bold text-muted-foreground uppercase tracking-wider text-center h-12">Total</TableHead>
+              <TableHead className="font-bold text-muted-foreground uppercase tracking-wider text-center h-12">Adv/Bal</TableHead>
+              <TableHead className="font-bold text-muted-foreground uppercase tracking-wider h-12">Delive Date</TableHead>
+              <TableHead className="font-bold text-muted-foreground uppercase tracking-wider text-center h-12">Status</TableHead>
+              <TableHead className="font-bold text-muted-foreground uppercase tracking-wider text-right h-12 pr-6">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow><TableCell colSpan={8} className="h-24 text-center">Loading orders...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={12} className="h-24 text-center">Loading orders...</TableCell></TableRow>
             ) : filteredOrdersList.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="h-32 text-center text-muted-foreground">
+                <TableCell colSpan={12} className="h-32 text-center text-muted-foreground">
                   <div className="flex flex-col items-center gap-2">
                     <ShoppingCart className="w-8 h-8 opacity-20" />
                     No orders found.
@@ -1307,93 +1307,92 @@ export default function OrdersPage() {
                   <TableRow key={order.id} className="group hover:bg-muted/30 transition-colors">
                     <TableCell className="font-mono text-muted-foreground text-xs">#{order.id}</TableCell>
                     <TableCell>
-                      <div className="font-bold">{order.customerName}</div>
-                      <div className="text-xs text-muted-foreground">{order.phone}</div>
+                      <div className="flex flex-col gap-0.5">
+                        <span className="font-bold text-foreground text-base leading-tight">{order.customerName}</span>
+                        <span className="text-sm text-muted-foreground font-medium">{order.phone}</span>
+                        {order.village && (
+                          <span className="text-[10px] uppercase font-bold text-primary/60 tracking-wider flex items-center gap-1 mt-0.5">
+                            <Layers className="w-2.5 h-2.5" />
+                            {order.village}
+                          </span>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-3">
                         {category?.image ? (
-                          <img src={category.image} className="w-12 h-12 rounded-md object-cover border shadow-sm" alt="" />
+                          <img src={category.image} className="w-12 h-12 rounded-lg object-cover border-2 border-background shadow-sm ring-1 ring-muted" alt="" />
                         ) : (
-                          <div className="w-12 h-12 rounded-md bg-muted flex items-center justify-center border">
+                          <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center border-2 border-background shadow-sm ring-1 ring-muted">
                             <Layers className="w-6 h-6 text-muted-foreground/30" />
                           </div>
                         )}
-                        <div>
-                          <span className="font-bold text-sm block leading-tight">{variety?.name}</span>
-                          <p className="text-[10px] text-muted-foreground uppercase font-mono">{lot?.lotNumber}</p>
+                        <div className="flex flex-col gap-0.5">
+                          <span className="font-black text-foreground text-sm leading-tight">{category?.name}</span>
+                          <span className="font-bold text-muted-foreground text-xs">{variety?.name}</span>
+                          <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-tighter">{lot?.lotNumber}</span>
                         </div>
                       </div>
                     </TableCell>
-                  <TableCell>
-                    {(() => {
-                      const orderWithCreator = order as any;
-                      return orderWithCreator.creator ? (
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
-                            {orderWithCreator.creator.username.charAt(0).toUpperCase()}
+                    <TableCell className="text-center">
+                      {(() => {
+                        const orderWithCreator = order as any;
+                        return orderWithCreator.creator ? (
+                          <div className="flex flex-col items-center justify-center gap-1">
+                            <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-[10px] font-black text-primary">
+                              {orderWithCreator.creator.username.charAt(0).toUpperCase()}
+                            </div>
+                            <span className="text-[10px] font-bold text-muted-foreground">{orderWithCreator.creator.username}</span>
                           </div>
-                          <span className="text-sm font-medium">{orderWithCreator.creator.username}</span>
-                        </div>
-                      ) : (
-                        <span className="text-xs text-muted-foreground italic">System</span>
-                      );
-                    })()}
-                  </TableCell>
-                    <TableCell className="text-right font-black text-primary">{order.bookedQty}</TableCell>
-                    <TableCell className="text-right font-medium">₹{Number(order.perUnitPrice).toLocaleString()}</TableCell>
-                    <TableCell className="text-right text-orange-600 font-medium">₹{Number(order.discount).toLocaleString()}</TableCell>
-                    <TableCell className="text-right font-black">₹{Number(order.totalAmount).toLocaleString()}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="font-bold text-blue-600">₹{Number(order.advanceAmount).toLocaleString()}</div>
-                      <div className="text-[10px] font-bold text-amber-600">₹{Number(order.remainingBalance).toLocaleString()}</div>
+                        ) : (
+                          <span className="text-[10px] text-muted-foreground italic">System</span>
+                        );
+                      })()}
                     </TableCell>
-                    <TableCell className="text-sm font-medium">{format(new Date(order.deliveryDate), "dd MMM yyyy")}</TableCell>
-                    <TableCell>
-                      <Badge variant={order.status === 'DELIVERED' ? 'secondary' : order.status === 'CANCELLED' ? 'destructive' : 'default'} className={order.status === 'DELIVERED' ? 'bg-green-100 text-green-700 border-green-200' : ''}>
+                    <TableCell className="text-center font-black text-emerald-600 text-lg">{order.bookedQty}</TableCell>
+                    <TableCell className="text-center font-bold text-muted-foreground text-base">₹{Number(order.perUnitPrice).toLocaleString()}</TableCell>
+                    <TableCell className="text-center font-bold text-orange-600 text-base">₹{Number(order.discount).toLocaleString()}</TableCell>
+                    <TableCell className="text-center font-black text-foreground text-lg">₹{Number(order.totalAmount).toLocaleString()}</TableCell>
+                    <TableCell className="text-center">
+                      <div className="flex flex-col items-center gap-0.5">
+                        <span className="text-sm font-black text-blue-600">₹{Number(order.advanceAmount).toLocaleString()}</span>
+                        <span className="text-[11px] font-bold text-orange-600">₹{Number(order.remainingBalance).toLocaleString()}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-bold text-muted-foreground text-sm whitespace-nowrap">
+                      {format(new Date(order.deliveryDate), "dd MMM yyyy")}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Badge 
+                        variant="outline" 
+                        className={cn(
+                          "text-[10px] font-black uppercase tracking-widest px-2 py-0.5",
+                          order.status === "DELIVERED" ? "bg-emerald-500 text-white border-transparent" : "bg-emerald-50 text-emerald-700 border-emerald-200"
+                        )}
+                      >
                         {order.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
+                    <TableCell className="text-right pr-6 whitespace-nowrap">
+                      <div className="flex items-center justify-end gap-2">
                         {order.status === 'BOOKED' && (
                           <Button 
                             size="sm" 
                             variant="outline" 
-                            className="h-8"
-                            onClick={() => setEditingOrder(order)}
-                          >
-                            Edit
-                          </Button>
-                        )}
-                        {order.status === 'BOOKED' ? (
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
-                            className="h-8 text-green-600 hover:text-green-700 hover:bg-green-50 border-green-200 hover:border-green-300 transition-all"
+                            className="h-8 bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-600 hover:text-white transition-all font-bold text-xs"
                             onClick={() => markDelivered(order.id)}
                           >
-                            <CheckCircle className="w-4 h-4 mr-1.5" /> Delivered
+                            Mark Delivered
                           </Button>
-                        ) : order.status === 'DELIVERED' ? (
-                          <div className="flex gap-2">
-                            <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200 h-8 px-3">
-                              <CheckCircle className="w-3.5 h-3.5 mr-1.5" /> Completed
-                            </Badge>
-                            <Button 
-                              size="sm" 
-                              variant="ghost" 
-                              className="h-8 text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-all"
-                              onClick={() => {
-                                if (confirm("Are you sure you want to undo this delivery?")) {
-                                  undoDelivery(order.id);
-                                }
-                              }}
-                            >
-                              Undo
-                            </Button>
-                          </div>
-                        ) : null}
+                        )}
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          className="h-8 font-bold text-xs"
+                          onClick={() => setEditingOrder(order)}
+                        >
+                          Edit
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
