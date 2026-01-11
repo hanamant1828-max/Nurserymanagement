@@ -874,18 +874,10 @@ export default function OrdersPage() {
                                       <SelectValue placeholder="Select District" />
                                     </SelectTrigger>
                                   </FormControl>
-                                  <SelectContent>
-                                    <Command>
-                                      <CommandInput placeholder="Search district..." />
-                                      <CommandList>
-                                        <CommandEmpty>No district found.</CommandEmpty>
-                                        <CommandGroup>
-                                          {districts.map(d => (
-                                            <SelectItem key={d.name} value={d.name}>{d.name}</SelectItem>
-                                          ))}
-                                        </CommandGroup>
-                                      </CommandList>
-                                    </Command>
+                                  <SelectContent className="max-h-60 overflow-y-auto">
+                                    {districts.map(d => (
+                                      <SelectItem key={d.name} value={d.name}>{d.name}</SelectItem>
+                                    ))}
                                   </SelectContent>
                                 </Select>
                                 <FormMessage />
@@ -909,24 +901,20 @@ export default function OrdersPage() {
                             return (
                               <FormItem>
                                 <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Taluk</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value} disabled={!selectedDistrictName}>
+                                <Select 
+                                  onValueChange={field.onChange} 
+                                  value={field.value} 
+                                  disabled={!selectedDistrictName}
+                                >
                                   <FormControl>
                                     <SelectTrigger className="h-12 text-lg bg-muted/30 border-muted focus:ring-primary/20">
                                       <SelectValue placeholder="Select Taluk" />
                                     </SelectTrigger>
                                   </FormControl>
-                                  <SelectContent>
-                                    <Command>
-                                      <CommandInput placeholder="Search taluk..." />
-                                      <CommandList>
-                                        <CommandEmpty>No taluk found.</CommandEmpty>
-                                        <CommandGroup>
-                                          {taluks.map(t => (
-                                            <SelectItem key={t} value={t}>{t}</SelectItem>
-                                          ))}
-                                        </CommandGroup>
-                                      </CommandList>
-                                    </Command>
+                                  <SelectContent className="max-h-60 overflow-y-auto">
+                                    {taluks.map(t => (
+                                      <SelectItem key={t} value={t}>{t}</SelectItem>
+                                    ))}
                                   </SelectContent>
                                 </Select>
                                 <FormMessage />
