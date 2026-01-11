@@ -21,13 +21,13 @@ export function BottomNav() {
           const isActive = location === item.href;
           return (
             <Link key={item.href} href={item.href}>
-              <a className={cn(
-                "flex flex-col items-center justify-center flex-1 gap-1 px-2 py-1 transition-colors",
+              <div className={cn(
+                "flex flex-col items-center justify-center flex-1 gap-1 px-2 py-1 transition-colors cursor-pointer",
                 isActive ? "text-primary" : "text-muted-foreground hover:text-primary/70"
               )}>
                 <item.icon className={cn("h-6 w-6", isActive && "animate-in zoom-in-75 duration-300")} />
                 <span className="text-[10px] font-medium">{item.label}</span>
-              </a>
+              </div>
             </Link>
           );
         })}
