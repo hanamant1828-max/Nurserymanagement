@@ -397,6 +397,33 @@ export default function OrdersPage() {
       : "Paid";
 
   const [editingOrder, setEditingOrder] = useState<any>(null);
+  const [isSearchingPhone, setIsSearchingPhone] = useState(false);
+
+  const checkPhone = async (phone: string) => {
+    if (phone.length < 10) return;
+    setIsSearchingPhone(true);
+    try {
+      const res = await fetch(`/api/customers/lookup?phone=${phone}`, { credentials: "include" });
+      if (res.ok) {
+        const customer = await res.json();
+        if (customer) {
+          form.setValue("customerName", customer.customerName);
+          form.setValue("state", customer.state || "");
+          form.setValue("district", customer.district || "");
+          form.setValue("taluk", customer.taluk || "");
+          form.setValue("village", customer.village || "");
+          toast({
+            title: "Customer Found",
+            description: `Auto-filled details for ${customer.customerName}`,
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error looking up customer:", error);
+    } finally {
+      setIsSearchingPhone(false);
+    }
+  };
 
   // Auto-set delivery date from lot's expected ready date
   useEffect(() => {
@@ -773,7 +800,22 @@ export default function OrdersPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Mobile Number</FormLabel>
-                              <FormControl><Input placeholder="Phone" className="h-12 text-lg bg-muted/30 border-muted focus-visible:ring-primary/20" {...field} /></FormControl>
+                              <div className="flex gap-2">
+                                <FormControl>
+                                  <Input 
+                                    placeholder="Phone" 
+                                    className="h-12 text-lg bg-muted/30 border-muted focus-visible:ring-primary/20 flex-1" 
+                                    {...field} 
+                                    onChange={(e) => {
+                                      field.onChange(e);
+                                      if (e.target.value.length === 10) {
+                                        checkPhone(e.target.value);
+                                      }
+                                    }}
+                                  />
+                                </FormControl>
+                                {isSearchingPhone && <Loader2 className="w-5 h-5 animate-spin mt-3.5" />}
+                              </div>
                               <FormMessage />
                             </FormItem>
                           )}

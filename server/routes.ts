@@ -157,7 +157,28 @@ export async function registerRoutes(
     res.json(order);
   });
 
-  app.delete(api.orders.delete.path || "/api/orders/:id", async (req, res) => {
+  app.get("/api/customers/lookup", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const phone = req.query.phone as string;
+    if (!phone) return res.status(400).json({ message: "Phone number is required" });
+    
+    const orders = await storage.getOrders();
+    const customerOrder = orders.find(o => o.phone === phone);
+    
+    if (customerOrder) {
+      res.json({
+        customerName: customerOrder.customerName,
+        state: customerOrder.state,
+        district: customerOrder.district,
+        taluk: customerOrder.taluk,
+        village: customerOrder.village
+      });
+    } else {
+      res.json(null);
+    }
+  });
+
+  app.delete("/api/orders/:id", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const id = Number(req.params.id);
     await storage.deleteOrder(id);
