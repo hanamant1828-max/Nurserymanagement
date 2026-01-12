@@ -74,11 +74,15 @@
   }
 
   .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+    -ms-overflow-style: auto;
+    scrollbar-width: auto;
   }
   .scrollbar-hide::-webkit-scrollbar {
-    display: none;
+    display: block;
+    height: 4px;
+  }
+  .scrollbar-hide::-webkit-scrollbar-thumb {
+    @apply bg-primary/20 rounded-full;
   }
 }
 

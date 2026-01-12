@@ -200,7 +200,7 @@ export default function ReportsPage() {
       </div>
 
       <Tabs defaultValue="sowing" value={activeTab} className="w-full" onValueChange={setActiveTab}>
-        <TabsList className="flex w-full mb-4 overflow-x-auto scrollbar-hide">
+        <TabsList className="flex w-full mb-6 overflow-x-auto pb-2 scrollbar-hide">
           <TabsTrigger value="sowing" className="flex items-center gap-2 flex-1 min-w-[140px]">
             <Sprout className="w-4 h-4" /> <span>Sowing</span>
           </TabsTrigger>

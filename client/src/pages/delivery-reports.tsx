@@ -305,7 +305,7 @@ export default function DeliveryReportsPage() {
       </div>
 
       <Tabs defaultValue="pending" value={activeTab} className="w-full" onValueChange={setActiveTab}>
-        <TabsList className="flex w-full mb-4 overflow-x-auto scrollbar-hide">
+        <TabsList className="flex w-full mb-6 overflow-x-auto pb-2 scrollbar-hide">
           <TabsTrigger value="pending" className="flex items-center gap-2 flex-1 min-w-[160px]">
             <Truck className="w-4 h-4" /> <span>Pending Deliveries</span>
           </TabsTrigger>
