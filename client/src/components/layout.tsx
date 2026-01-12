@@ -33,6 +33,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/orders", label: "Orders", icon: ShoppingCart },
     { href: "/today-deliveries", label: "Today's Deliveries", icon: CalendarCheck },
     { href: "/customers", label: "Customers", icon: Users },
+    { href: "/delivery-reports", label: "Delivery Reports", icon: Truck },
     { href: "/reports", label: "Reports", icon: BarChart3 },
   ];
 

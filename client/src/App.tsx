@@ -18,6 +18,7 @@ import OrdersPage from "@/pages/orders";
 import TodayDeliveriesPage from "@/pages/today-deliveries";
 import CustomersPage from "@/pages/customers";
 import ReportsPage from "@/pages/reports";
+import DeliveryReportsPage from "@/pages/delivery-reports";
 import UserManagementPage from "@/pages/users";
 import NotFound from "@/pages/not-found";
 
@@ -108,6 +109,9 @@ function Router() {
       </Route>
       <Route path="/reports">
         {() => <ProtectedRoute component={ReportsPage} />}
+      </Route>
+      <Route path="/delivery-reports">
+        {() => <ProtectedRoute component={DeliveryReportsPage} />}
       </Route>
       <Route path="/users">
         {() => <AdminRoute component={UserManagementPage} />}
