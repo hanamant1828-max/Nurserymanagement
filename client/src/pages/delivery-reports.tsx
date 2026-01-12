@@ -325,7 +325,7 @@ export default function DeliveryReportsPage() {
                 <p className="text-sm text-muted-foreground">Booked orders awaiting delivery.</p>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => exportToPDF(pendingDeliveries, "Pending_Deliveries", ["Customer", "Variety", "Lot", "Qty", "Date", "Village", "Taluk"], ["customerName", "varietyName", "lotNumber", "bookedQty", "deliveryDate", "village", "taluk"])}>
+                <Button variant="outline" size="sm" onClick={() => exportToPDF(pendingDeliveries, "Pending_Deliveries", ["Customer", "Variety", "Lot", "Qty", "Exp. Date", "Village", "Taluk"], ["customerName", "varietyName", "lotNumber", "bookedQty", "deliveryDate", "village", "taluk"])}>
                   PDF
                 </Button>
                 <Button size="sm" onClick={() => exportToExcel(pendingDeliveries, "Pending_Deliveries")}>
@@ -341,7 +341,7 @@ export default function DeliveryReportsPage() {
                     <TableHead>Variety</TableHead>
                     <TableHead>Lot</TableHead>
                     <TableHead className="text-right">Qty</TableHead>
-                    <TableHead>Date</TableHead>
+                    <TableHead>Exp. Date</TableHead>
                     <TableHead>Village</TableHead>
                     <TableHead>Taluk</TableHead>
                   </TableRow>
@@ -378,7 +378,7 @@ export default function DeliveryReportsPage() {
                 <p className="text-sm text-muted-foreground">Orders successfully delivered.</p>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => exportToPDF(deliveredOrders, "Delivered_Orders", ["Customer", "Variety", "Qty", "Total", "Date", "Village", "Taluk"], ["customerName", "varietyName", "bookedQty", "totalAmount", "deliveryDate", "village", "taluk"])}>
+                <Button variant="outline" size="sm" onClick={() => exportToPDF(deliveredOrders, "Delivered_Orders", ["Customer", "Variety", "Qty", "Total", "Exp. Date", "Actual Date", "Village", "Taluk"], ["customerName", "varietyName", "bookedQty", "totalAmount", "deliveryDate", "actualDeliveryDate", "village", "taluk"])}>
                   PDF
                 </Button>
                 <Button size="sm" onClick={() => exportToExcel(deliveredOrders, "Delivered_Orders")}>
@@ -394,7 +394,8 @@ export default function DeliveryReportsPage() {
                     <TableHead>Variety</TableHead>
                     <TableHead className="text-right">Qty</TableHead>
                     <TableHead className="text-right">Total</TableHead>
-                    <TableHead>Date</TableHead>
+                    <TableHead>Exp. Date</TableHead>
+                    <TableHead>Actual Date</TableHead>
                     <TableHead>Village</TableHead>
                     <TableHead>Taluk</TableHead>
                   </TableRow>
@@ -402,7 +403,7 @@ export default function DeliveryReportsPage() {
                 <TableBody>
                   {deliveredOrders.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No delivered orders found.</TableCell>
+                      <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No delivered orders found.</TableCell>
                     </TableRow>
                   ) : (
                     deliveredOrders.map((order) => (
@@ -412,6 +413,7 @@ export default function DeliveryReportsPage() {
                         <TableCell className="text-right">{order.bookedQty}</TableCell>
                         <TableCell className="text-right">₹{Number(order.totalAmount).toLocaleString()}</TableCell>
                         <TableCell>{order.deliveryDate}</TableCell>
+                        <TableCell>{order.actualDeliveryDate || "N/A"}</TableCell>
                         <TableCell>{order.village}</TableCell>
                         <TableCell>{order.taluk || "N/A"}</TableCell>
                       </TableRow>
