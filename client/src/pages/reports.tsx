@@ -288,7 +288,7 @@ export default function ReportsPage() {
 
         <div className={cn(
           "flex flex-wrap items-center gap-4 bg-muted/20 p-4 rounded-lg border border-dashed",
-          activeTab === "sowing" && "hidden"
+          (activeTab === "sowing" || activeTab === "order-reports") && "hidden"
         )}>
           <div className="flex flex-col gap-1 w-[200px]">
             <span className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Filter by District</span>
