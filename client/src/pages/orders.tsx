@@ -875,35 +875,53 @@ export default function OrdersPage() {
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent className="p-0">
-                                    <Command filter={(value, search) => {
-                                      if (value.toLowerCase().includes(search.toLowerCase())) return 1;
-                                      return 0;
-                                    }}>
-                                      <CommandInput placeholder="Search district..." className="h-9" />
-                                      <CommandList className="max-h-60 overflow-y-auto">
-                                        <CommandEmpty>No district found.</CommandEmpty>
-                                        <CommandGroup>
-                                          {districts.map(d => (
-                                            <CommandItem
-                                              key={d.name}
-                                              value={d.name}
-                                              onSelect={() => {
-                                                field.onChange(d.name);
-                                                form.setValue("taluk", "");
-                                              }}
-                                            >
-                                              <Check
-                                                className={cn(
-                                                  "mr-2 h-4 w-4",
-                                                  field.value === d.name ? "opacity-100" : "opacity-0"
-                                                )}
-                                              />
-                                              {d.name}
-                                            </CommandItem>
-                                          ))}
-                                        </CommandGroup>
-                                      </CommandList>
-                                    </Command>
+                                    <div className="p-2 border-b">
+                                      <div className="flex items-center gap-2 px-2 py-1 bg-muted/50 rounded-md">
+                                        <Search className="h-4 w-4 text-muted-foreground" />
+                                        <input
+                                          className="flex-1 bg-transparent border-none outline-none text-sm placeholder:text-muted-foreground"
+                                          placeholder="Search district..."
+                                          autoFocus
+                                          onChange={(e) => {
+                                            const search = e.target.value.toLowerCase();
+                                            const items = e.currentTarget.closest('[role="listbox"]')?.querySelectorAll('[role="option"]');
+                                            items?.forEach((item) => {
+                                              const text = item.textContent?.toLowerCase() || "";
+                                              (item as HTMLElement).style.display = text.includes(search) ? "flex" : "none";
+                                            });
+                                          }}
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="max-h-60 overflow-y-auto p-1" role="listbox">
+                                      {districts.length === 0 && (
+                                        <div className="p-2 text-sm text-muted-foreground text-center">No districts found</div>
+                                      )}
+                                      {districts.map(d => (
+                                        <div
+                                          key={d.name}
+                                          role="option"
+                                          aria-selected={field.value === d.name}
+                                          className={cn(
+                                            "flex items-center gap-2 px-2 py-1.5 text-sm rounded-sm cursor-pointer hover:bg-accent hover:text-accent-foreground",
+                                            field.value === d.name && "bg-accent text-accent-foreground"
+                                          )}
+                                          onClick={() => {
+                                            field.onChange(d.name);
+                                            form.setValue("taluk", "");
+                                            // Close the select manually if possible, or rely on it closing
+                                          }}
+                                        >
+                                          <Check
+                                            className={cn(
+                                              "h-4 w-4",
+                                              field.value === d.name ? "opacity-100" : "opacity-0"
+                                            )}
+                                          />
+                                          {d.name}
+                                        </div>
+                                      ))}
+                                    </div>
                                   </SelectContent>
                                 </Select>
                                 <FormMessage />
@@ -938,34 +956,51 @@ export default function OrdersPage() {
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent className="p-0">
-                                    <Command filter={(value, search) => {
-                                      if (value.toLowerCase().includes(search.toLowerCase())) return 1;
-                                      return 0;
-                                    }}>
-                                      <CommandInput placeholder="Search taluk..." className="h-9" />
-                                      <CommandList className="max-h-60 overflow-y-auto">
-                                        <CommandEmpty>No taluk found.</CommandEmpty>
-                                        <CommandGroup>
-                                          {taluks.map(t => (
-                                            <CommandItem
-                                              key={t}
-                                              value={t}
-                                              onSelect={() => {
-                                                field.onChange(t);
-                                              }}
-                                            >
-                                              <Check
-                                                className={cn(
-                                                  "mr-2 h-4 w-4",
-                                                  field.value === t ? "opacity-100" : "opacity-0"
-                                                )}
-                                              />
-                                              {t}
-                                            </CommandItem>
-                                          ))}
-                                        </CommandGroup>
-                                      </CommandList>
-                                    </Command>
+                                    <div className="p-2 border-b">
+                                      <div className="flex items-center gap-2 px-2 py-1 bg-muted/50 rounded-md">
+                                        <Search className="h-4 w-4 text-muted-foreground" />
+                                        <input
+                                          className="flex-1 bg-transparent border-none outline-none text-sm placeholder:text-muted-foreground"
+                                          placeholder="Search taluk..."
+                                          autoFocus
+                                          onChange={(e) => {
+                                            const search = e.target.value.toLowerCase();
+                                            const items = e.currentTarget.closest('[role="listbox"]')?.querySelectorAll('[role="option"]');
+                                            items?.forEach((item) => {
+                                              const text = item.textContent?.toLowerCase() || "";
+                                              (item as HTMLElement).style.display = text.includes(search) ? "flex" : "none";
+                                            });
+                                          }}
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="max-h-60 overflow-y-auto p-1" role="listbox">
+                                      {taluks.length === 0 && (
+                                        <div className="p-2 text-sm text-muted-foreground text-center">No taluks found</div>
+                                      )}
+                                      {taluks.map(t => (
+                                        <div
+                                          key={t}
+                                          role="option"
+                                          aria-selected={field.value === t}
+                                          className={cn(
+                                            "flex items-center gap-2 px-2 py-1.5 text-sm rounded-sm cursor-pointer hover:bg-accent hover:text-accent-foreground",
+                                            field.value === t && "bg-accent text-accent-foreground"
+                                          )}
+                                          onClick={() => {
+                                            field.onChange(t);
+                                          }}
+                                        >
+                                          <Check
+                                            className={cn(
+                                              "h-4 w-4",
+                                              field.value === t ? "opacity-100" : "opacity-0"
+                                            )}
+                                          />
+                                          {t}
+                                        </div>
+                                      ))}
+                                    </div>
                                   </SelectContent>
                                 </Select>
                                 <FormMessage />
