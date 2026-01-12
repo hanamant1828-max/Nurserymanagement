@@ -305,14 +305,14 @@ export default function DeliveryReportsPage() {
       </div>
 
       <Tabs defaultValue="pending" value={activeTab} className="w-full" onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3 mb-4">
-          <TabsTrigger value="pending" className="flex items-center gap-2">
+        <TabsList className="flex w-full mb-4 overflow-x-auto scrollbar-hide">
+          <TabsTrigger value="pending" className="flex items-center gap-2 flex-1 min-w-[160px]">
             <Truck className="w-4 h-4" /> <span>Pending Deliveries</span>
           </TabsTrigger>
-          <TabsTrigger value="delivered" className="flex items-center gap-2">
+          <TabsTrigger value="delivered" className="flex items-center gap-2 flex-1 min-w-[160px]">
             <CheckCircle className="w-4 h-4" /> <span>Delivered Orders</span>
           </TabsTrigger>
-          <TabsTrigger value="analysis" className="flex items-center gap-2">
+          <TabsTrigger value="analysis" className="flex items-center gap-2 flex-1 min-w-[160px]">
             <BarChart3 className="w-4 h-4" /> <span>Stats Analysis</span>
           </TabsTrigger>
         </TabsList>
@@ -421,9 +421,9 @@ export default function DeliveryReportsPage() {
 
         <TabsContent value="analysis">
           <Tabs defaultValue="variety">
-            <TabsList className="mb-4">
-              <TabsTrigger value="variety">Variety-wise</TabsTrigger>
-              <TabsTrigger value="village">Village-wise</TabsTrigger>
+            <TabsList className="flex w-full mb-4 overflow-x-auto scrollbar-hide">
+              <TabsTrigger value="variety" className="flex-1 min-w-[120px]">Variety-wise</TabsTrigger>
+              <TabsTrigger value="village" className="flex-1 min-w-[120px]">Village-wise</TabsTrigger>
             </TabsList>
             <TabsContent value="variety">
               <Card>

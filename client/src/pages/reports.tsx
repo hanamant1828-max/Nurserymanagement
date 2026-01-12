@@ -200,22 +200,20 @@ export default function ReportsPage() {
       </div>
 
       <Tabs defaultValue="sowing" value={activeTab} className="w-full" onValueChange={setActiveTab}>
-        <div className="overflow-x-auto pb-2 scrollbar-hide">
-          <TabsList className="inline-flex w-auto min-w-full md:grid md:w-full md:grid-cols-4 mb-4">
-            <TabsTrigger value="sowing" className="flex items-center gap-2 whitespace-nowrap">
-              <Sprout className="w-4 h-4" /> <span>Sowing</span>
-            </TabsTrigger>
-            <TabsTrigger value="stock" className="flex items-center gap-2 whitespace-nowrap">
-              <ShoppingBag className="w-4 h-4" /> <span>Stock</span>
-            </TabsTrigger>
-            <TabsTrigger value="variety" className="flex items-center gap-2 whitespace-nowrap">
-              <BarChart3 className="w-4 h-4" /> <span>Varieties</span>
-            </TabsTrigger>
-            <TabsTrigger value="payments" className="flex items-center gap-2 whitespace-nowrap">
-              <Search className="w-4 h-4" /> <span>Payments</span>
-            </TabsTrigger>
-          </TabsList>
-        </div>
+        <TabsList className="flex w-full mb-4 overflow-x-auto scrollbar-hide">
+          <TabsTrigger value="sowing" className="flex items-center gap-2 flex-1 min-w-[140px]">
+            <Sprout className="w-4 h-4" /> <span>Sowing</span>
+          </TabsTrigger>
+          <TabsTrigger value="stock" className="flex items-center gap-2 flex-1 min-w-[140px]">
+            <ShoppingBag className="w-4 h-4" /> <span>Stock</span>
+          </TabsTrigger>
+          <TabsTrigger value="variety" className="flex items-center gap-2 flex-1 min-w-[140px]">
+            <BarChart3 className="w-4 h-4" /> <span>Varieties</span>
+          </TabsTrigger>
+          <TabsTrigger value="payments" className="flex items-center gap-2 flex-1 min-w-[140px]">
+            <Search className="w-4 h-4" /> <span>Payments</span>
+          </TabsTrigger>
+        </TabsList>
 
         <TabsContent value="sowing">
           <Card>
