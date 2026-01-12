@@ -325,7 +325,7 @@ export default function DeliveryReportsPage() {
                 <p className="text-sm text-muted-foreground">Booked orders awaiting delivery.</p>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => exportToPDF(pendingDeliveries, "Pending_Deliveries", ["Customer", "Variety", "Lot", "Qty", "Date", "Village"], ["customerName", "varietyName", "lotNumber", "bookedQty", "deliveryDate", "village"])}>
+                <Button variant="outline" size="sm" onClick={() => exportToPDF(pendingDeliveries, "Pending_Deliveries", ["Customer", "Variety", "Lot", "Qty", "Date", "Village", "Taluk"], ["customerName", "varietyName", "lotNumber", "bookedQty", "deliveryDate", "village", "taluk"])}>
                   PDF
                 </Button>
                 <Button size="sm" onClick={() => exportToExcel(pendingDeliveries, "Pending_Deliveries")}>
@@ -343,12 +343,13 @@ export default function DeliveryReportsPage() {
                     <TableHead className="text-right">Qty</TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead>Village</TableHead>
+                    <TableHead>Taluk</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {pendingDeliveries.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No pending deliveries found.</TableCell>
+                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No pending deliveries found.</TableCell>
                     </TableRow>
                   ) : (
                     pendingDeliveries.map((order) => (
@@ -359,6 +360,7 @@ export default function DeliveryReportsPage() {
                         <TableCell className="text-right">{order.bookedQty}</TableCell>
                         <TableCell>{order.deliveryDate}</TableCell>
                         <TableCell>{order.village}</TableCell>
+                        <TableCell>{order.taluk || "N/A"}</TableCell>
                       </TableRow>
                     ))
                   )}
@@ -376,7 +378,7 @@ export default function DeliveryReportsPage() {
                 <p className="text-sm text-muted-foreground">Orders successfully delivered.</p>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => exportToPDF(deliveredOrders, "Delivered_Orders", ["Customer", "Variety", "Qty", "Total", "Date", "Village"], ["customerName", "varietyName", "bookedQty", "totalAmount", "deliveryDate", "village"])}>
+                <Button variant="outline" size="sm" onClick={() => exportToPDF(deliveredOrders, "Delivered_Orders", ["Customer", "Variety", "Qty", "Total", "Date", "Village", "Taluk"], ["customerName", "varietyName", "bookedQty", "totalAmount", "deliveryDate", "village", "taluk"])}>
                   PDF
                 </Button>
                 <Button size="sm" onClick={() => exportToExcel(deliveredOrders, "Delivered_Orders")}>
@@ -394,12 +396,13 @@ export default function DeliveryReportsPage() {
                     <TableHead className="text-right">Total</TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead>Village</TableHead>
+                    <TableHead>Taluk</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {deliveredOrders.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No delivered orders found.</TableCell>
+                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No delivered orders found.</TableCell>
                     </TableRow>
                   ) : (
                     deliveredOrders.map((order) => (
@@ -410,6 +413,7 @@ export default function DeliveryReportsPage() {
                         <TableCell className="text-right">₹{Number(order.totalAmount).toLocaleString()}</TableCell>
                         <TableCell>{order.deliveryDate}</TableCell>
                         <TableCell>{order.village}</TableCell>
+                        <TableCell>{order.taluk || "N/A"}</TableCell>
                       </TableRow>
                     ))
                   )}
