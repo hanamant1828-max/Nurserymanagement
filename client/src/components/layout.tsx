@@ -33,7 +33,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/orders", label: "Orders", icon: ShoppingCart },
     { href: "/today-deliveries", label: "Today's Deliveries", icon: CalendarCheck },
     { href: "/customers", label: "Customers", icon: Users },
-    { href: "/reports", label: "Reports", icon: BarChart3 },
+    { href: "/reports", label: "Report1", icon: BarChart3 },
   ];
 
   const adminItems = [
