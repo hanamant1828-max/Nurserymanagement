@@ -69,6 +69,8 @@ export const orders = pgTable("orders", {
   deliveryDate: text("delivery_date").notNull(),
   status: text("status").default("BOOKED").notNull(), // BOOKED, DELIVERED, CANCELLED
   paymentStatus: text("payment_status").notNull(), // Pending, Partially Paid, Paid
+  actualDeliveryDate: text("actual_delivery_date"),
+  actualDeliveryTime: text("actual_delivery_time"),
   deliveredQty: integer("delivered_qty").default(0),
   createdBy: integer("created_by"),
 }, (table) => [
