@@ -27,17 +27,17 @@ export default function ReportsPage() {
   const { data: lots, isLoading: loadingLots } = useLots();
   const { data: orders, isLoading: loadingOrders } = useOrders();
   const [searchTerm, setSearchTerm] = useState("");
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const queryParams = new URLSearchParams(location.split('?')[1] || "");
   const view = queryParams.get("view");
 
-  const [activeTab, setActiveTab] = useState<string>(view === "standard" ? "sowing" : "delivery-reports");
+  const [activeTab, setActiveTab] = useState<string>(view === "standard" ? "sowing" : "deliveries");
 
   useEffect(() => {
     if (view === "standard") {
       setActiveTab("sowing");
     } else {
-      setActiveTab("delivery-reports");
+      setActiveTab("deliveries");
     }
   }, [view]);
   
@@ -355,7 +355,7 @@ export default function ReportsPage() {
         </div>
       </div>
 
-      <Tabs defaultValue="sowing" className="w-full" onValueChange={setActiveTab}>
+      <Tabs defaultValue="sowing" value={activeTab} className="w-full" onValueChange={setActiveTab}>
         <div className="overflow-x-auto pb-2 scrollbar-hide">
           <TabsList className="inline-flex w-auto min-w-full md:grid md:w-full md:grid-cols-8 mb-4">
             <TabsTrigger value="sowing" className="flex items-center gap-2 whitespace-nowrap">
