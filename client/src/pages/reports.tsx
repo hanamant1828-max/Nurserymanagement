@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useLots } from "@/hooks/use-lots";
 import { useOrders } from "@/hooks/use-orders";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { format, parseISO, subMonths, isWithinInterval, startOfDay, endOfDay } from "date-fns";
 import * as XLSX from "xlsx";
 import { jsPDF } from "jspdf";
@@ -71,9 +78,22 @@ export default function ReportsPage() {
     }
   };
 
+  const [pageDistrictId, setPageDistrictId] = useState<string>("all");
+  const [pageTalukId, setPageTalukId] = useState<string>("all");
+
   const filterData = (data: any[], keys: string[]) => {
-    if (!searchTerm) return data;
-    return data.filter(item => 
+    let filtered = data;
+    
+    if (pageDistrictId !== "all") {
+      filtered = filtered.filter(item => item.district === pageDistrictId);
+    }
+    
+    if (pageTalukId !== "all") {
+      filtered = filtered.filter(item => item.taluk === pageTalukId);
+    }
+
+    if (!searchTerm) return filtered;
+    return filtered.filter(item => 
       keys.some(key => {
         const val = item[key];
         return val && val.toString().toLowerCase().includes(searchTerm.toLowerCase());
@@ -81,7 +101,22 @@ export default function ReportsPage() {
     );
   };
 
-  const dailySowingData = lots?.filter(l => isInRange(l.sowingDate)) || [];
+  const uniqueDistricts = useMemo(() => {
+    if (!orders) return [];
+    const districts = new Set(orders.map(o => o.district).filter(Boolean));
+    return Array.from(districts).sort();
+  }, [orders]);
+
+  const uniqueTaluks = useMemo(() => {
+    if (!orders) return [];
+    const taluks = new Set(
+      orders
+        .filter(o => pageDistrictId === "all" || o.district === pageDistrictId)
+        .map(o => o.taluk)
+        .filter(Boolean)
+    );
+    return Array.from(taluks).sort();
+  }, [orders, pageDistrictId]);
   const pendingDeliveries = orders?.filter(o => o.status === "BOOKED" && isInRange(o.deliveryDate)).map(o => {
     const lot = lots?.find(l => l.id === o.lotId);
     return {
@@ -89,6 +124,8 @@ export default function ReportsPage() {
       varietyName: (lot as any)?.variety?.name || "N/A"
     };
   }) || [];
+  
+  const dailySowingData = lots?.filter(l => isInRange(l.sowingDate)) || [];
   const deliveredOrders = orders?.filter(o => o.status === "DELIVERED" && isInRange(o.deliveryDate)) || [];
   
   const filteredDeliveredOrders = filterData(deliveredOrders, ["customerName", "village"]);
@@ -242,6 +279,57 @@ export default function ReportsPage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-4 bg-muted/20 p-4 rounded-lg border border-dashed">
+          <div className="flex flex-col gap-1 w-[200px]">
+            <span className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Filter by District</span>
+            <Select value={pageDistrictId} onValueChange={(val) => {
+              setPageDistrictId(val);
+              setPageTalukId("all");
+            }}>
+              <SelectTrigger className="bg-background">
+                <SelectValue placeholder="All Districts" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Districts</SelectItem>
+                {uniqueDistricts.map(d => (
+                  <SelectItem key={d} value={d || "Unknown"}>{d || "Unknown"}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex flex-col gap-1 w-[200px]">
+            <span className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Filter by Taluk</span>
+            <Select value={pageTalukId} onValueChange={setPageTalukId} disabled={pageDistrictId === "all"}>
+              <SelectTrigger className="bg-background">
+                <SelectValue placeholder="All Taluks" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Taluks</SelectItem>
+                {uniqueTaluks.map(t => (
+                  <SelectItem key={t} value={t || "Unknown"}>{t || "Unknown"}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-end h-full pt-5">
+            {(pageDistrictId !== "all" || pageTalukId !== "all") && (
+              <Button 
+                variant="ghost" 
+                size="sm"
+                className="text-xs text-muted-foreground hover:text-primary h-9"
+                onClick={() => {
+                  setPageDistrictId("all");
+                  setPageTalukId("all");
+                }}
+              >
+                Clear Location Filters
+              </Button>
+            )}
           </div>
         </div>
       </div>
