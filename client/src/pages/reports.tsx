@@ -204,6 +204,8 @@ export default function ReportsPage() {
   }, {}) || {});
 
 
+  const [activeTab, setActiveTab] = useState<string>("sowing");
+
   if (loadingLots || loadingOrders) {
     return <div className="p-8 text-center text-muted-foreground">Loading reports...</div>;
   }
@@ -284,7 +286,10 @@ export default function ReportsPage() {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-4 bg-muted/20 p-4 rounded-lg border border-dashed">
+        <div className={cn(
+          "flex flex-wrap items-center gap-4 bg-muted/20 p-4 rounded-lg border border-dashed",
+          activeTab === "sowing" && "hidden"
+        )}>
           <div className="flex flex-col gap-1 w-[200px]">
             <span className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Filter by District</span>
             <Select value={pageDistrictId} onValueChange={(val) => {
@@ -336,7 +341,7 @@ export default function ReportsPage() {
         </div>
       </div>
 
-      <Tabs defaultValue="sowing" className="w-full">
+      <Tabs defaultValue="sowing" className="w-full" onValueChange={setActiveTab}>
         <div className="overflow-x-auto pb-2 scrollbar-hide">
           <TabsList className="inline-flex w-auto min-w-full md:grid md:w-full md:grid-cols-8 mb-4">
             <TabsTrigger value="sowing" className="flex items-center gap-2 whitespace-nowrap">
