@@ -874,10 +874,18 @@ export default function OrdersPage() {
                                       <SelectValue placeholder="Select District" />
                                     </SelectTrigger>
                                   </FormControl>
-                                  <SelectContent className="max-h-60 overflow-y-auto">
-                                    {districts.map(d => (
-                                      <SelectItem key={d.name} value={d.name}>{d.name}</SelectItem>
-                                    ))}
+                                  <SelectContent className="p-0">
+                                    <Command>
+                                      <CommandInput placeholder="Search district..." className="h-9" />
+                                      <CommandList className="max-h-60 overflow-y-auto">
+                                        <CommandEmpty>No district found.</CommandEmpty>
+                                        <CommandGroup>
+                                          {districts.map(d => (
+                                            <SelectItem key={d.name} value={d.name}>{d.name}</SelectItem>
+                                          ))}
+                                        </CommandGroup>
+                                      </CommandList>
+                                    </Command>
                                   </SelectContent>
                                 </Select>
                                 <FormMessage />
@@ -911,10 +919,18 @@ export default function OrdersPage() {
                                       <SelectValue placeholder="Select Taluk" />
                                     </SelectTrigger>
                                   </FormControl>
-                                  <SelectContent className="max-h-60 overflow-y-auto">
-                                    {taluks.map(t => (
-                                      <SelectItem key={t} value={t}>{t}</SelectItem>
-                                    ))}
+                                  <SelectContent className="p-0">
+                                    <Command>
+                                      <CommandInput placeholder="Search taluk..." className="h-9" />
+                                      <CommandList className="max-h-60 overflow-y-auto">
+                                        <CommandEmpty>No taluk found.</CommandEmpty>
+                                        <CommandGroup>
+                                          {taluks.map(t => (
+                                            <SelectItem key={t} value={t}>{t}</SelectItem>
+                                          ))}
+                                        </CommandGroup>
+                                      </CommandList>
+                                    </Command>
                                   </SelectContent>
                                 </Select>
                                 <FormMessage />
