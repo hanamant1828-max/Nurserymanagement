@@ -1,8 +1,10 @@
 import { useState, useMemo } from "react";
 import { useLots } from "@/hooks/use-lots";
 import { useOrders } from "@/hooks/use-orders";
+import { useCategories } from "@/hooks/use-categories";
+import { useVarieties } from "@/hooks/use-varieties";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, FileSpreadsheet, Truck, CheckCircle, BarChart3, Calendar as CalendarIcon } from "lucide-react";
+import { Search, FileSpreadsheet, Truck, CheckCircle, BarChart3, Calendar as CalendarIcon, MapPin, Layers, Sprout } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -25,6 +27,8 @@ import { cn } from "@/lib/utils";
 export default function DeliveryReportsPage() {
   const { data: lots, isLoading: loadingLots } = useLots();
   const { data: orders, isLoading: loadingOrders } = useOrders();
+  const { data: categories } = useCategories();
+  const { data: varieties } = useVarieties();
   const [searchTerm, setSearchTerm] = useState("");
   
   const [activeTab, setActiveTab] = useState<string>("pending");
@@ -39,6 +43,8 @@ export default function DeliveryReportsPage() {
 
   const [pageDistrictId, setPageDistrictId] = useState<string>("all");
   const [pageTalukId, setPageTalukId] = useState<string>("all");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedVariety, setSelectedVariety] = useState<string>("all");
 
   const exportToExcel = (data: any[], fileName: string) => {
     const ws = XLSX.utils.json_to_sheet(data);
@@ -112,6 +118,20 @@ export default function DeliveryReportsPage() {
     
     if (pageTalukId !== "all") {
       filtered = filtered.filter(item => item.taluk === pageTalukId);
+    }
+
+    if (selectedCategory !== "all") {
+      filtered = filtered.filter(item => {
+        const lot = lots?.find(l => l.id === item.lotId);
+        return lot?.categoryId.toString() === selectedCategory;
+      });
+    }
+
+    if (selectedVariety !== "all") {
+      filtered = filtered.filter(item => {
+        const lot = lots?.find(l => l.id === item.lotId);
+        return lot?.varietyId.toString() === selectedVariety;
+      });
     }
 
     if (searchTerm) {
@@ -297,6 +317,39 @@ export default function DeliveryReportsPage() {
                 <SelectItem value="all">All Taluks</SelectItem>
                 {uniqueTaluks.map(t => (
                   <SelectItem key={t} value={t || "Unknown"}>{t || "Unknown"}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex flex-col gap-1 w-[200px]">
+            <span className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Filter by Category</span>
+            <Select value={selectedCategory} onValueChange={(val) => {
+              setSelectedCategory(val);
+              setSelectedVariety("all");
+            }}>
+              <SelectTrigger className="bg-background">
+                <SelectValue placeholder="All Categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {categories?.map(c => (
+                  <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex flex-col gap-1 w-[200px]">
+            <span className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Filter by Variety</span>
+            <Select value={selectedVariety} onValueChange={setSelectedVariety} disabled={selectedCategory === "all"}>
+              <SelectTrigger className="bg-background">
+                <SelectValue placeholder="All Varieties" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Varieties</SelectItem>
+                {varieties?.filter(v => v.categoryId.toString() === selectedCategory).map(v => (
+                  <SelectItem key={v.id} value={v.id.toString()}>{v.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>

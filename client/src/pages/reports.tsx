@@ -1,9 +1,18 @@
 import { useState, useMemo, useEffect } from "react";
 import { useLots } from "@/hooks/use-lots";
 import { useOrders } from "@/hooks/use-orders";
+import { useCategories } from "@/hooks/use-categories";
+import { useVarieties } from "@/hooks/use-varieties";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3, Search, FileSpreadsheet, Sprout, ShoppingBag, Calendar as CalendarIcon } from "lucide-react";
+import { BarChart3, Search, FileSpreadsheet, Sprout, ShoppingBag, Calendar as CalendarIcon, MapPin, Layers } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -19,7 +28,11 @@ import { cn } from "@/lib/utils";
 export default function ReportsPage() {
   const { data: lots, isLoading: loadingLots } = useLots();
   const { data: orders, isLoading: loadingOrders } = useOrders();
+  const { data: categories } = useCategories();
+  const { data: varieties } = useVarieties();
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedVariety, setSelectedVariety] = useState<string>("all");
   const [location] = useLocation();
   const queryParams = new URLSearchParams(location.split('?')[1] || "");
   const view = queryParams.get("view");
@@ -85,16 +98,36 @@ export default function ReportsPage() {
     }
   };
 
-  const dailySowingData = useMemo(() => lots?.filter(l => isInRange(l.sowingDate)) || [], [lots, dateRange]);
+  const filteredLots = useMemo(() => {
+    if (!lots) return [];
+    let filtered = lots;
 
-  const lotStockData = useMemo(() => lots?.map(l => ({
+    if (selectedCategory !== "all") {
+      filtered = filtered.filter(l => l.categoryId.toString() === selectedCategory);
+    }
+    if (selectedVariety !== "all") {
+      filtered = filtered.filter(l => l.varietyId.toString() === selectedVariety);
+    }
+    if (searchTerm) {
+      const s = searchTerm.toLowerCase();
+      filtered = filtered.filter(l => 
+        l.lotNumber.toLowerCase().includes(s) ||
+        (l as any).variety?.name.toLowerCase().includes(s)
+      );
+    }
+    return filtered;
+  }, [lots, selectedCategory, selectedVariety, searchTerm]);
+
+  const dailySowingData = useMemo(() => filteredLots.filter(l => isInRange(l.sowingDate)) || [], [filteredLots, dateRange]);
+
+  const lotStockData = useMemo(() => filteredLots.map(l => ({
     ...l,
     available: (l as any).available || 0
-  })) || [], [lots]);
+  })) || [], [filteredLots]);
 
   const varietyPerformance = useMemo(() => {
     const report: Record<string, any> = {};
-    lots?.forEach(lot => {
+    filteredLots.forEach(lot => {
       const varietyName = (lot as any).variety?.name || "N/A";
       if (!report[varietyName]) {
         report[varietyName] = { name: varietyName, sown: 0, damaged: 0, available: 0 };
@@ -104,7 +137,7 @@ export default function ReportsPage() {
       report[varietyName].available += (lot as any).available || 0;
     });
     return Object.values(report);
-  }, [lots]);
+  }, [filteredLots]);
 
   const paymentSummary = useMemo(() => {
     const report: Record<string, any> = {};
@@ -195,6 +228,41 @@ export default function ReportsPage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-4 bg-muted/20 p-4 rounded-lg border border-dashed">
+          <div className="flex flex-col gap-1 w-[200px]">
+            <span className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Filter by Category</span>
+            <Select value={selectedCategory} onValueChange={(val) => {
+              setSelectedCategory(val);
+              setSelectedVariety("all");
+            }}>
+              <SelectTrigger className="bg-background">
+                <SelectValue placeholder="All Categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {categories?.map(c => (
+                  <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex flex-col gap-1 w-[200px]">
+            <span className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Filter by Variety</span>
+            <Select value={selectedVariety} onValueChange={setSelectedVariety} disabled={selectedCategory === "all"}>
+              <SelectTrigger className="bg-background">
+                <SelectValue placeholder="All Varieties" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Varieties</SelectItem>
+                {varieties?.filter(v => v.categoryId.toString() === selectedCategory).map(v => (
+                  <SelectItem key={v.id} value={v.id.toString()}>{v.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>
