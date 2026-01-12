@@ -1,6 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useLots } from "@/hooks/use-lots";
 import { useOrders } from "@/hooks/use-orders";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart3, Search, FileSpreadsheet, Truck, Sprout, ShoppingBag, CheckCircle, Calendar as CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -26,7 +27,19 @@ export default function ReportsPage() {
   const { data: lots, isLoading: loadingLots } = useLots();
   const { data: orders, isLoading: loadingOrders } = useOrders();
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState<string>("sowing");
+  const [location] = useLocation();
+  const queryParams = new URLSearchParams(location.split('?')[1] || "");
+  const view = queryParams.get("view");
+
+  const [activeTab, setActiveTab] = useState<string>(view === "standard" ? "sowing" : "delivery-reports");
+
+  useEffect(() => {
+    if (view === "standard") {
+      setActiveTab("sowing");
+    } else {
+      setActiveTab("delivery-reports");
+    }
+  }, [view]);
   
   const [dateRange, setDateRange] = useState<{
     from: Date | undefined;
