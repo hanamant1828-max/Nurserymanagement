@@ -416,6 +416,11 @@ export default function OrdersPage() {
             title: "Customer Found",
             description: `Auto-filled details for ${customer.customerName}`,
           });
+        } else {
+          toast({
+            title: "New Customer",
+            description: "No record found. Please enter details manually.",
+          });
         }
       }
     } catch (error) {
@@ -807,14 +812,19 @@ export default function OrdersPage() {
                                     className="h-12 text-lg bg-muted/30 border-muted focus-visible:ring-primary/20 flex-1" 
                                     {...field} 
                                     onChange={(e) => {
-                                      field.onChange(e);
-                                      if (e.target.value.length === 10) {
-                                        checkPhone(e.target.value);
+                                      const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                      field.onChange(val);
+                                      if (val.length === 10) {
+                                        checkPhone(val);
                                       }
                                     }}
                                   />
                                 </FormControl>
-                                {isSearchingPhone && <Loader2 className="w-5 h-5 animate-spin mt-3.5" />}
+                                {isSearchingPhone && (
+                                  <div className="flex items-center">
+                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                  </div>
+                                )}
                               </div>
                               <FormMessage />
                             </FormItem>
