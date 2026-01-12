@@ -58,6 +58,7 @@ const formSchema = z.object({
   varietyId: z.string().min(1, "Variety is required"),
   lotNumber: z.string().min(1, "Lot Number is required"),
   seedsSown: z.coerce.number().min(1, "Must be greater than 0"),
+  damagePercentage: z.coerce.number().min(0).max(100).default(0),
   sowingDate: z.date(),
   expectedReadyDate: z.date().optional(),
   remarks: z.string().optional(),
@@ -147,6 +148,7 @@ export default function LotsPage() {
       varietyId: lot.varietyId.toString(),
       lotNumber: lot.lotNumber,
       seedsSown: lot.seedsSown,
+      damagePercentage: lot.damagePercentage ? parseFloat(lot.damagePercentage) : 0,
       sowingDate: new Date(lot.sowingDate),
       expectedReadyDate: lot.expectedReadyDate ? new Date(lot.expectedReadyDate) : undefined,
       remarks: lot.remarks || "",
@@ -177,10 +179,13 @@ export default function LotsPage() {
   const filteredVarieties = varieties?.filter(v => v.categoryId.toString() === selectedCategoryId && v.active);
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
+    const damageQty = Math.floor((data.seedsSown * (data.damagePercentage || 0)) / 100);
     const payload = {
       ...data,
       categoryId: Number(data.categoryId),
       varietyId: Number(data.varietyId),
+      damaged: damageQty,
+      damagePercentage: data.damagePercentage?.toString() || "0.00",
       sowingDate: format(data.sowingDate, "yyyy-MM-dd"),
       expectedReadyDate: data.expectedReadyDate ? format(data.expectedReadyDate, "yyyy-MM-dd") : undefined,
     };
@@ -340,13 +345,34 @@ export default function LotsPage() {
                             <Input 
                               type="number" 
                               {...field} 
-                              max={(() => {
-                                const lot = lots?.find(l => l.id === selectedLotId);
-                                return lot ? lot.seedsSown - lot.damaged : undefined;
-                              })()}
                             />
                           </FormControl>
                           <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Damage Percentage */}
+                    <FormField
+                      control={form.control}
+                      name="damagePercentage"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Damage Percentage (%)</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              step="0.01"
+                              placeholder="0.00"
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                          {form.watch("seedsSown") > 0 && field.value > 0 && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Calculated Damage Qty: {Math.floor((form.watch("seedsSown") * field.value) / 100)}
+                            </p>
+                          )}
                         </FormItem>
                       )}
                     />

@@ -42,6 +42,7 @@ export const lots = pgTable("lots", {
   sowingDate: text("sowing_date").notNull(),
   seedsSown: integer("seeds_sown").notNull(),
   damaged: integer("damaged").default(0).notNull(),
+  damagePercentage: decimal("damage_percentage").default("0.00"),
   expectedReadyDate: text("expected_ready_date"),
   remarks: text("remarks"),
 }, (table) => [
