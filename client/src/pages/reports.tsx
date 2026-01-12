@@ -31,12 +31,12 @@ export default function ReportsPage() {
   const queryParams = new URLSearchParams(location.split('?')[1] || "");
   const view = queryParams.get("view");
 
-  const [activeTab, setActiveTab] = useState<string>(view === "standard" ? "sowing" : "deliveries");
+  const [activeTab, setActiveTab] = useState<string>("sowing");
 
   useEffect(() => {
     if (view === "standard") {
       setActiveTab("sowing");
-    } else {
+    } else if (view === "deliveries") {
       setActiveTab("deliveries");
     }
   }, [view]);
