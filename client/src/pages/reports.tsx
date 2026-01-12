@@ -343,6 +343,8 @@ export default function ReportsPage() {
                   <TableRow>
                     <TableHead>Lot</TableHead>
                     <TableHead>Variety</TableHead>
+                    <TableHead className="text-right">Sowing Date</TableHead>
+                    <TableHead className="text-right">Ready Date</TableHead>
                     <TableHead className="text-right">Sown</TableHead>
                     <TableHead className="text-right">Available</TableHead>
                   </TableRow>
@@ -350,13 +352,15 @@ export default function ReportsPage() {
                 <TableBody>
                   {lotStockData.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">No stock data available.</TableCell>
+                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No stock data available.</TableCell>
                     </TableRow>
                   ) : (
                     lotStockData.map((lot) => (
                       <TableRow key={lot.id}>
                         <TableCell>{lot.lotNumber}</TableCell>
                         <TableCell>{(lot as any).variety?.name || "N/A"}</TableCell>
+                        <TableCell className="text-right">{lot.sowingDate}</TableCell>
+                        <TableCell className="text-right">{lot.expectedReadyDate}</TableCell>
                         <TableCell className="text-right">{lot.seedsSown}</TableCell>
                         <TableCell className="text-right font-bold">{lot.available}</TableCell>
                       </TableRow>
