@@ -9,6 +9,7 @@ import {
   CalendarCheck,
   Users, 
   BarChart3,
+  Truck,
   LogOut,
   Menu,
   X
