@@ -81,15 +81,17 @@ export default function ReportsPage() {
   const [pageDistrictId, setPageDistrictId] = useState<string>("all");
   const [pageTalukId, setPageTalukId] = useState<string>("all");
 
-  const filterData = (data: any[], keys: string[]) => {
+  const filterData = (data: any[], keys: string[], applyLocationFilters: boolean = true) => {
     let filtered = data;
     
-    if (pageDistrictId !== "all") {
-      filtered = filtered.filter(item => item.district === pageDistrictId);
-    }
-    
-    if (pageTalukId !== "all") {
-      filtered = filtered.filter(item => item.taluk === pageTalukId);
+    if (applyLocationFilters) {
+      if (pageDistrictId !== "all") {
+        filtered = filtered.filter(item => item.district === pageDistrictId);
+      }
+      
+      if (pageTalukId !== "all") {
+        filtered = filtered.filter(item => item.taluk === pageTalukId);
+      }
     }
 
     if (!searchTerm) return filtered;
@@ -392,7 +394,7 @@ export default function ReportsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filterData(dailySowingData, ["lotNumber", "sowingDate"]).map((lot) => (
+                  {filterData(dailySowingData, ["lotNumber", "sowingDate"], false).map((lot) => (
                     <TableRow key={lot.id}>
                       <TableCell>{lot.sowingDate}</TableCell>
                       <TableCell className="font-medium">{lot.lotNumber}</TableCell>
