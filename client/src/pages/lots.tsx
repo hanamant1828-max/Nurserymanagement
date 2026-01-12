@@ -813,14 +813,18 @@ export default function LotsPage() {
                     <p>{lot.sowingDate}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-muted-foreground text-xs">Available Stock</p>
-                    <p className="font-bold text-primary text-lg">{lot.available}</p>
+                    <p className="text-muted-foreground text-xs">Ready Date</p>
+                    <p className="font-medium text-amber-600">{lot.expectedReadyDate || "Not Set"}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground text-xs">Sown Quantity</p>
                     <p>{lot.seedsSown}</p>
                   </div>
                   <div className="text-right">
+                    <p className="text-muted-foreground text-xs">Available Stock</p>
+                    <p className="font-bold text-primary text-lg">{lot.available}</p>
+                  </div>
+                  <div className="col-span-2">
                     <p className="text-muted-foreground text-xs">Damaged</p>
                     <p className="text-destructive">{lot.damaged || 0}</p>
                   </div>
