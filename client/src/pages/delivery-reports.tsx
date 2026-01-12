@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { useLots } from "@/hooks/use-lots";
 import { useOrders } from "@/hooks/use-orders";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, FileSpreadsheet, Truck, CheckCircle, Calendar as CalendarIcon } from "lucide-react";
+import { Search, FileSpreadsheet, Truck, CheckCircle, BarChart3, Calendar as CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -148,6 +148,46 @@ export default function DeliveryReportsPage() {
     });
   }, [filteredOrders, lots, dateRange]);
 
+  const deliveryVarietyReport = useMemo(() => {
+    const report: Record<string, any> = {};
+    deliveredOrders.forEach(order => {
+      const key = order.varietyName;
+      if (!report[key]) {
+        report[key] = {
+          name: key,
+          orderCount: 0,
+          totalQty: 0,
+          totalAmount: 0
+        };
+      }
+      report[key].orderCount += 1;
+      report[key].totalQty += order.bookedQty;
+      report[key].totalAmount += Number(order.totalAmount);
+    });
+    return Object.values(report);
+  }, [deliveredOrders]);
+
+  const deliveryVillageReport = useMemo(() => {
+    const report: Record<string, any> = {};
+    deliveredOrders.forEach(order => {
+      const key = order.village || "Unknown";
+      if (!report[key]) {
+        report[key] = {
+          village: key,
+          orderCount: 0,
+          totalQty: 0,
+          paymentCollected: 0,
+          pendingBalance: 0
+        };
+      }
+      report[key].orderCount += 1;
+      report[key].totalQty += order.bookedQty;
+      report[key].paymentCollected += Number(order.advanceAmount);
+      report[key].pendingBalance += Number(order.remainingBalance);
+    });
+    return Object.values(report);
+  }, [deliveredOrders]);
+
   if (loadingLots || loadingOrders) {
     return <div className="p-8 text-center text-muted-foreground">Loading delivery reports...</div>;
   }
@@ -265,12 +305,15 @@ export default function DeliveryReportsPage() {
       </div>
 
       <Tabs defaultValue="pending" value={activeTab} className="w-full" onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2 mb-4">
+        <TabsList className="grid w-full grid-cols-3 mb-4">
           <TabsTrigger value="pending" className="flex items-center gap-2">
             <Truck className="w-4 h-4" /> <span>Pending Deliveries</span>
           </TabsTrigger>
           <TabsTrigger value="delivered" className="flex items-center gap-2">
             <CheckCircle className="w-4 h-4" /> <span>Delivered Orders</span>
+          </TabsTrigger>
+          <TabsTrigger value="analysis" className="flex items-center gap-2">
+            <BarChart3 className="w-4 h-4" /> <span>Stats Analysis</span>
           </TabsTrigger>
         </TabsList>
 
@@ -374,6 +417,87 @@ export default function DeliveryReportsPage() {
               </Table>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="analysis">
+          <Tabs defaultValue="variety">
+            <TabsList className="mb-4">
+              <TabsTrigger value="variety">Variety-wise</TabsTrigger>
+              <TabsTrigger value="village">Village-wise</TabsTrigger>
+            </TabsList>
+            <TabsContent value="variety">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle>Variety Delivery Analysis</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Variety</TableHead>
+                        <TableHead className="text-right">Orders</TableHead>
+                        <TableHead className="text-right">Qty</TableHead>
+                        <TableHead className="text-right">Revenue</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {deliveryVarietyReport.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">No data available for the selected period.</TableCell>
+                        </TableRow>
+                      ) : (
+                        deliveryVarietyReport.map((v: any, idx) => (
+                          <TableRow key={idx}>
+                            <TableCell className="font-medium">{v.name}</TableCell>
+                            <TableCell className="text-right">{v.orderCount}</TableCell>
+                            <TableCell className="text-right">{v.totalQty}</TableCell>
+                            <TableCell className="text-right">₹{v.totalAmount.toLocaleString()}</TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            <TabsContent value="village">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle>Village Delivery Analysis</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Village</TableHead>
+                        <TableHead className="text-right">Orders</TableHead>
+                        <TableHead className="text-right">Qty</TableHead>
+                        <TableHead className="text-right">Collected</TableHead>
+                        <TableHead className="text-right">Pending</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {deliveryVillageReport.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No data available for the selected period.</TableCell>
+                        </TableRow>
+                      ) : (
+                        deliveryVillageReport.map((v: any, idx) => (
+                          <TableRow key={idx}>
+                            <TableCell className="font-medium">{v.village}</TableCell>
+                            <TableCell className="text-right">{v.orderCount}</TableCell>
+                            <TableCell className="text-right">{v.totalQty}</TableCell>
+                            <TableCell className="text-right">₹{v.paymentCollected.toLocaleString()}</TableCell>
+                            <TableCell className="text-right">₹{v.pendingBalance.toLocaleString()}</TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
       </Tabs>
     </div>
