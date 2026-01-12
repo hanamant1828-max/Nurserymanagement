@@ -3,18 +3,11 @@ import { useLots } from "@/hooks/use-lots";
 import { useOrders } from "@/hooks/use-orders";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3, Search, FileSpreadsheet, Truck, Sprout, ShoppingBag, CheckCircle, Calendar as CalendarIcon } from "lucide-react";
+import { BarChart3, Search, FileSpreadsheet, Sprout, ShoppingBag, Calendar as CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { format, parseISO, subMonths, isWithinInterval, startOfDay, endOfDay } from "date-fns";
 import * as XLSX from "xlsx";
 import { jsPDF } from "jspdf";
@@ -27,7 +20,7 @@ export default function ReportsPage() {
   const { data: lots, isLoading: loadingLots } = useLots();
   const { data: orders, isLoading: loadingOrders } = useOrders();
   const [searchTerm, setSearchTerm] = useState("");
-  const [location, setLocation] = useLocation();
+  const [location] = useLocation();
   const queryParams = new URLSearchParams(location.split('?')[1] || "");
   const view = queryParams.get("view");
 
@@ -36,8 +29,6 @@ export default function ReportsPage() {
   useEffect(() => {
     if (view === "standard") {
       setActiveTab("sowing");
-    } else if (view === "deliveries") {
-      setActiveTab("deliveries");
     }
   }, [view]);
   
@@ -48,9 +39,6 @@ export default function ReportsPage() {
     from: subMonths(new Date(), 1),
     to: new Date(),
   });
-
-  const [pageDistrictId, setPageDistrictId] = useState<string>("all");
-  const [pageTalukId, setPageTalukId] = useState<string>("all");
 
   const exportToExcel = (data: any[], fileName: string) => {
     const ws = XLSX.utils.json_to_sheet(data);
@@ -97,113 +85,7 @@ export default function ReportsPage() {
     }
   };
 
-  const filterData = (data: any[], keys: string[], applyLocationFilters: boolean = true) => {
-    let filtered = data;
-    
-    if (applyLocationFilters) {
-      if (pageDistrictId !== "all") {
-        filtered = filtered.filter(item => item.district === pageDistrictId);
-      }
-      
-      if (pageTalukId !== "all") {
-        filtered = filtered.filter(item => item.taluk === pageTalukId);
-      }
-    }
-
-    if (!searchTerm) return filtered;
-    return filtered.filter(item => 
-      keys.some(key => {
-        const val = item[key];
-        return val && val.toString().toLowerCase().includes(searchTerm.toLowerCase());
-      })
-    );
-  };
-
-  const uniqueDistricts = useMemo(() => {
-    if (!orders) return [];
-    const districts = new Set(orders.map(o => o.district).filter(Boolean));
-    return Array.from(districts).sort();
-  }, [orders]);
-
-  const uniqueTaluks = useMemo(() => {
-    if (!orders) return [];
-    const taluks = new Set(
-      orders
-        .filter(o => pageDistrictId === "all" || o.district === pageDistrictId)
-        .map(o => o.taluk)
-        .filter(Boolean)
-    );
-    return Array.from(taluks).sort();
-  }, [orders, pageDistrictId]);
-
-  const filteredOrders = useMemo(() => {
-    if (!orders) return [];
-    return filterData(orders, ["customerName", "village", "phone", "district", "taluk"]);
-  }, [orders, searchTerm, pageDistrictId, pageTalukId]);
-
   const dailySowingData = useMemo(() => lots?.filter(l => isInRange(l.sowingDate)) || [], [lots, dateRange]);
-
-  const pendingDeliveries = useMemo(() => {
-    return filteredOrders.filter(o => o.status === "BOOKED" && isInRange(o.deliveryDate)).map(o => {
-      const lot = lots?.find(l => l.id === o.lotId);
-      return {
-        ...o,
-        varietyName: (lot as any)?.variety?.name || "N/A",
-        lotNumber: lot?.lotNumber || "N/A"
-      };
-    });
-  }, [filteredOrders, lots, dateRange]);
-
-  const deliveredOrders = useMemo(() => {
-    return filteredOrders.filter(o => o.status === "DELIVERED" && isInRange(o.deliveryDate)).map(o => {
-      const lot = lots?.find(l => l.id === o.lotId);
-      return {
-        ...o,
-        varietyName: (lot as any)?.variety?.name || "N/A",
-        lotNumber: lot?.lotNumber || "N/A"
-      };
-    });
-  }, [filteredOrders, lots, dateRange]);
-
-  const deliveryVarietyReport = useMemo(() => {
-    const report: Record<string, any> = {};
-    deliveredOrders.forEach(order => {
-      const key = order.varietyName;
-      if (!report[key]) {
-        report[key] = {
-          name: key,
-          orderCount: 0,
-          totalQty: 0,
-          totalAmount: 0
-        };
-      }
-      report[key].orderCount += 1;
-      report[key].totalQty += order.bookedQty;
-      report[key].totalAmount += Number(order.totalAmount);
-    });
-    return Object.values(report);
-  }, [deliveredOrders]);
-
-  const deliveryVillageReport = useMemo(() => {
-    const report: Record<string, any> = {};
-    deliveredOrders.forEach(order => {
-      const key = order.village || "Unknown";
-      if (!report[key]) {
-        report[key] = {
-          village: key,
-          orderCount: 0,
-          totalQty: 0,
-          paymentCollected: 0,
-          pendingBalance: 0
-        };
-      }
-      report[key].orderCount += 1;
-      report[key].totalQty += order.bookedQty;
-      report[key].paymentCollected += Number(order.advanceAmount);
-      report[key].pendingBalance += Number(order.remainingBalance);
-    });
-    return Object.values(report);
-  }, [deliveredOrders]);
 
   const lotStockData = useMemo(() => lots?.map(l => ({
     ...l,
@@ -307,7 +189,7 @@ export default function ReportsPage() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input 
-                placeholder="Customer, village, phone..." 
+                placeholder="Search..." 
                 className="pl-9"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -315,60 +197,13 @@ export default function ReportsPage() {
             </div>
           </div>
         </div>
-
-        <div className={cn(
-          "flex flex-wrap items-center gap-4 bg-muted/20 p-4 rounded-lg border border-dashed",
-          (activeTab === "sowing" || activeTab === "stock" || activeTab === "variety") && "hidden"
-        )}>
-          <div className="flex flex-col gap-1 w-[200px]">
-            <span className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Filter by District</span>
-            <Select value={pageDistrictId} onValueChange={(val) => {
-              setPageDistrictId(val);
-              setPageTalukId("all");
-            }}>
-              <SelectTrigger className="bg-background">
-                <SelectValue placeholder="All Districts" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Districts</SelectItem>
-                {uniqueDistricts.map(d => (
-                  <SelectItem key={d} value={d || "Unknown"}>{d || "Unknown"}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex flex-col gap-1 w-[200px]">
-            <span className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Filter by Taluk</span>
-            <Select value={pageTalukId} onValueChange={setPageTalukId} disabled={pageDistrictId === "all"}>
-              <SelectTrigger className="bg-background">
-                <SelectValue placeholder="All Taluks" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Taluks</SelectItem>
-                {uniqueTaluks.map(t => (
-                  <SelectItem key={t} value={t || "Unknown"}>{t || "Unknown"}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
       </div>
 
       <Tabs defaultValue="sowing" value={activeTab} className="w-full" onValueChange={setActiveTab}>
         <div className="overflow-x-auto pb-2 scrollbar-hide">
-          <TabsList className="inline-flex w-auto min-w-full md:grid md:w-full md:grid-cols-8 mb-4">
+          <TabsList className="inline-flex w-auto min-w-full md:grid md:w-full md:grid-cols-4 mb-4">
             <TabsTrigger value="sowing" className="flex items-center gap-2 whitespace-nowrap">
               <Sprout className="w-4 h-4" /> <span>Sowing</span>
-            </TabsTrigger>
-            <TabsTrigger value="deliveries" className="flex items-center gap-2 whitespace-nowrap">
-              <Truck className="w-4 h-4" /> <span>Pending</span>
-            </TabsTrigger>
-            <TabsTrigger value="delivered" className="flex items-center gap-2 whitespace-nowrap">
-              <CheckCircle className="w-4 h-4" /> <span>Delivered</span>
-            </TabsTrigger>
-            <TabsTrigger value="delivery-reports" className="flex items-center gap-2 whitespace-nowrap">
-              <BarChart3 className="w-4 h-4" /> <span>Stats</span>
             </TabsTrigger>
             <TabsTrigger value="stock" className="flex items-center gap-2 whitespace-nowrap">
               <ShoppingBag className="w-4 h-4" /> <span>Stock</span>
@@ -410,171 +245,25 @@ export default function ReportsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {dailySowingData.map((lot) => (
-                    <TableRow key={lot.id}>
-                      <TableCell>{lot.sowingDate}</TableCell>
-                      <TableCell className="font-medium">{lot.lotNumber}</TableCell>
-                      <TableCell>{(lot as any).variety?.name || "N/A"}</TableCell>
-                      <TableCell>{lot.seedsSown}</TableCell>
-                      <TableCell>{lot.expectedReadyDate}</TableCell>
+                  {dailySowingData.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No sowing data found.</TableCell>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="deliveries">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Pending Deliveries</CardTitle>
-                <p className="text-sm text-muted-foreground">Booked orders awaiting delivery.</p>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => exportToPDF(pendingDeliveries, "Pending_Deliveries", ["Customer", "Variety", "Lot", "Qty", "Date"], ["customerName", "varietyName", "lotNumber", "bookedQty", "deliveryDate"])}>
-                  PDF
-                </Button>
-                <Button size="sm" onClick={() => exportToExcel(pendingDeliveries, "Pending_Deliveries")}>
-                  Excel
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Variety</TableHead>
-                    <TableHead>Qty</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Village</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {pendingDeliveries.map((order) => (
-                    <TableRow key={order.id}>
-                      <TableCell>{order.customerName}</TableCell>
-                      <TableCell>{order.varietyName}</TableCell>
-                      <TableCell>{order.bookedQty}</TableCell>
-                      <TableCell>{order.deliveryDate}</TableCell>
-                      <TableCell>{order.village}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="delivered">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Delivered Orders</CardTitle>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => exportToPDF(deliveredOrders, "Delivered_Orders", ["Customer", "Variety", "Qty", "Total"], ["customerName", "varietyName", "bookedQty", "totalAmount"])}>
-                  PDF
-                </Button>
-                <Button size="sm" onClick={() => exportToExcel(deliveredOrders, "Delivered_Orders")}>
-                  Excel
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Variety</TableHead>
-                    <TableHead className="text-right">Qty</TableHead>
-                    <TableHead className="text-right">Total</TableHead>
-                    <TableHead>Date</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {deliveredOrders.map((order) => (
-                    <TableRow key={order.id}>
-                      <TableCell>{order.customerName}</TableCell>
-                      <TableCell>{order.varietyName}</TableCell>
-                      <TableCell className="text-right">{order.bookedQty}</TableCell>
-                      <TableCell className="text-right">₹{Number(order.totalAmount).toLocaleString()}</TableCell>
-                      <TableCell>{order.deliveryDate}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="delivery-reports">
-          <Tabs defaultValue="variety">
-            <TabsList className="mb-4">
-              <TabsTrigger value="variety">Variety-wise</TabsTrigger>
-              <TabsTrigger value="village">Village-wise</TabsTrigger>
-            </TabsList>
-            <TabsContent value="variety">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle>Variety Delivery Analysis</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Variety</TableHead>
-                        <TableHead className="text-right">Orders</TableHead>
-                        <TableHead className="text-right">Qty</TableHead>
-                        <TableHead className="text-right">Revenue</TableHead>
+                  ) : (
+                    dailySowingData.map((lot) => (
+                      <TableRow key={lot.id}>
+                        <TableCell>{lot.sowingDate}</TableCell>
+                        <TableCell className="font-medium">{lot.lotNumber}</TableCell>
+                        <TableCell>{(lot as any).variety?.name || "N/A"}</TableCell>
+                        <TableCell>{lot.seedsSown}</TableCell>
+                        <TableCell>{lot.expectedReadyDate}</TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {deliveryVarietyReport.map((v: any, idx) => (
-                        <TableRow key={idx}>
-                          <TableCell>{v.name}</TableCell>
-                          <TableCell className="text-right">{v.orderCount}</TableCell>
-                          <TableCell className="text-right">{v.totalQty}</TableCell>
-                          <TableCell className="text-right">₹{v.totalAmount.toLocaleString()}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            <TabsContent value="village">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle>Village Delivery Analysis</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Village</TableHead>
-                        <TableHead className="text-right">Orders</TableHead>
-                        <TableHead className="text-right">Collected</TableHead>
-                        <TableHead className="text-right">Pending</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {deliveryVillageReport.map((v: any, idx) => (
-                        <TableRow key={idx}>
-                          <TableCell>{v.village}</TableCell>
-                          <TableCell className="text-right">{v.orderCount}</TableCell>
-                          <TableCell className="text-right">₹{v.paymentCollected.toLocaleString()}</TableCell>
-                          <TableCell className="text-right">₹{v.pendingBalance.toLocaleString()}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="stock">
@@ -593,14 +282,20 @@ export default function ReportsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {lotStockData.map((lot) => (
-                    <TableRow key={lot.id}>
-                      <TableCell>{lot.lotNumber}</TableCell>
-                      <TableCell>{(lot as any).variety?.name || "N/A"}</TableCell>
-                      <TableCell className="text-right">{lot.seedsSown}</TableCell>
-                      <TableCell className="text-right font-bold">{lot.available}</TableCell>
+                  {lotStockData.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">No stock data available.</TableCell>
                     </TableRow>
-                  ))}
+                  ) : (
+                    lotStockData.map((lot) => (
+                      <TableRow key={lot.id}>
+                        <TableCell>{lot.lotNumber}</TableCell>
+                        <TableCell>{(lot as any).variety?.name || "N/A"}</TableCell>
+                        <TableCell className="text-right">{lot.seedsSown}</TableCell>
+                        <TableCell className="text-right font-bold">{lot.available}</TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </CardContent>
@@ -622,13 +317,19 @@ export default function ReportsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {varietyPerformance.map((v: any, idx) => (
-                    <TableRow key={idx}>
-                      <TableCell>{v.name}</TableCell>
-                      <TableCell className="text-right">{v.sown}</TableCell>
-                      <TableCell className="text-right font-bold text-primary">{v.available}</TableCell>
+                  {varietyPerformance.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">No variety performance data.</TableCell>
                     </TableRow>
-                  ))}
+                  ) : (
+                    varietyPerformance.map((v: any, idx) => (
+                      <TableRow key={idx}>
+                        <TableCell>{v.name}</TableCell>
+                        <TableCell className="text-right">{v.sown}</TableCell>
+                        <TableCell className="text-right">{v.available}</TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </CardContent>
@@ -637,7 +338,7 @@ export default function ReportsPage() {
 
         <TabsContent value="payments">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader>
               <CardTitle>Payment Summary</CardTitle>
             </CardHeader>
             <CardContent>
@@ -645,18 +346,24 @@ export default function ReportsPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Mode</TableHead>
-                    <TableHead className="text-right">Transactions</TableHead>
+                    <TableHead className="text-right">Orders</TableHead>
                     <TableHead className="text-right">Total Advance</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {paymentSummary.map((p: any, idx) => (
-                    <TableRow key={idx}>
-                      <TableCell>{p.mode}</TableCell>
-                      <TableCell className="text-right">{p.count}</TableCell>
-                      <TableCell className="text-right font-bold">₹{p.totalAdvance.toLocaleString()}</TableCell>
+                  {paymentSummary.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">No payment data for the selected period.</TableCell>
                     </TableRow>
-                  ))}
+                  ) : (
+                    paymentSummary.map((p: any, idx) => (
+                      <TableRow key={idx}>
+                        <TableCell className="capitalize">{p.mode}</TableCell>
+                        <TableCell className="text-right">{p.count}</TableCell>
+                        <TableCell className="text-right">₹{p.totalAdvance.toLocaleString()}</TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </CardContent>
