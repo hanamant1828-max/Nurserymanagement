@@ -659,6 +659,7 @@ export default function LotsPage() {
               <TableHead>Lot No</TableHead>
               <TableHead>Variety</TableHead>
               <TableHead>Sowing Date</TableHead>
+              <TableHead>Ready Date</TableHead>
               <TableHead className="text-right">Sown</TableHead>
               <TableHead className="text-right text-destructive">Damaged</TableHead>
               <TableHead className="text-right text-primary font-bold">Available</TableHead>
@@ -691,6 +692,9 @@ export default function LotsPage() {
                       </div>
                     </TableCell>
                     <TableCell>{lot.sowingDate}</TableCell>
+                    <TableCell>
+                      <span className="font-medium text-amber-600">{lot.expectedReadyDate || "-"}</span>
+                    </TableCell>
                     <TableCell className="text-right">{lot.seedsSown}</TableCell>
                     <TableCell className="text-right text-destructive">{lot.damaged > 0 ? lot.damaged : '-'}</TableCell>
                     <TableCell className="text-right font-bold text-primary text-lg">
