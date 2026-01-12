@@ -875,13 +875,31 @@ export default function OrdersPage() {
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent className="p-0">
-                                    <Command>
+                                    <Command filter={(value, search) => {
+                                      if (value.toLowerCase().includes(search.toLowerCase())) return 1;
+                                      return 0;
+                                    }}>
                                       <CommandInput placeholder="Search district..." className="h-9" />
                                       <CommandList className="max-h-60 overflow-y-auto">
                                         <CommandEmpty>No district found.</CommandEmpty>
                                         <CommandGroup>
                                           {districts.map(d => (
-                                            <SelectItem key={d.name} value={d.name}>{d.name}</SelectItem>
+                                            <CommandItem
+                                              key={d.name}
+                                              value={d.name}
+                                              onSelect={() => {
+                                                field.onChange(d.name);
+                                                form.setValue("taluk", "");
+                                              }}
+                                            >
+                                              <Check
+                                                className={cn(
+                                                  "mr-2 h-4 w-4",
+                                                  field.value === d.name ? "opacity-100" : "opacity-0"
+                                                )}
+                                              />
+                                              {d.name}
+                                            </CommandItem>
                                           ))}
                                         </CommandGroup>
                                       </CommandList>
@@ -920,13 +938,30 @@ export default function OrdersPage() {
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent className="p-0">
-                                    <Command>
+                                    <Command filter={(value, search) => {
+                                      if (value.toLowerCase().includes(search.toLowerCase())) return 1;
+                                      return 0;
+                                    }}>
                                       <CommandInput placeholder="Search taluk..." className="h-9" />
                                       <CommandList className="max-h-60 overflow-y-auto">
                                         <CommandEmpty>No taluk found.</CommandEmpty>
                                         <CommandGroup>
                                           {taluks.map(t => (
-                                            <SelectItem key={t} value={t}>{t}</SelectItem>
+                                            <CommandItem
+                                              key={t}
+                                              value={t}
+                                              onSelect={() => {
+                                                field.onChange(t);
+                                              }}
+                                            >
+                                              <Check
+                                                className={cn(
+                                                  "mr-2 h-4 w-4",
+                                                  field.value === t ? "opacity-100" : "opacity-0"
+                                                )}
+                                              />
+                                              {t}
+                                            </CommandItem>
                                           ))}
                                         </CommandGroup>
                                       </CommandList>
