@@ -82,7 +82,13 @@ export default function ReportsPage() {
   };
 
   const dailySowingData = lots?.filter(l => isInRange(l.sowingDate)) || [];
-  const pendingDeliveries = orders?.filter(o => o.status === "BOOKED" && isInRange(o.deliveryDate)) || [];
+  const pendingDeliveries = orders?.filter(o => o.status === "BOOKED" && isInRange(o.deliveryDate)).map(o => {
+    const lot = lots?.find(l => l.id === o.lotId);
+    return {
+      ...o,
+      varietyName: (lot as any)?.variety?.name || "N/A"
+    };
+  }) || [];
   const deliveredOrders = orders?.filter(o => o.status === "DELIVERED" && isInRange(o.deliveryDate)) || [];
   
   const filteredDeliveredOrders = filterData(deliveredOrders, ["customerName", "village"]);
@@ -326,7 +332,7 @@ export default function ReportsPage() {
                 <p className="text-sm text-muted-foreground">All booked orders awaiting delivery.</p>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => exportToPDF(pendingDeliveries, "Pending_Deliveries", ["Customer", "Lot", "Qty", "Delivery Date", "Village"], ["customerName", "lot.lotNumber", "bookedQty", "deliveryDate", "village"])}>
+                <Button variant="outline" size="sm" onClick={() => exportToPDF(pendingDeliveries, "Pending_Deliveries", ["Customer", "Variety", "Lot", "Qty", "Delivery Date", "Village"], ["customerName", "varietyName", "lot.lotNumber", "bookedQty", "deliveryDate", "village"])}>
                   Download PDF
                 </Button>
                 <Button size="sm" onClick={() => exportToExcel(pendingDeliveries, "Pending_Deliveries")}>
@@ -339,6 +345,7 @@ export default function ReportsPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Customer</TableHead>
+                    <TableHead>Variety</TableHead>
                     <TableHead>Lot</TableHead>
                     <TableHead>Qty</TableHead>
                     <TableHead>Delivery Date</TableHead>
@@ -346,15 +353,20 @@ export default function ReportsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filterData(pendingDeliveries, ["customerName", "village"]).map((order) => (
-                    <TableRow key={order.id}>
-                      <TableCell className="font-medium">{order.customerName}</TableCell>
-                      <TableCell>{(order as any).lot?.lotNumber || "N/A"}</TableCell>
-                      <TableCell>{order.bookedQty}</TableCell>
-                      <TableCell>{order.deliveryDate}</TableCell>
-                      <TableCell>{order.village}</TableCell>
-                    </TableRow>
-                  ))}
+                  {filterData(pendingDeliveries, ["customerName", "village"]).map((order) => {
+                    const lot = lots?.find(l => l.id === order.lotId);
+                    const varietyName = (lot as any)?.variety?.name || "N/A";
+                    return (
+                      <TableRow key={order.id}>
+                        <TableCell className="font-medium">{order.customerName}</TableCell>
+                        <TableCell className="font-bold">{varietyName}</TableCell>
+                        <TableCell>{lot?.lotNumber || "N/A"}</TableCell>
+                        <TableCell>{order.bookedQty}</TableCell>
+                        <TableCell>{order.deliveryDate}</TableCell>
+                        <TableCell>{order.village}</TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </CardContent>

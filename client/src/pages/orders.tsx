@@ -1556,10 +1556,10 @@ export default function OrdersPage() {
                       )}
                       <div className="flex-1">
                         <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Category & Variety</p>
-                        <p className="text-[10px] font-bold text-primary truncate uppercase">{category?.name}</p>
+                        <p className="font-bold text-sm leading-tight text-primary uppercase">{category?.name}</p>
                         <p className="font-bold text-sm leading-tight">{variety?.name}</p>
                         <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-xs font-mono text-muted-foreground bg-muted px-1 rounded">{lot?.lotNumber}</span>
+                          <span className="text-xs font-mono text-muted-foreground bg-muted px-1 rounded">Lot: {lot?.lotNumber}</span>
                           <span className="text-xs font-bold text-primary">₹{Number(order.perUnitPrice).toLocaleString()}/unit</span>
                         </div>
                       </div>
