@@ -374,11 +374,16 @@ export default function OrdersPage() {
     !selectedCategoryId || v.categoryId.toString() === selectedCategoryId
   );
 
-  const availableLots = lots?.filter(l => 
-    (!selectedCategoryId || l.categoryId.toString() === selectedCategoryId) &&
-    (!selectedVarietyId || l.varietyId.toString() === selectedVarietyId) &&
-    l.available > 0
-  );
+  const availableLots = useMemo(() => {
+    return lots?.filter(l => 
+      (!selectedCategoryId || l.categoryId.toString() === selectedCategoryId) &&
+      (!selectedVarietyId || l.varietyId.toString() === selectedVarietyId) &&
+      l.available > 0
+    ).map(lot => {
+      const lotOrders = orders?.filter(o => o.lotId === lot.id && (o.status === "BOOKED" || o.status === "DELIVERED")) || [];
+      return { ...lot, lotOrders };
+    });
+  }, [lots, orders, selectedCategoryId, selectedVarietyId]);
 
   const selectedLot = lots?.find(l => l.id.toString() === selectedLotId);
   const selectedCategory = categories?.find(c => c.id === selectedLot?.categoryId);
@@ -730,9 +735,9 @@ export default function OrdersPage() {
                                 disabled={!selectedVarietyId}
                                 searchFields={["lotNumber"]}
                                 renderItem={(lot) => {
-                                  const lotOrders = orders?.filter(o => o.lotId === lot.id && (o.status === "BOOKED" || o.status === "DELIVERED")) || [];
+                                  const lotOrders = lot.lotOrders || [];
                                   return (
-                                    <div className="flex items-center gap-4 py-1">
+                                    <div className="flex items-center gap-4 py-1 w-full">
                                       {lot.category?.image ? (
                                         <img src={lot.category.image} className="w-8 h-8 rounded-md object-cover border shadow-sm" alt="" />
                                       ) : (
@@ -740,22 +745,22 @@ export default function OrdersPage() {
                                           <Layers className="w-4 h-4 text-muted-foreground" />
                                         </div>
                                       )}
-                                      <div className="flex flex-col flex-1">
+                                      <div className="flex flex-col flex-1 min-w-0">
                                         <div className="flex justify-between items-center gap-2">
-                                          <span className="font-semibold text-sm leading-tight">{lot.lotNumber}</span>
-                                          <span className="text-[10px] text-muted-foreground font-bold">Stock: {lot.available}</span>
+                                          <span className="font-semibold text-sm leading-tight truncate">{lot.lotNumber}</span>
+                                          <span className="text-[10px] text-muted-foreground font-bold whitespace-nowrap">Stock: {lot.available}</span>
                                         </div>
                                         {lotOrders.length > 0 && (
-                                          <div className="mt-1 space-y-0.5 border-t pt-1 border-muted-foreground/10">
-                                            {lotOrders.slice(0, 3).map((o, idx) => (
-                                              <div key={idx} className="flex justify-between items-center text-[9px] text-muted-foreground leading-none">
-                                                <span>{o.deliveryDate ? format(new Date(o.deliveryDate), "dd MMM") : "N/A"}</span>
-                                                <span className="font-bold text-orange-600">Qty: {o.bookedQty}</span>
+                                          <div className="mt-1 space-y-1 border-t pt-1 border-muted-foreground/10">
+                                            {lotOrders.slice(0, 5).map((o: any, idx: number) => (
+                                              <div key={idx} className="flex justify-between items-center text-[10px] text-muted-foreground leading-none bg-muted/20 px-1 py-0.5 rounded">
+                                                <span className="font-medium">{o.deliveryDate ? format(new Date(o.deliveryDate), "dd MMM") : "N/A"}</span>
+                                                <span className="font-black text-orange-600">Qty: {o.bookedQty}</span>
                                               </div>
                                             ))}
-                                            {lotOrders.length > 3 && (
-                                              <div className="text-[8px] text-muted-foreground/60 text-center italic">
-                                                +{lotOrders.length - 3} more orders
+                                            {lotOrders.length > 5 && (
+                                              <div className="text-[9px] text-muted-foreground/60 text-center italic font-bold">
+                                                +{lotOrders.length - 5} more orders
                                               </div>
                                             )}
                                           </div>
