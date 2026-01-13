@@ -496,7 +496,7 @@ export default function TodayDeliveriesPage() {
           <TableBody>
             {filteredOrders.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
+                <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
                   <div className="flex flex-col items-center gap-2">
                     <CalendarIcon className="w-8 h-8 opacity-20" />
                     No deliveries scheduled for this date.
@@ -539,34 +539,32 @@ export default function TodayDeliveriesPage() {
                       <div className="text-[10px] font-bold text-amber-600">₹{Number(order.remainingBalance || 0).toLocaleString()}</div>
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        {order.status === "BOOKED" ? (
+                      <div className="flex flex-col gap-2 items-end">
+                        {order.status === 'BOOKED' ? (
                           <Button 
                             size="sm" 
                             variant="outline" 
                             className="h-8 text-emerald-600 border-emerald-200 hover:bg-emerald-50"
                             onClick={() => markDelivered(order.id)}
                           >
-                            <CheckCircle className="w-4 h-4 mr-1.5" /> Delivered
+                            <CheckCircle className="w-4 h-4 mr-1.5" /> Deliver
                           </Button>
-                        ) : (
-                          <div className="flex gap-2">
-                            <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-200 h-8 px-3">
-                              <CheckCircle className="w-3.5 h-3.5 mr-1.5" /> Completed
+                        ) : order.status === 'DELIVERED' ? (
+                          <div className="flex flex-col items-end gap-1">
+                            <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 py-1 px-2">
+                              <CheckCircle className="w-3 h-3 mr-1" /> DELIVERED
                             </Badge>
                             <Button 
                               size="sm" 
                               variant="ghost" 
-                              className="h-8 text-muted-foreground hover:text-destructive"
-                              onClick={() => {
-                                if (confirm("Are you sure you want to undo this delivery?")) {
-                                  undoDelivery(order.id);
-                                }
-                              }}
+                              className="h-6 text-[10px] text-muted-foreground hover:text-destructive"
+                              onClick={() => undoDelivery(order.id)}
                             >
-                              Undo
+                              Undo Delivery
                             </Button>
                           </div>
+                        ) : (
+                          <Badge variant="destructive">{order.status}</Badge>
                         )}
                       </div>
                     </TableCell>
@@ -665,13 +663,13 @@ export default function TodayDeliveriesPage() {
             return (
               <Card key={order.id} className="overflow-hidden border-2 shadow-sm">
                 <CardContent className="p-0">
-                  <div className="p-3 bg-primary/5 flex justify-between items-center border-b">
+                  <div className={`p-3 flex justify-between items-center border-b ${order.status === 'DELIVERED' ? 'bg-emerald-50' : 'bg-primary/5'}`}>
                     <div>
                       <p className="font-black text-lg leading-tight">{order.customerName}</p>
                       <p className="text-sm font-mono text-muted-foreground">{order.phone}</p>
                     </div>
-                    <Badge className="bg-primary text-white font-bold">
-                      {isSameDay(selectedDate, new Date()) ? "TODAY" : format(selectedDate, "MMM dd")}
+                    <Badge className={order.status === 'DELIVERED' ? 'bg-emerald-600 text-white' : 'bg-primary text-white'}>
+                      {order.status}
                     </Badge>
                   </div>
                   
@@ -685,34 +683,45 @@ export default function TodayDeliveriesPage() {
                         </div>
                       )}
                       <div className="flex-1">
-                        <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Category & Variety</p>
-                        <p className="text-[10px] font-bold text-primary truncate uppercase">{category?.name}</p>
-                        <p className="font-bold text-sm leading-tight">{variety?.name}</p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-xs font-mono text-muted-foreground bg-muted px-1 rounded">{lot?.lotNumber}</span>
-                          <span className="text-xs font-bold text-primary">₹{Number(order.perUnitPrice).toLocaleString()}/unit</span>
-                        </div>
+                        <p className="font-bold text-sm">{variety?.name}</p>
+                        <p className="text-xs font-mono text-muted-foreground">{lot?.lotNumber}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Qty</p>
+                        <p className="text-[10px] uppercase font-bold text-muted-foreground">Qty</p>
                         <p className="font-black text-2xl text-primary">{order.bookedQty}</p>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 pt-2 border-t border-dashed">
-                       <div>
-                        <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Payment Details</p>
-                        <p className="text-sm font-black text-emerald-600">Total: ₹{Number(order.totalAmount).toLocaleString()}</p>
-                        <p className="text-[10px] font-bold text-blue-600 leading-tight">Adv: ₹{Number(order.advanceAmount).toLocaleString()} <span className="opacity-70">({order.paymentMode})</span></p>
+                    <div className="flex justify-between items-center pt-2 border-t border-dashed">
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                        <div>
+                          <p className="text-[9px] uppercase font-bold text-muted-foreground">Total</p>
+                          <p className="font-bold text-sm">₹{Number(order.totalAmount || 0).toLocaleString()}</p>
+                        </div>
+                        <div>
+                          <p className="text-[9px] uppercase font-bold text-muted-foreground">Advance</p>
+                          <p className="font-bold text-sm text-blue-600">₹{Number(order.advanceAmount || 0).toLocaleString()}</p>
+                        </div>
                       </div>
-                      <div className="flex items-end justify-end">
-                        <Button 
-                          size="sm"
-                          onClick={() => markDelivered(order.id)}
-                          className="bg-emerald-600 hover:bg-emerald-700 h-10 px-4 font-bold rounded-xl active-elevate-2 shadow-md shadow-emerald-500/10"
-                        >
-                          <CheckCircle className="w-4 h-4 mr-1.5" /> Deliver
-                        </Button>
+                      <div className="flex gap-2">
+                        {order.status === 'BOOKED' ? (
+                          <Button 
+                            size="sm"
+                            onClick={() => markDelivered(order.id)}
+                            className="bg-emerald-600 hover:bg-emerald-700 h-10 px-4 font-bold"
+                          >
+                            <CheckCircle className="w-4 h-4 mr-1.5" /> Deliver
+                          </Button>
+                        ) : order.status === 'DELIVERED' && (
+                          <Button 
+                            size="sm"
+                            variant="outline"
+                            onClick={() => undoDelivery(order.id)}
+                            className="h-10 px-3 text-muted-foreground border-dashed"
+                          >
+                            Undo
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -725,4 +734,3 @@ export default function TodayDeliveriesPage() {
     </div>
   );
 }
-
