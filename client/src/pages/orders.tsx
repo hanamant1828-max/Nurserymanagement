@@ -37,7 +37,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { Plus, ShoppingCart, CheckCircle, Layers, Check, ChevronsUpDown, Loader2, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, ShoppingCart, CheckCircle, Layers, Check, ChevronsUpDown, Loader2, Search, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
 import confetti from "canvas-confetti";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -939,7 +939,7 @@ export default function OrdersPage() {
                             name="village"
                             render={({ field }) => (
                               <FormItem>
-                                <FormControl><Input placeholder="Address" className="h-12 text-lg bg-muted/30 border-muted focus-visible:ring-primary/20" {...field} /></FormControl>
+                                <FormControl><Input placeholder="Address" className="h-12 text-xl font-black bg-muted/30 border-muted focus-visible:ring-primary/20" {...field} /></FormControl>
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -1351,7 +1351,7 @@ export default function OrdersPage() {
                         <span className="font-bold text-foreground text-base leading-tight">{order.customerName}</span>
                         <span className="text-sm text-muted-foreground font-medium">{order.phone}</span>
                         {order.village && (
-                          <span className="text-[10px] uppercase font-bold text-primary/60 tracking-wider flex items-center gap-1 mt-0.5">
+                          <span className="text-sm font-black text-foreground tracking-wider flex items-center gap-1 mt-0.5">
                             <Layers className="w-2.5 h-2.5" />
                             {order.village}
                           </span>
@@ -1584,7 +1584,10 @@ export default function OrdersPage() {
                         <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Delivery Date</p>
                         <p className="text-sm font-bold">{format(new Date(order.deliveryDate), "dd MMM yyyy")}</p>
                         {order.village && (
-                          <p className="text-[10px] text-muted-foreground truncate italic">{order.village}</p>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <MapPin className="w-3 h-3 text-muted-foreground/60" />
+                            <span className="text-sm font-black text-foreground">{order.village}</span>
+                          </div>
                         )}
                       </div>
                       <div className="space-y-1 text-right">

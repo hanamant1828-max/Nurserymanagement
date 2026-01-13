@@ -412,7 +412,7 @@ export default function DeliveryReportsPage() {
                         <TableCell>{order.lotNumber}</TableCell>
                         <TableCell className="text-right">{order.bookedQty}</TableCell>
                         <TableCell>{order.deliveryDate}</TableCell>
-                        <TableCell>{order.village}</TableCell>
+                        <TableCell className="font-black text-base">{order.village}</TableCell>
                         <TableCell>{order.taluk || "N/A"}</TableCell>
                       </TableRow>
                     ))
@@ -467,7 +467,7 @@ export default function DeliveryReportsPage() {
                         <TableCell className="text-right">₹{Number(order.totalAmount).toLocaleString()}</TableCell>
                         <TableCell>{order.deliveryDate}</TableCell>
                         <TableCell>{order.actualDeliveryDate || "N/A"}</TableCell>
-                        <TableCell>{order.village}</TableCell>
+                        <TableCell className="font-black text-base">{order.village}</TableCell>
                         <TableCell>{order.taluk || "N/A"}</TableCell>
                       </TableRow>
                     ))
