@@ -156,7 +156,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       {/* Main Content */}
       <main className="flex-1 overflow-auto w-full pb-20 md:pb-0">
-        <div className="container max-w-7xl mx-auto p-4 md:p-8 pt-16 lg:pt-8 min-h-screen animate-in fade-in duration-500">
+        <div className="p-4 md:p-8 pt-16 lg:pt-8 min-h-screen animate-in fade-in duration-500">
           {children}
         </div>
       </main>
