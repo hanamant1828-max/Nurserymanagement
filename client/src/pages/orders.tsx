@@ -1009,6 +1009,27 @@ export default function OrdersPage() {
                       <div className="grid grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
+                          name="bookedQty"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Quantity</FormLabel>
+                              <FormControl>
+                                <Input type="number" className="h-12 text-lg bg-muted/30 border-muted focus-visible:ring-primary/20" {...field} 
+                                  max={selectedLot?.available} 
+                                  onChange={e => field.onChange(parseInt(e.target.value) || 0)} 
+                                />
+                              </FormControl>
+                              {selectedLot && (field.value > selectedLot.available) && (
+                                <p className="text-[10px] font-bold text-destructive uppercase tracking-tight mt-1 animate-pulse">
+                                  Quantity exceeds stock ({selectedLot.available} available)
+                                </p>
+                              )}
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
                           name="perUnitPrice"
                           render={({ field }) => (
                             <FormItem>
@@ -1026,6 +1047,9 @@ export default function OrdersPage() {
                             </FormItem>
                           )}
                         />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
                           name="discount"
@@ -1041,30 +1065,6 @@ export default function OrdersPage() {
                                   data-testid="input-discount" 
                                 />
                               </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4 pt-2">
-                        <FormField
-                          control={form.control}
-                          name="bookedQty"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Quantity</FormLabel>
-                              <FormControl>
-                                <Input type="number" className="h-12 text-lg bg-muted/30 border-muted focus-visible:ring-primary/20" {...field} 
-                                  max={selectedLot?.available} 
-                                  onChange={e => field.onChange(parseInt(e.target.value) || 0)} 
-                                />
-                              </FormControl>
-                              {selectedLot && (field.value > selectedLot.available) && (
-                                <p className="text-[10px] font-bold text-destructive uppercase tracking-tight mt-1 animate-pulse">
-                                  Quantity exceeds stock ({selectedLot.available} available)
-                                </p>
-                              )}
                               <FormMessage />
                             </FormItem>
                           )}
