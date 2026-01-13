@@ -118,7 +118,7 @@ export default function ReportsPage() {
     return filtered;
   }, [lots, selectedCategory, selectedVariety, searchTerm]);
 
-  const dailySowingData = useMemo(() => filteredLots.filter(l => isInRange(l.sowingDate)) || [], [filteredLots, dateRange]);
+  const dailySowingData = useMemo(() => filteredLots.filter(l => isInRange(l.expectedReadyDate || l.sowingDate)) || [], [filteredLots, dateRange]);
 
   const lotStockData = useMemo(() => filteredLots.map(l => ({
     ...l,

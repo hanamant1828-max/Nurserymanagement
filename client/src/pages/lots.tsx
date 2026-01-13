@@ -102,13 +102,13 @@ export default function LotsPage() {
     // Date range filtering
     let matchesDate = true;
     if (dateRange?.from) {
-      const sowingDate = parseISO(l.sowingDate);
+      const readyDate = l.expectedReadyDate ? parseISO(l.expectedReadyDate) : parseISO(l.sowingDate);
       const start = startOfDay(dateRange.from);
-      matchesDate = isAfter(sowingDate, start) || sowingDate.getTime() === start.getTime();
+      matchesDate = isAfter(readyDate, start) || readyDate.getTime() === start.getTime();
       
       if (matchesDate && dateRange.to) {
         const end = endOfDay(dateRange.to);
-        matchesDate = isBefore(sowingDate, end) || sowingDate.getTime() === end.getTime();
+        matchesDate = isBefore(readyDate, end) || readyDate.getTime() === end.getTime();
       }
     }
 
