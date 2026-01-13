@@ -56,6 +56,26 @@
   .glass-card {
     @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-lg shadow-black/5;
   }
+
+  .main-wrapper,
+  .page-content,
+  .content-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin: 0 !important;
+  }
+
+  .orders-table-wrapper {
+    width: 100%;
+    margin: 0;
+  }
+
+  .orders-table {
+    width: 100%;
+    min-width: 100%;
+  }
   
   .nav-item {
     @apply flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium;
