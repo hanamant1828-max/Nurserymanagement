@@ -745,13 +745,6 @@ export default function OrdersPage() {
                                   
                                   return (
                                     <div className="flex items-center gap-4 py-2 w-full border-b last:border-0 border-muted/20">
-                                      {lot.category?.image ? (
-                                        <img src={lot.category.image} className="w-12 h-12 rounded-lg object-cover border shadow-sm flex-shrink-0" alt="" />
-                                      ) : (
-                                        <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center border flex-shrink-0">
-                                          <Layers className="w-6 h-6 text-muted-foreground" />
-                                        </div>
-                                      )}
                                       <div className="flex flex-col flex-1 min-w-0">
                                         <div className="flex justify-between items-start gap-2 mb-1.5">
                                           <div className="flex flex-col">
