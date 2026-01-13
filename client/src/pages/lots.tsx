@@ -58,6 +58,7 @@ const formSchema = z.object({
   varietyId: z.string().min(1, "Variety is required"),
   lotNumber: z.string().min(1, "Lot Number is required"),
   seedsSown: z.coerce.number().min(1, "Must be greater than 0"),
+  packetsSown: z.coerce.number().min(0).default(0),
   damagePercentage: z.coerce.number().min(0).max(100).default(0),
   sowingDate: z.date(),
   expectedReadyDate: z.date().optional(),
@@ -341,6 +342,24 @@ export default function LotsPage() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Seeds Sown Quantity</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Packets Sown */}
+                    <FormField
+                      control={form.control}
+                      name="packetsSown"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Number of Packets Sown</FormLabel>
                           <FormControl>
                             <Input 
                               type="number" 

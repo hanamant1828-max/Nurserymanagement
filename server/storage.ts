@@ -154,7 +154,7 @@ export class DatabaseStorage implements IStorage {
 
     return allLots.map((lot) => {
       const totalBooked = lot.orders.reduce((sum, o) => sum + o.bookedQty, 0);
-      const available = lot.seedsSown - lot.damaged - totalBooked;
+      const available = (lot.seedsSown || 0) - lot.damaged - totalBooked;
 
       return {
         ...lot,
