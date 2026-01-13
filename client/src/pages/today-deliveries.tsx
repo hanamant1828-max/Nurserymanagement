@@ -525,11 +525,11 @@ export default function TodayDeliveriesPage() {
                       </div>
                     </TableCell>
                     <TableCell className="text-right font-black text-primary text-lg">{order.bookedQty}</TableCell>
-                    <TableCell className="text-right font-medium">₹{Number(order.perUnitPrice).toLocaleString()}</TableCell>
-                    <TableCell className="text-right font-black">₹{Number(order.totalAmount).toLocaleString()}</TableCell>
+                    <TableCell className="text-right font-medium">₹{Number(order.perUnitPrice || 0).toLocaleString()}</TableCell>
+                    <TableCell className="text-right font-black">₹{Number(order.totalAmount || 0).toLocaleString()}</TableCell>
                     <TableCell className="text-right">
-                      <div className="font-bold text-blue-600">₹{Number(order.advanceAmount).toLocaleString()}</div>
-                      <div className="text-[10px] font-bold text-amber-600">₹{Number(order.remainingBalance).toLocaleString()}</div>
+                      <div className="font-bold text-blue-600">₹{Number(order.advanceAmount || 0).toLocaleString()}</div>
+                      <div className="text-[10px] font-bold text-amber-600">₹{Number(order.remainingBalance || 0).toLocaleString()}</div>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">

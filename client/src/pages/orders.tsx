@@ -1390,13 +1390,13 @@ export default function OrdersPage() {
                       })()}
                     </TableCell>
                     <TableCell className="text-center font-black text-emerald-600 text-lg">{order.bookedQty}</TableCell>
-                    <TableCell className="text-center font-bold text-muted-foreground text-base">₹{Number(order.perUnitPrice).toLocaleString()}</TableCell>
-                    <TableCell className="text-center font-bold text-orange-600 text-base">₹{Number(order.discount).toLocaleString()}</TableCell>
-                    <TableCell className="text-center font-black text-foreground text-lg">₹{Number(order.totalAmount).toLocaleString()}</TableCell>
+                    <TableCell className="text-center font-bold text-muted-foreground text-base">₹{Number(order.perUnitPrice || 0).toLocaleString()}</TableCell>
+                    <TableCell className="text-center font-bold text-orange-600 text-base">₹{Number(order.discount || 0).toLocaleString()}</TableCell>
+                    <TableCell className="text-center font-black text-foreground text-lg">₹{Number(order.totalAmount || 0).toLocaleString()}</TableCell>
                     <TableCell className="text-center">
                       <div className="flex flex-col items-center gap-0.5">
-                        <span className="text-sm font-black text-blue-600">₹{Number(order.advanceAmount).toLocaleString()}</span>
-                        <span className="text-[11px] font-bold text-orange-600">₹{Number(order.remainingBalance).toLocaleString()}</span>
+                        <span className="text-sm font-black text-blue-600">₹{Number(order.advanceAmount || 0).toLocaleString()}</span>
+                        <span className="text-[11px] font-bold text-orange-600">₹{Number(order.remainingBalance || 0).toLocaleString()}</span>
                       </div>
                     </TableCell>
                     <TableCell className="font-bold text-muted-foreground text-sm whitespace-nowrap">

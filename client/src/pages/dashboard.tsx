@@ -42,11 +42,11 @@ export default function Dashboard() {
   ).length || 0;
 
   const totalRevenue = orders?.filter(o => o.status === 'DELIVERED')
-    .reduce((sum, o) => sum + Number(o.totalAmount), 0) || 0;
+    .reduce((sum, o) => sum + Number(o.totalAmount || 0), 0) || 0;
   
   // Upcoming deliveries (next 7 days)
   const upcomingDeliveries = orders?.filter(o => {
-    if (o.status !== 'BOOKED') return false;
+    if (o.status !== 'BOOKED' || !o.deliveryDate) return false;
     const deliveryDate = parseISO(o.deliveryDate);
     const diffTime = deliveryDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 

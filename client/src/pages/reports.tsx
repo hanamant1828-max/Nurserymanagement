@@ -143,10 +143,10 @@ export default function ReportsPage() {
     const report: Record<string, any> = {};
     orders?.forEach(order => {
       if (!isInRange(order.deliveryDate)) return;
-      const mode = order.paymentMode;
+      const mode = order.paymentMode || "Cash";
       if (!report[mode]) report[mode] = { mode, count: 0, totalAdvance: 0 };
       report[mode].count += 1;
-      report[mode].totalAdvance += Number(order.advanceAmount);
+      report[mode].totalAdvance += Number(order.advanceAmount || 0);
     });
     return Object.values(report);
   }, [orders, dateRange]);
