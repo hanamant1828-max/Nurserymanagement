@@ -522,7 +522,14 @@ export default function OrdersPage() {
       colors: ['#10b981', '#3b82f6', '#f59e0b']
     });
 
-    update({ id, status: "DELIVERED", deliveredQty: 0 }, {
+    const now = new Date();
+    update({ 
+      id, 
+      status: "DELIVERED", 
+      deliveredQty: 0,
+      actualDeliveryDate: format(now, "yyyy-MM-dd"),
+      actualDeliveryTime: format(now, "HH:mm:ss")
+    }, {
       onSuccess: () => {
         toast({
           title: "Order Delivered",
