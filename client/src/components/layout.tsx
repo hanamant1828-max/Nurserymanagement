@@ -140,17 +140,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <NavContent isMobile={false} />
       </aside>
 
-      {/* Mobile Sidebar */}
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" className="lg:hidden absolute top-4 left-4 z-50">
-            <Menu className="w-6 h-6" />
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="left" className="p-0 w-80">
-          <NavContent isMobile={true} />
-        </SheetContent>
-      </Sheet>
+      {/* Mobile Header - Hide sidebar trigger on mobile as we use BottomNav */}
+      <header className="lg:hidden fixed top-0 left-0 right-0 h-14 bg-background/80 backdrop-blur-md border-b z-40 flex items-center px-4">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+            <Sprout className="w-5 h-5 text-white" />
+          </div>
+          <span className="font-display font-bold text-sm">Kisan Hi-Tech Nursery</span>
+        </div>
+      </header>
 
       {/* Main Content */}
       <main className="flex-1 overflow-auto w-full pb-20 md:pb-0">

@@ -73,6 +73,24 @@
     padding-bottom: env(safe-area-inset-bottom);
   }
 
+  .app-shadow {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+  }
+
+  .tap-highlight-none {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  @media (max-width: 768px) {
+    .nav-item {
+      @apply active:scale-[0.98] active:bg-primary/10;
+    }
+    
+    button, a {
+      @apply tap-highlight-none;
+    }
+  }
+
   .scrollbar-hide {
     -ms-overflow-style: auto;
     scrollbar-width: auto;
