@@ -78,10 +78,11 @@ export default function DeliveryReportsPage() {
     doc.save(`${fileName}_${format(new Date(), "yyyy-MM-dd")}.pdf`);
   };
 
-  const isInRange = (dateStr: string) => {
+  const isInRange = (dateStr: string | null, fallbackDateStr: string) => {
     if (!dateRange.from || !dateRange.to) return true;
     try {
-      const date = parseISO(dateStr);
+      // Use actualDeliveryDate if available, otherwise use fallback (deliveryDate)
+      const date = parseISO(dateStr || fallbackDateStr);
       return isWithinInterval(date, {
         start: startOfDay(dateRange.from),
         end: endOfDay(dateRange.to)
@@ -147,7 +148,7 @@ export default function DeliveryReportsPage() {
   }, [orders, searchTerm, pageDistrictId, pageTalukId]);
 
   const pendingDeliveries = useMemo(() => {
-    return filteredOrders.filter(o => o.status === "BOOKED" && isInRange(o.deliveryDate)).map(o => {
+    return filteredOrders.filter(o => o.status === "BOOKED" && isInRange(null, o.deliveryDate)).map(o => {
       const lot = lots?.find(l => l.id === o.lotId);
       return {
         ...o,
@@ -158,7 +159,7 @@ export default function DeliveryReportsPage() {
   }, [filteredOrders, lots, dateRange]);
 
   const deliveredOrders = useMemo(() => {
-    return filteredOrders.filter(o => o.status === "DELIVERED" && isInRange(o.deliveryDate)).map(o => {
+    return filteredOrders.filter(o => o.status === "DELIVERED" && isInRange(o.actualDeliveryDate, o.deliveryDate)).map(o => {
       const lot = lots?.find(l => l.id === o.lotId);
       return {
         ...o,
