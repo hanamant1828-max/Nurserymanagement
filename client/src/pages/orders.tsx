@@ -758,40 +758,6 @@ export default function OrdersPage() {
                                             Stock: {lot.available}
                                           </span>
                                         </div>
-                                        
-                                        {lotOrders.length > 0 ? (
-                                          <div className="space-y-1.5 mt-1 bg-muted/30 p-2 rounded-lg border border-muted-foreground/10">
-                                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1 flex items-center gap-1.5">
-                                              <ShoppingCart className="w-3 h-3" />
-                                              Current Bookings
-                                            </p>
-                                            <div className="grid gap-1">
-                                              {lotOrders.slice(0, 5).map((o: any, idx: number) => (
-                                                <div key={idx} className="flex justify-between items-center text-[11px] bg-background px-2.5 py-1.5 rounded border border-muted shadow-sm">
-                                                  <div className="flex items-center gap-2">
-                                                    <Badge variant="outline" className="text-[9px] font-black px-1.5 py-0 bg-orange-50 text-orange-700 border-orange-200">
-                                                      {o.deliveryDate ? format(parseISO(o.deliveryDate), "dd MMM") : "N/A"}
-                                                    </Badge>
-                                                  </div>
-                                                  <div className="flex items-center gap-1">
-                                                    <span className="text-muted-foreground text-[10px]">Qty:</span>
-                                                    <span className="font-black text-emerald-700">{o.bookedQty}</span>
-                                                  </div>
-                                                </div>
-                                              ))}
-                                            </div>
-                                            {lotOrders.length > 5 && (
-                                              <div className="text-[10px] text-primary/60 text-center font-bold py-1 bg-primary/5 rounded border border-dashed border-primary/20">
-                                                +{lotOrders.length - 5} more orders...
-                                              </div>
-                                            )}
-                                          </div>
-                                        ) : (
-                                          <div className="text-[10px] text-muted-foreground/60 italic flex items-center gap-2 py-1 px-2 bg-muted/20 rounded">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30" />
-                                            No existing bookings for this lot
-                                          </div>
-                                        )}
                                       </div>
                                     </div>
                                   );
