@@ -149,6 +149,7 @@ export default function LotsPage() {
       varietyId: lot.varietyId.toString(),
       lotNumber: lot.lotNumber,
       seedsSown: lot.seedsSown,
+      packetsSown: lot.packetsSown || 0,
       damagePercentage: lot.damagePercentage ? parseFloat(lot.damagePercentage) : 0,
       sowingDate: new Date(lot.sowingDate),
       expectedReadyDate: lot.expectedReadyDate ? new Date(lot.expectedReadyDate) : undefined,
