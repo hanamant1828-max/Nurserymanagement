@@ -779,7 +779,6 @@ export default function OrdersPage() {
                                                     <Badge variant="outline" className="text-[9px] font-black px-1.5 py-0 bg-orange-50 text-orange-700 border-orange-200">
                                                       {o.deliveryDate ? format(new Date(o.deliveryDate), "dd MMM") : "N/A"}
                                                     </Badge>
-                                                    <span className="text-foreground font-semibold truncate max-w-[80px]">{o.customerName}</span>
                                                   </div>
                                                   <div className="flex items-center gap-1">
                                                     <span className="text-muted-foreground text-[10px]">Qty:</span>
