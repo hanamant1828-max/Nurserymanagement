@@ -1307,7 +1307,7 @@ export default function OrdersPage() {
         )}
       </div>
 
-      <div className="hidden md:block rounded-xl border bg-card shadow-sm overflow-hidden">
+      <div className="hidden md:block rounded-xl border bg-card shadow-sm overflow-hidden max-w-7xl mx-auto">
         <Table>
           <TableHeader className="bg-muted/50">
             <TableRow className="hover:bg-transparent border-b">
@@ -1317,7 +1317,6 @@ export default function OrdersPage() {
               <TableHead className="font-bold text-muted-foreground uppercase tracking-wider h-12 text-center">Taken By</TableHead>
               <TableHead className="font-bold text-muted-foreground uppercase tracking-wider text-center h-12">Qty</TableHead>
               <TableHead className="font-bold text-muted-foreground uppercase tracking-wider text-center h-12">Rate</TableHead>
-              <TableHead className="font-bold text-muted-foreground uppercase tracking-wider text-center h-12">Discount</TableHead>
               <TableHead className="font-bold text-muted-foreground uppercase tracking-wider text-center h-12">Total</TableHead>
               <TableHead className="font-bold text-muted-foreground uppercase tracking-wider text-center h-12">Adv/Bal</TableHead>
               <TableHead className="font-bold text-muted-foreground uppercase tracking-wider h-12">Delive Date</TableHead>
@@ -1391,7 +1390,6 @@ export default function OrdersPage() {
                     </TableCell>
                     <TableCell className="text-center font-black text-emerald-600 text-lg">{order.bookedQty}</TableCell>
                     <TableCell className="text-center font-bold text-muted-foreground text-base">₹{Number(order.perUnitPrice || 0).toLocaleString()}</TableCell>
-                    <TableCell className="text-center font-bold text-orange-600 text-base">₹{Number(order.discount || 0).toLocaleString()}</TableCell>
                     <TableCell className="text-center font-black text-foreground text-lg">₹{Number(order.totalAmount || 0).toLocaleString()}</TableCell>
                     <TableCell className="text-center">
                       <div className="flex flex-col items-center gap-0.5">
