@@ -44,38 +44,42 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   const NavContent = () => (
     <div className="flex flex-col h-full">
-      <div className="p-6 border-b border-border/50">
+      <div className="p-6 border-b border-border/50 overflow-hidden">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/30">
+          <div className="w-10 h-10 min-w-[40px] rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/30">
             <Sprout className="w-6 h-6 text-white" />
           </div>
-          <div>
+          <div className="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300 whitespace-nowrap">
             <h1 className="font-display font-bold text-lg leading-tight">Kisan Hi-Tech Nursery</h1>
             <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Kalloli</p>
           </div>
         </div>
       </div>
       
-      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+      <nav className="flex-1 p-4 space-y-2 overflow-y-auto overflow-x-hidden">
         {navItems.map((item) => {
           const isActive = location === item.href;
           return (
-            <Link key={item.href} href={item.href} className={`nav-item ${isActive ? 'active' : 'text-muted-foreground hover:text-primary'}`} onClick={() => setOpen(false)}>
-              <item.icon className={`w-5 h-5 ${isActive ? 'stroke-2' : 'stroke-[1.5]'}`} />
-              <span>{item.label}</span>
+            <Link key={item.href} href={item.href} className={`nav-item ${isActive ? 'active' : 'text-muted-foreground hover:text-primary'} whitespace-nowrap`}>
+              <item.icon className={`w-5 h-5 min-w-[20px] ${isActive ? 'stroke-2' : 'stroke-[1.5]'}`} />
+              <span className="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
+                {item.label}
+              </span>
             </Link>
           );
         })}
 
         {user?.role === 'admin' && (
           <div className="pt-4 mt-4 border-t border-border/50">
-            <p className="px-3 mb-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Administration</p>
+            <p className="px-3 mb-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">Administration</p>
             {adminItems.map((item) => {
               const isActive = location === item.href;
               return (
-                <Link key={item.href} href={item.href} className={`nav-item ${isActive ? 'active' : 'text-muted-foreground hover:text-primary'}`} onClick={() => setOpen(false)}>
-                  <item.icon className={`w-5 h-5 ${isActive ? 'stroke-2' : 'stroke-[1.5]'}`} />
-                  <span>{item.label}</span>
+                <Link key={item.href} href={item.href} className={`nav-item ${isActive ? 'active' : 'text-muted-foreground hover:text-primary'} whitespace-nowrap`}>
+                  <item.icon className={`w-5 h-5 min-w-[20px] ${isActive ? 'stroke-2' : 'stroke-[1.5]'}`} />
+                  <span className="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
+                    {item.label}
+                  </span>
                 </Link>
               );
             })}
@@ -84,24 +88,26 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </nav>
 
       <div className="p-4 border-t border-border/50">
-        <div className="bg-muted/50 rounded-xl p-4 mb-4 flex items-center gap-3">
-          <Avatar className="h-10 w-10 border-2 border-white shadow-sm">
+        <div className="bg-muted/50 rounded-xl p-4 mb-4 flex items-center gap-3 overflow-hidden">
+          <Avatar className="h-10 w-10 min-w-[40px] border-2 border-white shadow-sm">
             <AvatarFallback className="bg-primary/10 text-primary font-bold">
               {user?.username?.substring(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 overflow-hidden opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
             <p className="font-medium truncate">{user?.username}</p>
             <p className="text-xs text-muted-foreground capitalize">{user?.role}</p>
           </div>
         </div>
         <Button 
           variant="outline" 
-          className="w-full justify-start text-muted-foreground hover:text-destructive hover:bg-destructive/10 hover:border-destructive/20"
+          className="w-full justify-start text-muted-foreground hover:text-destructive hover:bg-destructive/10 hover:border-destructive/20 overflow-hidden"
           onClick={() => logout()}
         >
-          <LogOut className="w-4 h-4 mr-2" />
-          Sign Out
+          <LogOut className="w-4 h-4 min-w-[16px] mr-2" />
+          <span className="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
+            Sign Out
+          </span>
         </Button>
       </div>
     </div>
@@ -110,7 +116,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-muted/20 flex">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:block w-72 bg-card border-r border-border h-screen sticky top-0">
+      <aside 
+        className="hidden lg:block w-72 bg-card border-r border-border h-screen sticky top-0 transition-[width] duration-300 group/sidebar overflow-hidden hover:w-72 w-20"
+      >
         <NavContent />
       </aside>
 
