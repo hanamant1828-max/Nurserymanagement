@@ -777,7 +777,7 @@ export default function OrdersPage() {
                                                 <div key={idx} className="flex justify-between items-center text-[11px] bg-background px-2.5 py-1.5 rounded border border-muted shadow-sm">
                                                   <div className="flex items-center gap-2">
                                                     <Badge variant="outline" className="text-[9px] font-black px-1.5 py-0 bg-orange-50 text-orange-700 border-orange-200">
-                                                      {o.deliveryDate ? format(new Date(o.deliveryDate), "dd MMM") : "N/A"}
+                                                      {o.deliveryDate ? format(parseISO(o.deliveryDate), "dd MMM") : "N/A"}
                                                     </Badge>
                                                   </div>
                                                   <div className="flex items-center gap-1">
