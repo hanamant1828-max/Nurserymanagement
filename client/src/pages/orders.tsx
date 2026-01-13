@@ -729,21 +729,41 @@ export default function OrdersPage() {
                                 placeholder="Pick a Lot"
                                 disabled={!selectedVarietyId}
                                 searchFields={["lotNumber"]}
-                                renderItem={(lot) => (
-                                  <div className="flex items-center gap-4 py-1">
-                                    {lot.category?.image ? (
-                                      <img src={lot.category.image} className="w-8 h-8 rounded-md object-cover border shadow-sm" alt="" />
-                                    ) : (
-                                      <div className="w-8 h-8 rounded-md bg-muted flex items-center justify-center border">
-                                        <Layers className="w-4 h-4 text-muted-foreground" />
+                                renderItem={(lot) => {
+                                  const lotOrders = orders?.filter(o => o.lotId === lot.id && (o.status === "BOOKED" || o.status === "DELIVERED")) || [];
+                                  return (
+                                    <div className="flex items-center gap-4 py-1">
+                                      {lot.category?.image ? (
+                                        <img src={lot.category.image} className="w-8 h-8 rounded-md object-cover border shadow-sm" alt="" />
+                                      ) : (
+                                        <div className="w-8 h-8 rounded-md bg-muted flex items-center justify-center border">
+                                          <Layers className="w-4 h-4 text-muted-foreground" />
+                                        </div>
+                                      )}
+                                      <div className="flex flex-col flex-1">
+                                        <div className="flex justify-between items-center gap-2">
+                                          <span className="font-semibold text-sm leading-tight">{lot.lotNumber}</span>
+                                          <span className="text-[10px] text-muted-foreground font-bold">Stock: {lot.available}</span>
+                                        </div>
+                                        {lotOrders.length > 0 && (
+                                          <div className="mt-1 space-y-0.5 border-t pt-1 border-muted-foreground/10">
+                                            {lotOrders.slice(0, 3).map((o, idx) => (
+                                              <div key={idx} className="flex justify-between items-center text-[9px] text-muted-foreground leading-none">
+                                                <span>{o.deliveryDate ? format(new Date(o.deliveryDate), "dd MMM") : "N/A"}</span>
+                                                <span className="font-bold text-orange-600">Qty: {o.bookedQty}</span>
+                                              </div>
+                                            ))}
+                                            {lotOrders.length > 3 && (
+                                              <div className="text-[8px] text-muted-foreground/60 text-center italic">
+                                                +{lotOrders.length - 3} more orders
+                                              </div>
+                                            )}
+                                          </div>
+                                        )}
                                       </div>
-                                    )}
-                                    <div className="flex flex-col">
-                                      <span className="font-semibold text-sm leading-tight">{lot.lotNumber}</span>
-                                      <span className="text-[10px] text-muted-foreground">Available: {lot.available}</span>
                                     </div>
-                                  </div>
-                                )}
+                                  );
+                                }}
                               />
                             </FormControl>
                             <FormMessage />
