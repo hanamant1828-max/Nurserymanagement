@@ -1,0 +1,144 @@
+GET https://replit-cdn.com/replit-pill/replit-pill.global.js net::ERR_CONNECTION_RESETUnderstand this error
+ab1cd792-cb5f-4245-a9ca-74d9926ce355-00-2nlt55xvzqysg.pike.replit.dev/:138  GET https://replit-cdn.com/replit-pill/replit-pill.global.js net::ERR_CONNECTION_RESETUnderstand this error
+injected.js:214  GET https://ab1cd792-cb5f-4245-a9ca-74d9926ce355-00-2nlt55xvzqysg.pike.replit.dev/api/user 401 (Unauthorized)
+apply @ injected.js:214
+queryFn @ use-auth.ts:12
+fetchFn @ @tanstack_react-query.js?v=6030773d:812
+run @ @tanstack_react-query.js?v=6030773d:477
+start @ @tanstack_react-query.js?v=6030773d:518
+fetch @ @tanstack_react-query.js?v=6030773d:893
+#executeFetch @ @tanstack_react-query.js?v=6030773d:1963
+onSubscribe @ @tanstack_react-query.js?v=6030773d:1840
+subscribe @ @tanstack_react-query.js?v=6030773d:19
+(anonymous) @ @tanstack_react-query.js?v=6030773d:2962
+subscribeToStore @ chunk-MNF4PNE3.js?v=585675f8:12032
+commitHookEffectListMount @ chunk-MNF4PNE3.js?v=585675f8:16963
+commitPassiveMountOnFiber @ chunk-MNF4PNE3.js?v=585675f8:18206
+commitPassiveMountEffects_complete @ chunk-MNF4PNE3.js?v=585675f8:18179
+commitPassiveMountEffects_begin @ chunk-MNF4PNE3.js?v=585675f8:18169
+commitPassiveMountEffects @ chunk-MNF4PNE3.js?v=585675f8:18159
+flushPassiveEffectsImpl @ chunk-MNF4PNE3.js?v=585675f8:19543
+flushPassiveEffects @ chunk-MNF4PNE3.js?v=585675f8:19500
+performSyncWorkOnRoot @ chunk-MNF4PNE3.js?v=585675f8:18921
+flushSyncCallbacks @ chunk-MNF4PNE3.js?v=585675f8:9166
+commitRootImpl @ chunk-MNF4PNE3.js?v=585675f8:19485
+commitRoot @ chunk-MNF4PNE3.js?v=585675f8:19330
+finishConcurrentRender @ chunk-MNF4PNE3.js?v=585675f8:18858
+performConcurrentWorkOnRoot @ chunk-MNF4PNE3.js?v=585675f8:18768
+workLoop @ chunk-MNF4PNE3.js?v=585675f8:197
+flushWork @ chunk-MNF4PNE3.js?v=585675f8:176
+performWorkUntilDeadline @ chunk-MNF4PNE3.js?v=585675f8:384Understand this error
+  GET https://ab1cd792-cb5f-4245-a9ca-74d9926ce355-00-2nlt55xvzqysg.pike.replit.dev/api/user 401 (Unauthorized)
+apply @ ab1cd792-cb5f-4245-a…ols/injected.js:214
+queryFn @ ab1cd792-cb5f-4245-a…hooks/use-auth.ts:7
+fetchFn @ ab1cd792-cb5f-4245-a…y.js?v=6030773d:812
+run @ ab1cd792-cb5f-4245-a…y.js?v=6030773d:477
+start @ ab1cd792-cb5f-4245-a…y.js?v=6030773d:518
+fetch @ ab1cd792-cb5f-4245-a…y.js?v=6030773d:893
+#executeFetch @ ab1cd792-cb5f-4245-a….js?v=6030773d:1963
+onSubscribe @ ab1cd792-cb5f-4245-a….js?v=6030773d:1840
+subscribe @ ab1cd792-cb5f-4245-a…ry.js?v=6030773d:19
+(anonymous) @ ab1cd792-cb5f-4245-a….js?v=6030773d:2962
+subscribeToStore @ ab1cd792-cb5f-4245-a…js?v=585675f8:12032
+commitHookEffectListMount @ ab1cd792-cb5f-4245-a…js?v=585675f8:16963
+commitPassiveMountOnFiber @ ab1cd792-cb5f-4245-a…js?v=585675f8:18206
+commitPassiveMountEffects_complete @ ab1cd792-cb5f-4245-a…js?v=585675f8:18179
+commitPassiveMountEffects_begin @ ab1cd792-cb5f-4245-a…js?v=585675f8:18169
+commitPassiveMountEffects @ ab1cd792-cb5f-4245-a…js?v=585675f8:18159
+flushPassiveEffectsImpl @ ab1cd792-cb5f-4245-a…js?v=585675f8:19543
+flushPassiveEffects @ ab1cd792-cb5f-4245-a…js?v=585675f8:19500
+performSyncWorkOnRoot @ ab1cd792-cb5f-4245-a…js?v=585675f8:18921
+flushSyncCallbacks @ ab1cd792-cb5f-4245-a….js?v=585675f8:9166
+commitRootImpl @ ab1cd792-cb5f-4245-a…js?v=585675f8:19485
+commitRoot @ ab1cd792-cb5f-4245-a…js?v=585675f8:19330
+finishConcurrentRender @ ab1cd792-cb5f-4245-a…js?v=585675f8:18858
+performConcurrentWorkOnRoot @ ab1cd792-cb5f-4245-a…js?v=585675f8:18768
+workLoop @ ab1cd792-cb5f-4245-a…3.js?v=585675f8:197
+flushWork @ ab1cd792-cb5f-4245-a…3.js?v=585675f8:176
+performWorkUntilDeadline @ ab1cd792-cb5f-4245-a…3.js?v=585675f8:384Understand this error
+(index):138  GET https://replit-cdn.com/replit-pill/replit-pill.global.js net::ERR_CONNECTION_RESETUnderstand this error
+injected.js:214  GET https://ab1cd792-cb5f-4245-a9ca-74d9926ce355-00-2nlt55xvzqysg.pike.replit.dev/api/user 401 (Unauthorized)
+apply @ injected.js:214
+queryFn @ use-auth.ts:12
+fetchFn @ @tanstack_react-query.js?v=6030773d:812
+run @ @tanstack_react-query.js?v=6030773d:477
+start @ @tanstack_react-query.js?v=6030773d:518
+fetch @ @tanstack_react-query.js?v=6030773d:893
+#executeFetch @ @tanstack_react-query.js?v=6030773d:1963
+onSubscribe @ @tanstack_react-query.js?v=6030773d:1840
+subscribe @ @tanstack_react-query.js?v=6030773d:19
+(anonymous) @ @tanstack_react-query.js?v=6030773d:2962
+subscribeToStore @ chunk-MNF4PNE3.js?v=585675f8:12032
+commitHookEffectListMount @ chunk-MNF4PNE3.js?v=585675f8:16963
+commitPassiveMountOnFiber @ chunk-MNF4PNE3.js?v=585675f8:18206
+commitPassiveMountEffects_complete @ chunk-MNF4PNE3.js?v=585675f8:18179
+commitPassiveMountEffects_begin @ chunk-MNF4PNE3.js?v=585675f8:18169
+commitPassiveMountEffects @ chunk-MNF4PNE3.js?v=585675f8:18159
+flushPassiveEffectsImpl @ chunk-MNF4PNE3.js?v=585675f8:19543
+flushPassiveEffects @ chunk-MNF4PNE3.js?v=585675f8:19500
+performSyncWorkOnRoot @ chunk-MNF4PNE3.js?v=585675f8:18921
+flushSyncCallbacks @ chunk-MNF4PNE3.js?v=585675f8:9166
+commitRootImpl @ chunk-MNF4PNE3.js?v=585675f8:19485
+commitRoot @ chunk-MNF4PNE3.js?v=585675f8:19330
+finishConcurrentRender @ chunk-MNF4PNE3.js?v=585675f8:18858
+performConcurrentWorkOnRoot @ chunk-MNF4PNE3.js?v=585675f8:18768
+workLoop @ chunk-MNF4PNE3.js?v=585675f8:197
+flushWork @ chunk-MNF4PNE3.js?v=585675f8:176
+performWorkUntilDeadline @ chunk-MNF4PNE3.js?v=585675f8:384Understand this error
+injected.js:214  POST https://ab1cd792-cb5f-4245-a9ca-74d9926ce355-00-2nlt55xvzqysg.pike.replit.dev/api/login 401 (Unauthorized)
+apply @ injected.js:214
+mutationFn @ use-auth.ts:28
+fn @ @tanstack_react-query.js?v=6030773d:1152
+run @ @tanstack_react-query.js?v=6030773d:477
+start @ @tanstack_react-query.js?v=6030773d:518
+execute @ @tanstack_react-query.js?v=6030773d:1187
+await in execute
+mutate @ @tanstack_react-query.js?v=6030773d:2578
+(anonymous) @ @tanstack_react-query.js?v=6030773d:3234
+onSubmit @ login.tsx:31
+(anonymous) @ chunk-7ISUN3PM.js?v=585675f8:1465
+await in (anonymous)
+callCallback2 @ chunk-MNF4PNE3.js?v=585675f8:3680
+invokeGuardedCallbackDev @ chunk-MNF4PNE3.js?v=585675f8:3705
+invokeGuardedCallback @ chunk-MNF4PNE3.js?v=585675f8:3739
+invokeGuardedCallbackAndCatchFirstError @ chunk-MNF4PNE3.js?v=585675f8:3742
+executeDispatch @ chunk-MNF4PNE3.js?v=585675f8:7046
+processDispatchQueueItemsInOrder @ chunk-MNF4PNE3.js?v=585675f8:7066
+processDispatchQueue @ chunk-MNF4PNE3.js?v=585675f8:7075
+dispatchEventsForPlugins @ chunk-MNF4PNE3.js?v=585675f8:7083
+(anonymous) @ chunk-MNF4PNE3.js?v=585675f8:7206
+batchedUpdates$1 @ chunk-MNF4PNE3.js?v=585675f8:18966
+batchedUpdates @ chunk-MNF4PNE3.js?v=585675f8:3585
+dispatchEventForPluginEventSystem @ chunk-MNF4PNE3.js?v=585675f8:7205
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-MNF4PNE3.js?v=585675f8:5484
+dispatchEvent @ chunk-MNF4PNE3.js?v=585675f8:5478
+dispatchDiscreteEvent @ chunk-MNF4PNE3.js?v=585675f8:5455Understand this error
+injected.js:214  POST https://ab1cd792-cb5f-4245-a9ca-74d9926ce355-00-2nlt55xvzqysg.pike.replit.dev/api/login 401 (Unauthorized)
+apply @ injected.js:214
+mutationFn @ use-auth.ts:28
+fn @ @tanstack_react-query.js?v=6030773d:1152
+run @ @tanstack_react-query.js?v=6030773d:477
+start @ @tanstack_react-query.js?v=6030773d:518
+execute @ @tanstack_react-query.js?v=6030773d:1187
+await in execute
+mutate @ @tanstack_react-query.js?v=6030773d:2578
+(anonymous) @ @tanstack_react-query.js?v=6030773d:3234
+onSubmit @ login.tsx:31
+(anonymous) @ chunk-7ISUN3PM.js?v=585675f8:1465
+await in (anonymous)
+callCallback2 @ chunk-MNF4PNE3.js?v=585675f8:3680
+invokeGuardedCallbackDev @ chunk-MNF4PNE3.js?v=585675f8:3705
+invokeGuardedCallback @ chunk-MNF4PNE3.js?v=585675f8:3739
+invokeGuardedCallbackAndCatchFirstError @ chunk-MNF4PNE3.js?v=585675f8:3742
+executeDispatch @ chunk-MNF4PNE3.js?v=585675f8:7046
+processDispatchQueueItemsInOrder @ chunk-MNF4PNE3.js?v=585675f8:7066
+processDispatchQueue @ chunk-MNF4PNE3.js?v=585675f8:7075
+dispatchEventsForPlugins @ chunk-MNF4PNE3.js?v=585675f8:7083
+(anonymous) @ chunk-MNF4PNE3.js?v=585675f8:7206
+batchedUpdates$1 @ chunk-MNF4PNE3.js?v=585675f8:18966
+batchedUpdates @ chunk-MNF4PNE3.js?v=585675f8:3585
+dispatchEventForPluginEventSystem @ chunk-MNF4PNE3.js?v=585675f8:7205
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-MNF4PNE3.js?v=585675f8:5484
+dispatchEvent @ chunk-MNF4PNE3.js?v=585675f8:5478
+dispatchDiscreteEvent @ chunk-MNF4PNE3.js?v=585675f8:5455Understand this error
+injected.js:214  POST https://ab1cd792-cb5f-4245-a9ca-74d9926ce355-00-2nlt55xvzqysg.pike.replit.dev/api/login 401 (Unauthorized)
