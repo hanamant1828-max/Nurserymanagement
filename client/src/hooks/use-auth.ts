@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api, type User } from "@shared/routes";
+import { api } from "@shared/routes";
+import { type User } from "@shared/schema";
 import { z } from "zod";
 
 type LoginInput = z.infer<typeof api.auth.login.input>;

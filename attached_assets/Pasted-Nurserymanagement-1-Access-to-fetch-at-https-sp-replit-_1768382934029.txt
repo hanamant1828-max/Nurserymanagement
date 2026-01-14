@@ -1,0 +1,32 @@
+Nurserymanagement:1 Access to fetch at 'https://sp.replit.com/v1/t' from origin 'https://replit.com' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.Understand this error
+sp.replit.com/v1/t:1  Failed to load resource: net::ERR_FAILEDUnderstand this error
+replit-cdn.com/replit-pill/replit-pill.global.js:1  Failed to load resource: net::ERR_CONNECTION_RESETUnderstand this error
+replit-cdn.com/replit-pill/replit-pill.global.js:1  Failed to load resource: net::ERR_CONNECTION_RESETUnderstand this error
+replit-cdn.com/replit-pill/replit-pill.global.js:1  Failed to load resource: net::ERR_CONNECTION_RESETUnderstand this error
+replit-cdn.com/replit-pill/replit-pill.global.js:1  Failed to load resource: net::ERR_CONNECTION_RESETUnderstand this error
+replit-cdn.com/replit-pill/replit-pill.global.js:1  Failed to load resource: net::ERR_CONNECTION_RESETUnderstand this error
+replit-cdn.com/replit-pill/replit-pill.global.js:1  Failed to load resource: net::ERR_CONNECTION_RESETUnderstand this error
+replit-cdn.com/replit-pill/replit-pill.global.js:1  Failed to load resource: net::ERR_CONNECTION_RESETUnderstand this error
+replit-cdn.com/replit-pill/replit-pill.global.js:1  Failed to load resource: net::ERR_CONNECTION_RESETUnderstand this error
+replit-cdn.com/replit-pill/replit-pill.global.js:1  Failed to load resource: net::ERR_CONNECTION_RESETUnderstand this error
+replit-cdn.com/replit-pill/replit-pill.global.js:1  Failed to load resource: net::ERR_CONNECTION_RESETUnderstand this error
+replit-cdn.com/replit-pill/replit-pill.global.js:1  Failed to load resource: net::ERR_CONNECTION_RESETUnderstand this error
+replit-cdn.com/replit-pill/replit-pill.global.js:1  Failed to load resource: net::ERR_CONNECTION_RESETUnderstand this error
+replit-cdn.com/replit-pill/replit-pill.global.js:1  Failed to load resource: net::ERR_CONNECTION_RESETUnderstand this error
+replit-cdn.com/replit-pill/replit-pill.global.js:1  Failed to load resource: net::ERR_CONNECTION_RESETUnderstand this error
+replit-cdn.com/replit-pill/replit-pill.global.js:1  Failed to load resource: net::ERR_CONNECTION_RESETUnderstand this error
+replit-cdn.com/replit-pill/replit-pill.global.js:1  Failed to load resource: net::ERR_CONNECTION_RESETUnderstand this error
+replit-cdn.com/replit-pill/replit-pill.global.js:1  Failed to load resource: net::ERR_CONNECTION_RESETUnderstand this error
+replit-cdn.com/replit-pill/replit-pill.global.js:1  Failed to load resource: net::ERR_CONNECTION_RESETUnderstand this error
+replit-cdn.com/replit-pill/replit-pill.global.js:1  Failed to load resource: net::ERR_CONNECTION_RESETUnderstand this error
+replit-cdn.com/replit-pill/replit-pill.global.js:1  Failed to load resource: net::ERR_CONNECTION_RESETUnderstand this error
+replit-cdn.com/replit-pill/replit-pill.global.js:1  Failed to load resource: net::ERR_CONNECTION_RESETUnderstand this error
+replit-cdn.com/replit-pill/replit-pill.global.js:1  Failed to load resource: net::ERR_CONNECTION_RESETUnderstand this error
+replit-cdn.com/replit-pill/replit-pill.global.js:1  Failed to load resource: net::ERR_CONNECTION_RESETUnderstand this error
+replit-cdn.com/replit-pill/replit-pill.global.js:1  Failed to load resource: net::ERR_CONNECTION_RESETUnderstand this error
+replit-cdn.com/replit-pill/replit-pill.global.js:1  Failed to load resource: net::ERR_CONNECTION_RESETUnderstand this error
+replit-cdn.com/replit-pill/replit-pill.global.js:1  Failed to load resource: net::ERR_CONNECTION_RESETUnderstand this error
+replit-cdn.com/replit-pill/replit-pill.global.js:1  Failed to load resource: net::ERR_CONNECTION_RESETUnderstand this error
+replit-cdn.com/replit-pill/replit-pill.global.js:1  Failed to load resource: net::ERR_CONNECTION_RESETUnderstand this error
+replit-cdn.com/replit-pill/replit-pill.global.js:1  Failed to load resource: net::ERR_CONNECTION_RESETUnderstand this error
+replit-cdn.com/replit-pill/replit-pill.global.js:1  Failed to load resource: net::ERR_CONNECTION_RESET
