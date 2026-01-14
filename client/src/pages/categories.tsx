@@ -270,8 +270,8 @@ export default function CategoriesPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="icon" onClick={() => handleEdit(category)}>
-                          <Edit2 className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary transition-all" onClick={() => handleEdit(category)}>
+                          <Edit2 className="w-4 h-4" />
                         </Button>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
@@ -344,7 +344,7 @@ export default function CategoriesPage() {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="flex-1 h-9" onClick={() => handleEdit(category)}>
+                  <Button variant="outline" size="sm" className="flex-1 h-9 rounded-lg hover:bg-primary/5 hover:text-primary transition-all" onClick={() => handleEdit(category)}>
                     <Edit2 className="w-3.5 h-3.5 mr-1.5" /> Edit
                   </Button>
                   <AlertDialog>

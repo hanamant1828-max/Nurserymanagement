@@ -27,7 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Sprout, AlertTriangle, Eye, Calendar as CalendarIcon, Trash2, CheckCircle, Layers, CalendarDays } from "lucide-react";
+import { Plus, Sprout, AlertTriangle, Eye, Calendar as CalendarIcon, Trash2, CheckCircle, Layers, CalendarDays, Edit2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -735,26 +735,12 @@ export default function LotsPage() {
                       <div className="flex justify-end gap-2">
                         <Button 
                           variant="ghost" 
-                          size="sm" 
-                          className="h-8 w-8 text-primary"
+                          size="icon" 
+                          className="h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary transition-all"
                           onClick={() => handleEdit(lot)}
                           title="Edit Lot"
                         >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="lucide lucide-pencil"
-                          >
-                            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                            <path d="m15 5 4 4" />
-                          </svg>
+                          <Edit2 className="w-4 h-4" />
                         </Button>
                         <Button 
                           variant="ghost" 

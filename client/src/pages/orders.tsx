@@ -49,6 +49,7 @@ import {
   ChevronLeft,
   ChevronRight,
   MapPin,
+  Edit2,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { useForm } from "react-hook-form";
@@ -2643,12 +2644,12 @@ export default function OrdersPage() {
                           </Button>
                         )}
                         <Button
-                          size="sm"
+                          size="icon"
                           variant="ghost"
-                          className="h-8 font-bold text-xs"
+                          className="h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary transition-all"
                           onClick={() => setEditingOrder(order)}
                         >
-                          Edit
+                          <Edit2 className="w-4 h-4" />
                         </Button>
                       </div>
                     </TableCell>
