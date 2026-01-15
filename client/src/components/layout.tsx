@@ -12,6 +12,7 @@ import {
   Truck,
   LogOut,
   Menu,
+  RefreshCw,
   X
 } from "lucide-react";
 import { useState } from "react";
@@ -20,12 +21,20 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { BottomNav } from "@/components/bottom-nav";
 import { cn } from "@/lib/utils";
+import { queryClient } from "@/lib/queryClient";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { user } = useUser();
   const { mutate: logout } = useLogout();
   const [open, setOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await queryClient.refetchQueries();
+    setTimeout(() => setIsRefreshing(false), 500);
+  };
 
   const navItems = [
     { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -141,10 +150,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Mobile Header */}
-      <header className="lg:hidden fixed top-0 left-0 right-0 h-14 bg-background/80 backdrop-blur-md border-b z-40 flex items-center">
+      <header className="lg:hidden fixed top-0 left-0 right-0 h-14 bg-background/80 backdrop-blur-md border-b z-40 flex items-center justify-between px-2">
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="text-muted-foreground ml-2">
+            <Button variant="ghost" size="icon" className="text-muted-foreground">
               <Menu className="w-6 h-6" />
             </Button>
           </SheetTrigger>
@@ -152,11 +161,32 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <NavContent isMobile={true} />
           </SheetContent>
         </Sheet>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="text-muted-foreground"
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+        >
+          <RefreshCw className={cn("w-5 h-5", isRefreshing && "animate-spin")} />
+        </Button>
       </header>
 
       {/* Main Content */}
       <main className="flex-1 overflow-auto w-full pb-20 md:pb-0">
         <div className="pt-16 lg:pt-8 min-h-screen animate-in fade-in duration-500">
+          <div className="hidden lg:flex justify-end px-8 mb-4">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="gap-2"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+            >
+              <RefreshCw className={cn("w-4 h-4", isRefreshing && "animate-spin")} />
+              Refresh Data
+            </Button>
+          </div>
           {children}
         </div>
       </main>
