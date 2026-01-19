@@ -141,11 +141,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
     </div>
   );
 
+  const asideClasses = cn(
+    "hidden lg:block bg-card border-r border-border h-screen sticky top-0 transition-[width] duration-300 group/sidebar overflow-hidden w-20 hover:w-72",
+  );
+
   return (
     <div className="min-h-screen bg-muted/20 flex">
-      <aside 
-        className="hidden lg:block w-72 bg-card border-r border-border h-screen sticky top-0 transition-[width] duration-300 group/sidebar overflow-hidden hover:w-72 w-20"
-      >
+      <aside className={asideClasses}>
         <NavContent isMobile={false} />
       </aside>
 
