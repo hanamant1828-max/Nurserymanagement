@@ -33,24 +33,29 @@ export default function Dashboard() {
 
   // Calculate Metrics
   const today = new Date();
-  const sowingToday = lots?.filter(l => l.sowingDate === format(today, 'yyyy-MM-dd')).length || 0;
-  const activeLots = lots?.filter(l => (l as any).available > 0).length || 0;
-  const pendingOrders = orders?.filter(o => o.status === 'BOOKED').length || 0;
+  const sowingToday = lots?.filter(l => l && l.sowingDate === format(today, 'yyyy-MM-dd')).length || 0;
+  const activeLots = lots?.filter(l => l && (l as any).available > 0).length || 0;
+  const pendingOrders = orders?.filter(o => o && o.status === 'BOOKED').length || 0;
   const deliveriesToday = orders?.filter(o => 
+    o && 
     o.status === 'BOOKED' && 
     o.deliveryDate === format(today, 'yyyy-MM-dd')
   ).length || 0;
 
-  const totalRevenue = orders?.filter(o => o.status === 'DELIVERED')
+  const totalRevenue = orders?.filter(o => o && o.status === 'DELIVERED')
     .reduce((sum, o) => sum + Number(o.totalAmount || 0), 0) || 0;
   
   // Upcoming deliveries (next 7 days)
   const upcomingDeliveries = orders?.filter(o => {
-    if (o.status !== 'BOOKED' || !o.deliveryDate) return false;
-    const deliveryDate = parseISO(o.deliveryDate);
-    const diffTime = deliveryDate.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-    return diffDays >= 0 && diffDays <= 7;
+    if (!o || o.status !== 'BOOKED' || !o.deliveryDate) return false;
+    try {
+      const deliveryDate = parseISO(o.deliveryDate);
+      const diffTime = deliveryDate.getTime() - today.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+      return diffDays >= 0 && diffDays <= 7;
+    } catch (e) {
+      return false;
+    }
   }) || [];
 
   const stats = [
@@ -103,6 +108,7 @@ export default function Dashboard() {
 
   // Prepare chart data (Sales by Variety)
   const salesByVariety = orders?.reduce((acc, order) => {
+    if (!order) return acc;
     // variety name is accessed via order.lot.variety.name because of drizzle relations
     const varietyName = (order as any).lot?.variety?.name || "Unknown Variety";
     acc[varietyName] = (acc[varietyName] || 0) + (order.bookedQty || 0);
