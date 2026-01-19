@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLots, useCreateLot, useUpdateLot } from "@/hooks/use-lots";
 import { useCategories } from "@/hooks/use-categories";
 import { useVarieties } from "@/hooks/use-varieties";
@@ -634,7 +634,7 @@ export default function LotsPage() {
               <Calendar
                 mode="single"
                 selected={dateRange?.from}
-                onSelect={(date) => setDateRange(prev => ({ from: date, to: prev?.to }))}
+                onSelect={(date) => setDateRange((prev: DateRange | undefined) => ({ from: date, to: prev?.to }))}
                 initialFocus
               />
             </PopoverContent>
@@ -656,7 +656,7 @@ export default function LotsPage() {
               <Calendar
                 mode="single"
                 selected={dateRange?.to}
-                onSelect={(date) => setDateRange(prev => ({ from: prev?.from || new Date(), to: date }))}
+                onSelect={(date) => setDateRange((prev: DateRange | undefined) => ({ from: prev?.from || new Date(), to: date }))}
                 initialFocus
               />
             </PopoverContent>

@@ -230,7 +230,7 @@ export default function ReportsPage() {
                   <Calendar
                     mode="single"
                     selected={dateRange.from}
-                    onSelect={(date) => setDateRange(prev => ({ ...prev, from: date }))}
+                    onSelect={(date) => setDateRange((prev: { from: Date | undefined; to: Date | undefined }) => ({ ...prev, from: date || undefined }))}
                     initialFocus
                   />
                 </PopoverContent>
@@ -256,7 +256,7 @@ export default function ReportsPage() {
                   <Calendar
                     mode="single"
                     selected={dateRange.to}
-                    onSelect={(date) => setDateRange(prev => ({ ...prev, to: date }))}
+                    onSelect={(date) => setDateRange((prev: { from: Date | undefined; to: Date | undefined }) => ({ ...prev, to: date || undefined }))}
                     initialFocus
                   />
                 </PopoverContent>

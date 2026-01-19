@@ -2741,7 +2741,7 @@ export default function OrdersPage() {
                   variant="outline"
                   size="sm"
                   onClick={() =>
-                    setCurrentPage((prev) => Math.max(1, prev - 1))
+                    setCurrentPage((prev: number) => Math.max(1, prev - 1))
                   }
                   disabled={currentPage === 1}
                   className="gap-1"
@@ -2789,7 +2789,7 @@ export default function OrdersPage() {
                   variant="outline"
                   size="sm"
                   onClick={() =>
-                    setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                    setCurrentPage((prev: number) => Math.min(totalPages, prev + 1))
                   }
                   disabled={currentPage === totalPages}
                   className="gap-1"

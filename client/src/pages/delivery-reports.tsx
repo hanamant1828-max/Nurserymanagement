@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useLots } from "@/hooks/use-lots";
 import { useOrders } from "@/hooks/use-orders";
 import { useCategories } from "@/hooks/use-categories";
@@ -306,7 +306,7 @@ export default function DeliveryReportsPage() {
                   <Calendar
                     mode="single"
                     selected={dateRange.from}
-                    onSelect={(date) => setDateRange(prev => ({ ...prev, from: date }))}
+                    onSelect={(date) => setDateRange((prev: { from: Date | undefined; to: Date | undefined }) => ({ ...prev, from: date || undefined }))}
                     initialFocus
                   />
                 </PopoverContent>
@@ -332,7 +332,7 @@ export default function DeliveryReportsPage() {
                   <Calendar
                     mode="single"
                     selected={dateRange.to}
-                    onSelect={(date) => setDateRange(prev => ({ ...prev, to: date }))}
+                    onSelect={(date) => setDateRange((prev: { from: Date | undefined; to: Date | undefined }) => ({ ...prev, to: date || undefined }))}
                     initialFocus
                   />
                 </PopoverContent>
