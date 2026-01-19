@@ -141,7 +141,10 @@ function SearchableSelect({
   }, [options, searchQuery, searchFields]);
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={(isOpen) => {
+      setOpen(isOpen);
+      if (!isOpen) setSearchQuery("");
+    }}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
@@ -173,21 +176,24 @@ function SearchableSelect({
             <CommandInput
               placeholder={`Search ${placeholder.toLowerCase()}...`}
               autoFocus
-              onValueChange={setSearchQuery}
+              onValueChange={(val) => {
+                setSearchQuery(val);
+              }}
             />
-            <CommandList className="max-h-[300px] overflow-y-auto">
-              <CommandEmpty>{emptyText}</CommandEmpty>
-              <CommandGroup>
-                {filteredOptions.map((option) => (
-                  <CommandItem
-                    key={option.id}
-                    value={option.id.toString()}
-                    onSelect={() => {
-                      onValueChange(option.id.toString());
-                      setOpen(false);
-                    }}
-                    className="flex items-center justify-between py-1"
-                  >
+          <CommandList className="max-h-[300px] overflow-y-auto">
+            <CommandEmpty>{emptyText}</CommandEmpty>
+            <CommandGroup>
+              {filteredOptions.map((option) => (
+                <CommandItem
+                  key={option.id}
+                  value={option.id.toString()}
+                  onSelect={() => {
+                    onValueChange(option.id.toString());
+                    setOpen(false);
+                    setSearchQuery("");
+                  }}
+                  className="flex items-center justify-between py-1"
+                >
                   <div className="flex items-center gap-2">
                     {renderItem(option)}
                   </div>
@@ -1604,7 +1610,7 @@ export default function OrdersPage() {
                               <FormLabel>Select Category</FormLabel>
                               <FormControl>
                                 <SearchableSelect
-                                  options={categories || []}
+                                  options={sortedCategories || []}
                                   value={field.value || ""}
                                   onValueChange={(val) => {
                                     field.onChange(val);
