@@ -92,8 +92,11 @@ export default function TodayDeliveriesPage() {
     if (!orders) return [];
     
     return orders.filter(order => {
+      if (!order) return false;
       try {
-        const deliveryDate = parseISO(order.deliveryDate);
+        const deliveryDateStr = order.deliveryDate;
+        if (!deliveryDateStr) return false;
+        const deliveryDate = parseISO(deliveryDateStr);
         const matchesDate = isSameDay(deliveryDate, selectedDate);
         if (!matchesDate) return false;
 
@@ -103,12 +106,12 @@ export default function TodayDeliveriesPage() {
         // If any filter is set to something other than "all", apply it
         if (pageCategoryId !== "all") {
           const lot = lots?.find(l => l.id === order.lotId);
-          if (lot?.categoryId.toString() !== pageCategoryId) return false;
+          if (lot?.categoryId?.toString() !== pageCategoryId) return false;
         }
 
         if (pageVarietyId !== "all") {
           const lot = lots?.find(l => l.id === order.lotId);
-          if (lot?.varietyId.toString() !== pageVarietyId) return false;
+          if (lot?.varietyId?.toString() !== pageVarietyId) return false;
         }
 
         if (pageLotId !== "all") {
@@ -258,7 +261,7 @@ export default function TodayDeliveriesPage() {
                       <>
                         {categories?.find(c => c.id.toString() === pageCategoryId)?.image ? (
                           <img 
-                            src={categories.find(c => c.id.toString() === pageCategoryId)?.image ?? ""} 
+                            src={categories?.find(c => c.id.toString() === pageCategoryId)?.image ?? ""} 
                             className="w-6 h-6 rounded-sm object-cover border" 
                             alt="" 
                           />
