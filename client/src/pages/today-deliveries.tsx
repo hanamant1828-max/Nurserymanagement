@@ -115,7 +115,7 @@ export default function TodayDeliveriesPage() {
         }
 
         if (pageLotId !== "all") {
-          if (order.lotId.toString() !== pageLotId) return false;
+          if (order.lotId?.toString() !== pageLotId) return false;
         }
 
         return true;
@@ -529,8 +529,8 @@ export default function TodayDeliveriesPage() {
                           </div>
                         )}
                         <div>
-                          <span className="font-bold text-sm block leading-tight">{variety?.name}</span>
-                          <p className="text-[10px] text-muted-foreground uppercase font-mono">{lot?.lotNumber}</p>
+                          <span className="font-bold text-sm block leading-tight">{variety?.name || "Unknown Variety"}</span>
+                          <p className="text-[10px] text-muted-foreground uppercase font-mono">{lot?.lotNumber || "N/A"}</p>
                         </div>
                       </div>
                     </TableCell>
@@ -686,8 +686,8 @@ export default function TodayDeliveriesPage() {
                         </div>
                       )}
                       <div className="flex-1">
-                        <p className="font-bold text-sm">{variety?.name}</p>
-                        <p className="text-xs font-mono text-muted-foreground">{lot?.lotNumber}</p>
+                        <p className="font-bold text-sm">{variety?.name || "Unknown Variety"}</p>
+                        <p className="text-xs font-mono text-muted-foreground">{lot?.lotNumber || "N/A"}</p>
                       </div>
                       <div className="text-right">
                         <p className="text-[10px] uppercase font-bold text-muted-foreground">Qty</p>
