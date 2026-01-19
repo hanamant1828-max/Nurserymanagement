@@ -1090,23 +1090,82 @@ export default function OrdersPage() {
   const { data: categories } = useCategories();
   const { data: varieties } = useVarieties();
 
-  const [open, setOpen] = useState(false);
-  const [step, setStep] = useState(1);
-  const [search, setSearch] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 25;
+  // Persistence key
+  const PERSISTENCE_KEY = "orders_filters_state";
 
-  const [pageCategoryId, setPageCategoryId] = useState<string>("all");
-  const [pageVarietyId, setPageVarietyId] = useState<string>("all");
-  const [pageLotId, setPageLotId] = useState<string>("all");
-
-  const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>(() => {
+  // Initial state helper
+  const getInitialState = () => {
+    const saved = localStorage.getItem(PERSISTENCE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return {
+          search: parsed.search || "",
+          pageCategoryId: parsed.pageCategoryId || "all",
+          pageVarietyId: parsed.pageVarietyId || "all",
+          pageLotId: parsed.pageLotId || "all",
+          dateRange: {
+            from: parsed.dateRange?.from ? new Date(parsed.dateRange.from) : new Date(new Date().setDate(new Date().getDate() - 30)),
+            to: parsed.dateRange?.to ? new Date(parsed.dateRange.to) : new Date(new Date().setDate(new Date().getDate() + 30)),
+          },
+          currentPage: parsed.currentPage || 1,
+        };
+      } catch (e) {
+        console.error("Failed to parse saved filters", e);
+      }
+    }
     const from = new Date();
     from.setDate(from.getDate() - 30);
     const to = new Date();
     to.setDate(to.getDate() + 30);
-    return { from, to };
-  });
+    return {
+      search: "",
+      pageCategoryId: "all",
+      pageVarietyId: "all",
+      pageLotId: "all",
+      dateRange: { from, to },
+      currentPage: 1,
+    };
+  };
+
+  const initialState = getInitialState();
+  const [open, setOpen] = useState(false);
+  const [step, setStep] = useState(1);
+  const [search, setSearch] = useState(initialState.search);
+  const [currentPage, setCurrentPage] = useState(initialState.currentPage);
+  const itemsPerPage = 25;
+
+  const [pageCategoryId, setPageCategoryId] = useState<string>(initialState.pageCategoryId);
+  const [pageVarietyId, setPageVarietyId] = useState<string>(initialState.pageVarietyId);
+  const [pageLotId, setPageLotId] = useState<string>(initialState.pageLotId);
+
+  const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>(initialState.dateRange);
+
+  // Persist state changes
+  useEffect(() => {
+    const stateToSave = {
+      search,
+      pageCategoryId,
+      pageVarietyId,
+      pageLotId,
+      dateRange,
+      currentPage
+    };
+    localStorage.setItem(PERSISTENCE_KEY, JSON.stringify(stateToSave));
+  }, [search, pageCategoryId, pageVarietyId, pageLotId, dateRange, currentPage]);
+
+  const handleClearFilters = () => {
+    setSearch("");
+    setPageCategoryId("all");
+    setPageVarietyId("all");
+    setPageLotId("all");
+    const from = new Date();
+    from.setDate(from.getDate() - 30);
+    const to = new Date();
+    to.setDate(to.getDate() + 30);
+    setDateRange({ from, to });
+    setCurrentPage(1);
+  };
 
   // Reset to first page when filters change
   useEffect(() => {
