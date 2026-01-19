@@ -76,19 +76,78 @@ export default function LotsPage() {
   const { data: categories } = useCategories();
   const { data: varieties } = useVarieties();
   
+  // Persistence key
+  const PERSISTENCE_KEY = "lots_filters_state";
+
+  // Initial state helper
+  const getInitialState = () => {
+    const saved = localStorage.getItem(PERSISTENCE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return {
+          search: parsed.search || "",
+          selectedCategory: parsed.selectedCategory || "all",
+          selectedVariety: parsed.selectedVariety || "all",
+          dateRange: parsed.dateRange ? {
+            from: parsed.dateRange.from ? new Date(parsed.dateRange.from) : undefined,
+            to: parsed.dateRange.to ? new Date(parsed.dateRange.to) : undefined,
+          } : {
+            from: subDays(new Date(), 15),
+            to: new Date(),
+          },
+          currentPage: parsed.currentPage || 1,
+        };
+      } catch (e) {
+        console.error("Failed to parse saved filters", e);
+      }
+    }
+    return {
+      search: "",
+      selectedCategory: "all",
+      selectedVariety: "all",
+      dateRange: {
+        from: subDays(new Date(), 15),
+        to: new Date(),
+      },
+      currentPage: 1,
+    };
+  };
+
+  const initialState = getInitialState();
   const [open, setOpen] = useState(false);
   const [damageDialogOpen, setDamageDialogOpen] = useState(false);
   const [selectedLotId, setSelectedLotId] = useState<number | null>(null);
-  const [search, setSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [selectedVariety, setSelectedVariety] = useState<string>("all");
-  const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: subDays(new Date(), 15),
-    to: new Date(),
-  });
+  const [search, setSearch] = useState(initialState.search);
+  const [selectedCategory, setSelectedCategory] = useState<string>(initialState.selectedCategory);
+  const [selectedVariety, setSelectedVariety] = useState<string>(initialState.selectedVariety);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(initialState.dateRange);
 
   const [editingLot, setEditingLot] = useState<any>(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(initialState.currentPage);
+
+  // Persist state changes
+  useEffect(() => {
+    const stateToSave = {
+      search,
+      selectedCategory,
+      selectedVariety,
+      dateRange,
+      currentPage
+    };
+    localStorage.setItem(PERSISTENCE_KEY, JSON.stringify(stateToSave));
+  }, [search, selectedCategory, selectedVariety, dateRange, currentPage]);
+
+  const handleClearFilters = () => {
+    setSearch("");
+    setSelectedCategory("all");
+    setSelectedVariety("all");
+    setDateRange({
+      from: subDays(new Date(), 15),
+      to: new Date(),
+    });
+    setCurrentPage(1);
+  };
   const PAGE_SIZE = 15;
 
   const filteredLotsList = lots?.filter(l => {
@@ -489,7 +548,15 @@ export default function LotsPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 p-4 bg-muted/30 rounded-xl border border-border/50">
+      <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 p-4 bg-muted/30 rounded-xl border border-border/50 relative">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="absolute -top-3 right-4 bg-background border h-7 text-[10px] font-bold uppercase hover:bg-destructive hover:text-destructive-foreground transition-colors z-10"
+          onClick={handleClearFilters}
+        >
+          Clear Filters
+        </Button>
         <div className="space-y-2">
           <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Category Filter</label>
           <Select value={selectedCategory} onValueChange={(val) => {

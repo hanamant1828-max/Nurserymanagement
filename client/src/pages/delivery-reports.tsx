@@ -29,22 +29,87 @@ export default function DeliveryReportsPage() {
   const { data: orders, isLoading: loadingOrders } = useOrders();
   const { data: categories } = useCategories();
   const { data: varieties } = useVarieties();
-  const [searchTerm, setSearchTerm] = useState("");
-  
-  const [activeTab, setActiveTab] = useState<string>("pending");
-  
+
+  // Persistence key
+  const PERSISTENCE_KEY = "delivery_reports_filters_state";
+
+  // Initial state helper
+  const getInitialState = () => {
+    const saved = localStorage.getItem(PERSISTENCE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return {
+          searchTerm: parsed.searchTerm || "",
+          activeTab: parsed.activeTab || "pending",
+          dateRange: parsed.dateRange ? {
+            from: parsed.dateRange.from ? new Date(parsed.dateRange.from) : undefined,
+            to: parsed.dateRange.to ? new Date(parsed.dateRange.to) : undefined,
+          } : {
+            from: subMonths(new Date(), 1),
+            to: new Date(),
+          },
+          pageDistrictId: parsed.pageDistrictId || "all",
+          pageTalukId: parsed.pageTalukId || "all",
+          selectedCategory: parsed.selectedCategory || "all",
+          selectedVariety: parsed.selectedVariety || "all",
+        };
+      } catch (e) {
+        console.error("Failed to parse saved filters", e);
+      }
+    }
+    return {
+      searchTerm: "",
+      activeTab: "pending",
+      dateRange: {
+        from: subMonths(new Date(), 1),
+        to: new Date(),
+      },
+      pageDistrictId: "all",
+      pageTalukId: "all",
+      selectedCategory: "all",
+      selectedVariety: "all",
+    };
+  };
+
+  const initialState = getInitialState();
+  const [searchTerm, setSearchTerm] = useState(initialState.searchTerm);
+  const [activeTab, setActiveTab] = useState<string>(initialState.activeTab);
   const [dateRange, setDateRange] = useState<{
     from: Date | undefined;
     to: Date | undefined;
-  }>({
-    from: subMonths(new Date(), 1),
-    to: new Date(),
-  });
+  }>(initialState.dateRange);
 
-  const [pageDistrictId, setPageDistrictId] = useState<string>("all");
-  const [pageTalukId, setPageTalukId] = useState<string>("all");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [selectedVariety, setSelectedVariety] = useState<string>("all");
+  const [pageDistrictId, setPageDistrictId] = useState<string>(initialState.pageDistrictId);
+  const [pageTalukId, setPageTalukId] = useState<string>(initialState.pageTalukId);
+  const [selectedCategory, setSelectedCategory] = useState<string>(initialState.selectedCategory);
+  const [selectedVariety, setSelectedVariety] = useState<string>(initialState.selectedVariety);
+
+  // Persist state changes
+  useEffect(() => {
+    const stateToSave = {
+      searchTerm,
+      activeTab,
+      dateRange,
+      pageDistrictId,
+      pageTalukId,
+      selectedCategory,
+      selectedVariety,
+    };
+    localStorage.setItem(PERSISTENCE_KEY, JSON.stringify(stateToSave));
+  }, [searchTerm, activeTab, dateRange, pageDistrictId, pageTalukId, selectedCategory, selectedVariety]);
+
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setDateRange({
+      from: subMonths(new Date(), 1),
+      to: new Date(),
+    });
+    setPageDistrictId("all");
+    setPageTalukId("all");
+    setSelectedCategory("all");
+    setSelectedVariety("all");
+  };
 
   const exportToExcel = (data: any[], fileName: string) => {
     const ws = XLSX.utils.json_to_sheet(data);
@@ -289,7 +354,15 @@ export default function DeliveryReportsPage() {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-4 bg-muted/20 p-4 rounded-lg border border-dashed">
+        <div className="flex flex-wrap items-center gap-4 bg-muted/20 p-4 rounded-lg border border-dashed relative">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="absolute -top-3 right-4 bg-background border h-7 text-[10px] font-bold uppercase hover:bg-destructive hover:text-destructive-foreground transition-colors"
+            onClick={handleClearFilters}
+          >
+            Clear Filters
+          </Button>
           <div className="flex flex-col gap-1 w-[200px]">
             <span className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Filter by District</span>
             <Select value={pageDistrictId} onValueChange={(val) => {
