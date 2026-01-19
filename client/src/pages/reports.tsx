@@ -30,28 +30,75 @@ export default function ReportsPage() {
   const { data: orders, isLoading: loadingOrders } = useOrders();
   const { data: categories } = useCategories();
   const { data: varieties } = useVarieties();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [selectedVariety, setSelectedVariety] = useState<string>("all");
+  
+  // Persistence key
+  const PERSISTENCE_KEY = "reports_filters_state";
+
+  // Initial state helper
+  const getInitialState = () => {
+    const saved = localStorage.getItem(PERSISTENCE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return {
+          searchTerm: parsed.searchTerm || "",
+          selectedCategory: parsed.selectedCategory || "all",
+          selectedVariety: parsed.selectedVariety || "all",
+          dateRange: {
+            from: parsed.dateRange?.from ? new Date(parsed.dateRange.from) : subMonths(new Date(), 1),
+            to: parsed.dateRange?.to ? new Date(parsed.dateRange.to) : new Date(),
+          }
+        };
+      } catch (e) {
+        console.error("Failed to parse saved filters", e);
+      }
+    }
+    return {
+      searchTerm: "",
+      selectedCategory: "all",
+      selectedVariety: "all",
+      dateRange: {
+        from: subMonths(new Date(), 1),
+        to: new Date(),
+      }
+    };
+  };
+
+  const initialState = getInitialState();
+  const [searchTerm, setSearchTerm] = useState(initialState.searchTerm);
+  const [selectedCategory, setSelectedCategory] = useState<string>(initialState.selectedCategory);
+  const [selectedVariety, setSelectedVariety] = useState<string>(initialState.selectedVariety);
+  const [dateRange, setDateRange] = useState<{
+    from: Date | undefined;
+    to: Date | undefined;
+  }>(initialState.dateRange);
+
   const [location] = useLocation();
   const queryParams = new URLSearchParams(location.split('?')[1] || "");
   const view = queryParams.get("view");
 
   const [activeTab, setActiveTab] = useState<string>("sowing");
 
+  // Persist state changes
   useEffect(() => {
-    if (view === "standard") {
-      setActiveTab("sowing");
-    }
-  }, [view]);
-  
-  const [dateRange, setDateRange] = useState<{
-    from: Date | undefined;
-    to: Date | undefined;
-  }>({
-    from: subMonths(new Date(), 1),
-    to: new Date(),
-  });
+    const stateToSave = {
+      searchTerm,
+      selectedCategory,
+      selectedVariety,
+      dateRange
+    };
+    localStorage.setItem(PERSISTENCE_KEY, JSON.stringify(stateToSave));
+  }, [searchTerm, selectedCategory, selectedVariety, dateRange]);
+
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setSelectedCategory("all");
+    setSelectedVariety("all");
+    setDateRange({
+      from: subMonths(new Date(), 1),
+      to: new Date(),
+    });
+  };
 
   const exportToExcel = (data: any[], fileName: string) => {
     const ws = XLSX.utils.json_to_sheet(data);
@@ -231,7 +278,15 @@ export default function ReportsPage() {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-4 bg-muted/20 p-4 rounded-lg border border-dashed">
+        <div className="flex flex-wrap items-center gap-4 bg-muted/20 p-4 rounded-lg border border-dashed relative">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="absolute -top-3 right-2 bg-background border h-7 text-[10px] font-bold uppercase hover:bg-destructive hover:text-destructive-foreground transition-colors"
+            onClick={handleClearFilters}
+          >
+            Clear Filters
+          </Button>
           <div className="flex flex-col gap-1 w-[200px]">
             <span className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Filter by Category</span>
             <Select value={selectedCategory} onValueChange={(val) => {
