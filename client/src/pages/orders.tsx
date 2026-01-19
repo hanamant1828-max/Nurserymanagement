@@ -127,6 +127,18 @@ function SearchableSelect({
   searchFields?: string[];
 }) {
   const [open, setOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredOptions = useMemo(() => {
+    if (!searchQuery) return options;
+    const searchLower = searchQuery.toLowerCase();
+    return options.filter((option) =>
+      searchFields.some((field) => {
+        const val = option[field];
+        return val && val.toString().toLowerCase().includes(searchLower);
+      })
+    );
+  }, [options, searchQuery, searchFields]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -155,37 +167,27 @@ function SearchableSelect({
         align="start"
         sideOffset={4}
       >
-        <Command
-          filter={(value, search) => {
-            const option = options.find((opt) => opt.id.toString() === value);
-            if (!option) return 0;
-
-            const searchLower = search.toLowerCase();
-            const matches = searchFields.some((field) => {
-              const val = option[field];
-              return val && val.toString().toLowerCase().includes(searchLower);
-            });
-
-            return matches ? 1 : 0;
-          }}
-        >
-          <CommandInput
-            placeholder={`Search ${placeholder.toLowerCase()}...`}
-            autoFocus
-          />
-          <CommandList className="max-h-[300px] overflow-y-auto">
-            <CommandEmpty>{emptyText}</CommandEmpty>
-            <CommandGroup>
-              {options.map((option) => (
-                <CommandItem
-                  key={option.id}
-                  value={option.id.toString()}
-                  onSelect={() => {
-                    onValueChange(option.id.toString());
-                    setOpen(false);
-                  }}
-                  className="flex items-center justify-between py-1"
-                >
+          <Command
+            shouldFilter={false}
+          >
+            <CommandInput
+              placeholder={`Search ${placeholder.toLowerCase()}...`}
+              autoFocus
+              onValueChange={setSearchQuery}
+            />
+            <CommandList className="max-h-[300px] overflow-y-auto">
+              <CommandEmpty>{emptyText}</CommandEmpty>
+              <CommandGroup>
+                {filteredOptions.map((option) => (
+                  <CommandItem
+                    key={option.id}
+                    value={option.id.toString()}
+                    onSelect={() => {
+                      onValueChange(option.id.toString());
+                      setOpen(false);
+                    }}
+                    className="flex items-center justify-between py-1"
+                  >
                   <div className="flex items-center gap-2">
                     {renderItem(option)}
                   </div>

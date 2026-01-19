@@ -5,10 +5,28 @@ import { useVarieties } from "@/hooks/use-varieties";
 import { useCategories } from "@/hooks/use-categories";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { format, isSameDay, parseISO } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ChevronLeft, ChevronRight, ShoppingCart, CheckCircle, Clock, Calendar as CalendarIcon, Layers, Loader2, ChevronsUpDown, Check } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ShoppingCart,
+  CheckCircle,
+  Clock,
+  Calendar as CalendarIcon,
+  Layers,
+  Loader2,
+  ChevronsUpDown,
+  Check,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Pagination,
@@ -20,10 +38,20 @@ import {
 } from "@/components/ui/pagination";
 import { useUpdateOrder } from "@/hooks/use-orders";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Command,
   CommandEmpty,
@@ -60,38 +88,41 @@ export default function TodayDeliveriesPage() {
 
   const filteredCategoriesDropdown = useMemo(() => {
     if (!sortedCategories) return [];
-    return sortedCategories.filter(c => 
-      c.name.toLowerCase().includes(categorySearch.toLowerCase())
+    return sortedCategories.filter((c) =>
+      c.name.toLowerCase().includes(categorySearch.toLowerCase()),
     );
   }, [sortedCategories, categorySearch]);
 
-  const filteredVarietiesPage = varieties?.filter(v => 
-    pageCategoryId === "all" || v.categoryId.toString() === pageCategoryId
+  const filteredVarietiesPage = varieties?.filter(
+    (v) =>
+      pageCategoryId === "all" || v.categoryId.toString() === pageCategoryId,
   );
 
   const filteredVarietiesDropdown = useMemo(() => {
     if (!filteredVarietiesPage) return [];
-    return filteredVarietiesPage.filter(v => 
-      v.name.toLowerCase().includes(varietySearch.toLowerCase())
+    return filteredVarietiesPage.filter((v) =>
+      v.name.toLowerCase().includes(varietySearch.toLowerCase()),
     );
   }, [filteredVarietiesPage, varietySearch]);
 
-  const filteredLotsPage = lots?.filter(l => 
-    (pageCategoryId === "all" || l.categoryId.toString() === pageCategoryId) &&
-    (pageVarietyId === "all" || l.varietyId.toString() === pageVarietyId)
+  const filteredLotsPage = lots?.filter(
+    (l) =>
+      (pageCategoryId === "all" ||
+        l.categoryId.toString() === pageCategoryId) &&
+      (pageVarietyId === "all" || l.varietyId.toString() === pageVarietyId),
   );
 
   const filteredLotsDropdown = useMemo(() => {
     if (!filteredLotsPage) return [];
-    return filteredLotsPage.filter(l => 
-      l.lotNumber.toLowerCase().includes(lotSearch.toLowerCase())
+    return filteredLotsPage.filter((l) =>
+      l.lotNumber.toLowerCase().includes(lotSearch.toLowerCase()),
     );
   }, [filteredLotsPage, lotSearch]);
 
   const filteredOrders = useMemo(() => {
     if (!orders) return [];
-    
-    return orders.filter(order => {
+
+    return orders.filter((order) => {
       if (!order) return false;
       try {
         const deliveryDateStr = order.deliveryDate;
@@ -101,16 +132,17 @@ export default function TodayDeliveriesPage() {
         if (!matchesDate) return false;
 
         // Only show Booked and Delivered orders on the delivery schedule
-        if (order.status !== "BOOKED" && order.status !== "DELIVERED") return false;
+        if (order.status !== "BOOKED" && order.status !== "DELIVERED")
+          return false;
 
         // If any filter is set to something other than "all", apply it
         if (pageCategoryId !== "all") {
-          const lot = lots?.find(l => l.id === order.lotId);
+          const lot = lots?.find((l) => l.id === order.lotId);
           if (lot?.categoryId?.toString() !== pageCategoryId) return false;
         }
 
         if (pageVarietyId !== "all") {
-          const lot = lots?.find(l => l.id === order.lotId);
+          const lot = lots?.find((l) => l.id === order.lotId);
           if (lot?.varietyId?.toString() !== pageVarietyId) return false;
         }
 
@@ -132,7 +164,7 @@ export default function TodayDeliveriesPage() {
   const totalPages = Math.ceil(filteredOrders.length / 25);
   const paginatedOrders = filteredOrders.slice(
     (currentPage - 1) * 25,
-    currentPage * 25
+    currentPage * 25,
   );
 
   const markDelivered = (id: number) => {
@@ -140,49 +172,55 @@ export default function TodayDeliveriesPage() {
       particleCount: 150,
       spread: 70,
       origin: { y: 0.6 },
-      colors: ['#10b981', '#3b82f6', '#f59e0b']
+      colors: ["#10b981", "#3b82f6", "#f59e0b"],
     });
 
     const now = new Date();
-    update({ 
-      id, 
-      status: "DELIVERED", 
-      deliveredQty: 0,
-      actualDeliveryDate: format(now, "yyyy-MM-dd"),
-      actualDeliveryTime: format(now, "HH:mm:ss")
-    }, {
-      onSuccess: () => {
-        toast({
-          title: "Order Delivered",
-          description: "The order has been successfully marked as delivered.",
-        });
+    update(
+      {
+        id,
+        status: "DELIVERED",
+        deliveredQty: 0,
+        actualDeliveryDate: format(now, "yyyy-MM-dd"),
+        actualDeliveryTime: format(now, "HH:mm:ss"),
       },
-      onError: (error: Error) => {
-        toast({
-          title: "Update Failed",
-          description: error.message,
-          variant: "destructive",
-        });
-      }
-    });
+      {
+        onSuccess: () => {
+          toast({
+            title: "Order Delivered",
+            description: "The order has been successfully marked as delivered.",
+          });
+        },
+        onError: (error: Error) => {
+          toast({
+            title: "Update Failed",
+            description: error.message,
+            variant: "destructive",
+          });
+        },
+      },
+    );
   };
 
   const undoDelivery = (id: number) => {
-    update({ id, status: "BOOKED", deliveredQty: 0 }, {
-      onSuccess: () => {
-        toast({
-          title: "Undo Successful",
-          description: "The order has been reverted to Booked status.",
-        });
+    update(
+      { id, status: "BOOKED", deliveredQty: 0 },
+      {
+        onSuccess: () => {
+          toast({
+            title: "Undo Successful",
+            description: "The order has been reverted to Booked status.",
+          });
+        },
+        onError: (error: Error) => {
+          toast({
+            title: "Undo Failed",
+            description: error.message,
+            variant: "destructive",
+          });
+        },
       },
-      onError: (error: Error) => {
-        toast({
-          title: "Undo Failed",
-          description: error.message,
-          variant: "destructive",
-        });
-      }
-    });
+    );
   };
 
   if (isLoading) {
@@ -212,24 +250,30 @@ export default function TodayDeliveriesPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-display font-bold">
-            {isSameDay(selectedDate, new Date()) ? "Today's Deliveries" : "Scheduled Deliveries"}
+            {isSameDay(selectedDate, new Date())
+              ? "Today's Deliveries"
+              : "Scheduled Deliveries"}
           </h1>
           <p className="text-muted-foreground">
             Orders for {format(selectedDate, "eeee, dd MMMM yyyy")}.
           </p>
         </div>
-        
+
         <Popover>
           <PopoverTrigger asChild>
             <Button
               variant={"outline"}
               className={cn(
                 "w-full md:w-[280px] justify-start text-left font-normal h-12 text-lg border-primary/20 hover:bg-primary/5",
-                !selectedDate && "text-muted-foreground"
+                !selectedDate && "text-muted-foreground",
               )}
             >
               <CalendarIcon className="mr-2 h-5 w-5" />
-              {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
+              {selectedDate ? (
+                format(selectedDate, "PPP")
+              ) : (
+                <span>Pick a date</span>
+              )}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="end">
@@ -246,7 +290,9 @@ export default function TodayDeliveriesPage() {
       <Card className="bg-muted/30 border-none shadow-none">
         <CardContent className="p-4 flex flex-wrap gap-4 items-end">
           <div className="space-y-1.5 flex-1 min-w-[200px]">
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">Category Filter</label>
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">
+              Category Filter
+            </label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -256,20 +302,32 @@ export default function TodayDeliveriesPage() {
                 >
                   <div className="flex items-center gap-3 truncate">
                     {pageCategoryId === "all" ? (
-                      <span className="font-bold text-primary">All Categories</span>
+                      <span className="font-bold text-primary">
+                        All Categories
+                      </span>
                     ) : (
                       <>
-                        {categories?.find(c => c.id.toString() === pageCategoryId)?.image ? (
-                          <img 
-                            src={categories?.find(c => c.id.toString() === pageCategoryId)?.image ?? ""} 
-                            className="w-6 h-6 rounded-sm object-cover border" 
-                            alt="" 
+                        {categories?.find(
+                          (c) => c.id.toString() === pageCategoryId,
+                        )?.image ? (
+                          <img
+                            src={
+                              categories?.find(
+                                (c) => c.id.toString() === pageCategoryId,
+                              )?.image ?? ""
+                            }
+                            className="w-6 h-6 rounded-sm object-cover border"
+                            alt=""
                           />
                         ) : (
                           <Layers className="w-4 h-4 text-muted-foreground/40" />
                         )}
                         <span className="font-semibold text-base">
-                          {categories?.find(c => c.id.toString() === pageCategoryId)?.name}
+                          {
+                            categories?.find(
+                              (c) => c.id.toString() === pageCategoryId,
+                            )?.name
+                          }
                         </span>
                       </>
                     )}
@@ -277,10 +335,13 @@ export default function TodayDeliveriesPage() {
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+              <PopoverContent
+                className="w-[--radix-popover-trigger-width] p-0"
+                align="start"
+              >
                 <Command>
-                  <CommandInput 
-                    placeholder="Search category..." 
+                  <CommandInput
+                    placeholder="Search category..."
                     onValueChange={setCategorySearch}
                   />
                   <CommandList className="max-h-[300px] overflow-y-auto">
@@ -298,10 +359,14 @@ export default function TodayDeliveriesPage() {
                         <div className="w-10 h-10 rounded-md bg-primary/10 flex items-center justify-center border border-primary/20">
                           <Layers className="w-5 h-5 text-primary" />
                         </div>
-                        <span className="font-bold text-primary">All Categories</span>
-                        {pageCategoryId === "all" && <Check className="ml-auto h-4 w-4 text-primary" />}
+                        <span className="font-bold text-primary">
+                          All Categories
+                        </span>
+                        {pageCategoryId === "all" && (
+                          <Check className="ml-auto h-4 w-4 text-primary" />
+                        )}
                       </CommandItem>
-                      {filteredCategoriesDropdown.map(c => (
+                      {filteredCategoriesDropdown.map((c) => (
                         <CommandItem
                           key={c.id}
                           value={c.name}
@@ -313,14 +378,22 @@ export default function TodayDeliveriesPage() {
                           className="flex items-center gap-3 py-2 cursor-pointer"
                         >
                           {c.image ? (
-                            <img src={c.image} className="w-10 h-10 rounded-md object-cover border" alt="" />
+                            <img
+                              src={c.image}
+                              className="w-10 h-10 rounded-md object-cover border"
+                              alt=""
+                            />
                           ) : (
                             <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center border">
                               <Layers className="w-5 h-5 text-muted-foreground/40" />
                             </div>
                           )}
-                          <span className="font-semibold text-base">{c.name}</span>
-                          {pageCategoryId === c.id.toString() && <Check className="ml-auto h-4 w-4 text-primary" />}
+                          <span className="font-semibold text-base">
+                            {c.name}
+                          </span>
+                          {pageCategoryId === c.id.toString() && (
+                            <Check className="ml-auto h-4 w-4 text-primary" />
+                          )}
                         </CommandItem>
                       ))}
                     </CommandGroup>
@@ -331,7 +404,9 @@ export default function TodayDeliveriesPage() {
           </div>
 
           <div className="space-y-1.5 flex-1 min-w-[200px]">
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">Variety Filter</label>
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">
+              Variety Filter
+            </label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -345,17 +420,24 @@ export default function TodayDeliveriesPage() {
                       <span className="font-bold">All Varieties</span>
                     ) : (
                       <span className="font-semibold">
-                        {varieties?.find(v => v.id.toString() === pageVarietyId)?.name}
+                        {
+                          varieties?.find(
+                            (v) => v.id.toString() === pageVarietyId,
+                          )?.name
+                        }
                       </span>
                     )}
                   </span>
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+              <PopoverContent
+                className="w-[--radix-popover-trigger-width] p-0"
+                align="start"
+              >
                 <Command>
-                  <CommandInput 
-                    placeholder="Search variety..." 
+                  <CommandInput
+                    placeholder="Search variety..."
                     onValueChange={setVarietySearch}
                   />
                   <CommandList className="max-h-[300px] overflow-y-auto">
@@ -370,9 +452,11 @@ export default function TodayDeliveriesPage() {
                         className="flex items-center gap-3 py-2 cursor-pointer"
                       >
                         <span className="font-bold">All Varieties</span>
-                        {pageVarietyId === "all" && <Check className="ml-auto h-4 w-4 text-primary" />}
+                        {pageVarietyId === "all" && (
+                          <Check className="ml-auto h-4 w-4 text-primary" />
+                        )}
                       </CommandItem>
-                      {filteredVarietiesDropdown.map(v => (
+                      {filteredVarietiesDropdown.map((v) => (
                         <CommandItem
                           key={v.id}
                           value={v.name}
@@ -383,7 +467,9 @@ export default function TodayDeliveriesPage() {
                           className="flex items-center gap-3 py-2 cursor-pointer"
                         >
                           <span className="font-semibold">{v.name}</span>
-                          {pageVarietyId === v.id.toString() && <Check className="ml-auto h-4 w-4 text-primary" />}
+                          {pageVarietyId === v.id.toString() && (
+                            <Check className="ml-auto h-4 w-4 text-primary" />
+                          )}
                         </CommandItem>
                       ))}
                     </CommandGroup>
@@ -394,7 +480,9 @@ export default function TodayDeliveriesPage() {
           </div>
 
           <div className="space-y-1.5 flex-1 min-w-[200px]">
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">Lot Filter</label>
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">
+              Lot Filter
+            </label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -408,17 +496,23 @@ export default function TodayDeliveriesPage() {
                       <span className="font-bold">All Lots</span>
                     ) : (
                       <span className="font-semibold">
-                        {lots?.find(l => l.id.toString() === pageLotId)?.lotNumber}
+                        {
+                          lots?.find((l) => l.id.toString() === pageLotId)
+                            ?.lotNumber
+                        }
                       </span>
                     )}
                   </span>
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+              <PopoverContent
+                className="w-[--radix-popover-trigger-width] p-0"
+                align="start"
+              >
                 <Command>
-                  <CommandInput 
-                    placeholder="Search lot..." 
+                  <CommandInput
+                    placeholder="Search lot..."
                     onValueChange={setLotSearch}
                   />
                   <CommandList className="max-h-[300px] overflow-y-auto">
@@ -432,9 +526,11 @@ export default function TodayDeliveriesPage() {
                         className="flex items-center gap-3 py-2 cursor-pointer"
                       >
                         <span className="font-bold">All Lots</span>
-                        {pageLotId === "all" && <Check className="ml-auto h-4 w-4 text-primary" />}
+                        {pageLotId === "all" && (
+                          <Check className="ml-auto h-4 w-4 text-primary" />
+                        )}
                       </CommandItem>
-                      {filteredLotsDropdown.map(l => (
+                      {filteredLotsDropdown.map((l) => (
                         <CommandItem
                           key={l.id}
                           value={l.lotNumber}
@@ -443,8 +539,12 @@ export default function TodayDeliveriesPage() {
                           }}
                           className="flex items-center gap-3 py-2 cursor-pointer"
                         >
-                          <span className="font-semibold font-mono">{l.lotNumber}</span>
-                          {pageLotId === l.id.toString() && <Check className="ml-auto h-4 w-4 text-primary" />}
+                          <span className="font-semibold font-mono">
+                            {l.lotNumber}
+                          </span>
+                          {pageLotId === l.id.toString() && (
+                            <Check className="ml-auto h-4 w-4 text-primary" />
+                          )}
                         </CommandItem>
                       ))}
                     </CommandGroup>
@@ -453,10 +553,12 @@ export default function TodayDeliveriesPage() {
               </PopoverContent>
             </Popover>
           </div>
-          
-          {(pageCategoryId !== "all" || pageVarietyId !== "all" || pageLotId !== "all") && (
-            <Button 
-              variant="ghost" 
+
+          {(pageCategoryId !== "all" ||
+            pageVarietyId !== "all" ||
+            pageLotId !== "all") && (
+            <Button
+              variant="ghost"
               onClick={() => {
                 setPageCategoryId("all");
                 setPageVarietyId("all");
@@ -478,7 +580,9 @@ export default function TodayDeliveriesPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-black text-primary">{filteredOrders.length}</div>
+            <div className="text-4xl font-black text-primary">
+              {filteredOrders.length}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -499,7 +603,10 @@ export default function TodayDeliveriesPage() {
           <TableBody>
             {filteredOrders.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
+                <TableCell
+                  colSpan={7}
+                  className="h-32 text-center text-muted-foreground"
+                >
                   <div className="flex flex-col items-center gap-2">
                     <CalendarIcon className="w-8 h-8 opacity-20" />
                     No deliveries scheduled for this date.
@@ -508,58 +615,90 @@ export default function TodayDeliveriesPage() {
               </TableRow>
             ) : (
               paginatedOrders.map((order) => {
-                const lot = lots?.find(l => l.id === order.lotId);
-                const variety = varieties?.find(v => v.id === lot?.varietyId);
-                const category = categories?.find(c => c.id === lot?.categoryId);
+                const lot = lots?.find((l) => l.id === order.lotId);
+                const variety = varieties?.find((v) => v.id === lot?.varietyId);
+                const category = categories?.find(
+                  (c) => c.id === lot?.categoryId,
+                );
 
                 return (
-                  <TableRow key={order.id} className="hover:bg-muted/30 transition-colors">
+                  <TableRow
+                    key={order.id}
+                    className="hover:bg-muted/30 transition-colors"
+                  >
                     <TableCell>
                       <div className="font-bold">{order.customerName}</div>
-                      <div className="text-xs text-muted-foreground font-mono">{order.phone}</div>
-                      {order.village && <div className="text-[10px] text-muted-foreground italic truncate">({order.village})</div>}
+                      <div className="text-xs text-muted-foreground font-mono">
+                        {order.phone}
+                      </div>
+                      {order.village && (
+                        <div className="text-[10px] text-muted-foreground italic truncate">
+                          ({order.village})
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-3">
                         {category?.image ? (
-                          <img src={category.image} className="w-10 h-10 rounded-md object-cover border" alt="" />
+                          <img
+                            src={category.image}
+                            className="w-10 h-10 rounded-md object-cover border"
+                            alt=""
+                          />
                         ) : (
                           <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center border">
                             <Layers className="w-5 h-5 text-muted-foreground/30" />
                           </div>
                         )}
                         <div>
-                          <span className="font-bold text-sm block leading-tight">{variety?.name || "Unknown Variety"}</span>
-                          <p className="text-[10px] text-muted-foreground uppercase font-mono">{lot?.lotNumber || "N/A"}</p>
+                          <span className="font-bold text-sm block leading-tight">
+                            {variety?.name || "Unknown Variety"}
+                          </span>
+                          <p className="text-[10px] text-muted-foreground uppercase font-mono">
+                            {lot?.lotNumber || "N/A"}
+                          </p>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="text-right font-black text-primary text-lg">{order.bookedQty}</TableCell>
-                    <TableCell className="text-right font-medium">₹{Number(order.perUnitPrice || 0).toLocaleString()}</TableCell>
-                    <TableCell className="text-right font-black">₹{Number(order.totalAmount || 0).toLocaleString()}</TableCell>
+                    <TableCell className="text-right font-black text-primary text-lg">
+                      {order.bookedQty}
+                    </TableCell>
+                    <TableCell className="text-right font-medium">
+                      ₹{Number(order.perUnitPrice || 0).toLocaleString()}
+                    </TableCell>
+                    <TableCell className="text-right font-black">
+                      ₹{Number(order.totalAmount || 0).toLocaleString()}
+                    </TableCell>
                     <TableCell className="text-right">
-                      <div className="font-bold text-blue-600">₹{Number(order.advanceAmount || 0).toLocaleString()}</div>
-                      <div className="text-[10px] font-bold text-amber-600">₹{Number(order.remainingBalance || 0).toLocaleString()}</div>
+                      <div className="font-bold text-blue-600">
+                        ₹{Number(order.advanceAmount || 0).toLocaleString()}
+                      </div>
+                      <div className="text-[10px] font-bold text-amber-600">
+                        ₹{Number(order.remainingBalance || 0).toLocaleString()}
+                      </div>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex flex-col gap-2 items-end">
-                        {order.status === 'BOOKED' ? (
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
+                        {order.status === "BOOKED" ? (
+                          <Button
+                            size="sm"
+                            variant="outline"
                             className="h-8 text-emerald-600 border-emerald-200 hover:bg-emerald-50"
                             onClick={() => markDelivered(order.id)}
                           >
                             <CheckCircle className="w-4 h-4 mr-1.5" /> Deliver
                           </Button>
-                        ) : order.status === 'DELIVERED' ? (
+                        ) : order.status === "DELIVERED" ? (
                           <div className="flex flex-col items-end gap-1">
-                            <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 py-1 px-2">
+                            <Badge
+                              variant="outline"
+                              className="bg-emerald-50 text-emerald-700 border-emerald-200 py-1 px-2"
+                            >
                               <CheckCircle className="w-3 h-3 mr-1" /> DELIVERED
                             </Badge>
-                            <Button 
-                              size="sm" 
-                              variant="ghost" 
+                            <Button
+                              size="sm"
+                              variant="ghost"
                               className="h-6 text-[10px] text-muted-foreground hover:text-destructive"
                               onClick={() => undoDelivery(order.id)}
                             >
@@ -582,11 +721,13 @@ export default function TodayDeliveriesPage() {
       {totalPages > 1 && (
         <div className="flex items-center justify-between px-2 py-4 border-t bg-card rounded-b-xl border-x border-b">
           <p className="text-sm text-muted-foreground">
-            Showing <span className="font-medium">{(currentPage - 1) * 25 + 1}</span> to{" "}
+            Showing{" "}
+            <span className="font-medium">{(currentPage - 1) * 25 + 1}</span> to{" "}
             <span className="font-medium">
               {Math.min(currentPage * 25, filteredOrders.length)}
-            </span> of{" "}
-            <span className="font-medium">{filteredOrders.length}</span> results
+            </span>{" "}
+            of <span className="font-medium">{filteredOrders.length}</span>{" "}
+            results
           </p>
           <Pagination className="mx-0 w-auto">
             <PaginationContent>
@@ -594,7 +735,9 @@ export default function TodayDeliveriesPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(1, prev - 1))
+                  }
                   disabled={currentPage === 1}
                   className="gap-1"
                 >
@@ -602,9 +745,9 @@ export default function TodayDeliveriesPage() {
                   Previous
                 </Button>
               </PaginationItem>
-              
+
               {Array.from({ length: totalPages }, (_, i) => i + 1)
-                .filter(page => {
+                .filter((page) => {
                   return (
                     page === 1 ||
                     page === totalPages ||
@@ -617,7 +760,7 @@ export default function TodayDeliveriesPage() {
                     items.push(
                       <PaginationItem key={`ellipsis-${page}`}>
                         <span className="px-2 text-muted-foreground">...</span>
-                      </PaginationItem>
+                      </PaginationItem>,
                     );
                   }
                   items.push(
@@ -630,7 +773,7 @@ export default function TodayDeliveriesPage() {
                       >
                         {page}
                       </Button>
-                    </PaginationItem>
+                    </PaginationItem>,
                   );
                   return items;
                 })}
@@ -639,7 +782,9 @@ export default function TodayDeliveriesPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                  }
                   disabled={currentPage === totalPages}
                   className="gap-1"
                 >
@@ -659,71 +804,108 @@ export default function TodayDeliveriesPage() {
           </div>
         ) : (
           paginatedOrders.map((order) => {
-            const lot = lots?.find(l => l.id === order.lotId);
-            const variety = varieties?.find(v => v.id === lot?.varietyId);
-            const category = categories?.find(c => c.id === lot?.categoryId);
+            const lot = lots?.find((l) => l.id === order.lotId);
+            const variety = varieties?.find((v) => v.id === lot?.varietyId);
+            const category = categories?.find((c) => c.id === lot?.categoryId);
 
             return (
-              <Card key={order.id} className="overflow-hidden border-2 shadow-sm">
+              <Card
+                key={order.id}
+                className="overflow-hidden border-2 shadow-sm"
+              >
                 <CardContent className="p-0">
-                  <div className={`p-3 flex justify-between items-center border-b ${order.status === 'DELIVERED' ? 'bg-emerald-50' : 'bg-primary/5'}`}>
+                  <div
+                    className={`p-3 flex justify-between items-center border-b ${order.status === "DELIVERED" ? "bg-emerald-50" : "bg-primary/5"}`}
+                  >
                     <div>
-                      <p className="font-black text-lg leading-tight">{order.customerName}</p>
-                      <p className="text-sm font-mono text-muted-foreground">{order.phone}</p>
+                      <p className="font-black text-lg leading-tight">
+                        {order.customerName}
+                      </p>
+                      <p className="text-sm font-mono text-muted-foreground">
+                        {order.phone}
+                      </p>
                     </div>
-                    <Badge className={order.status === 'DELIVERED' ? 'bg-emerald-600 text-white' : 'bg-primary text-white'}>
+                    <Badge
+                      className={
+                        order.status === "DELIVERED"
+                          ? "bg-emerald-600 text-white"
+                          : "bg-primary text-white"
+                      }
+                    >
                       {order.status}
                     </Badge>
                   </div>
-                  
+
                   <div className="p-4 space-y-4">
                     <div className="flex items-center gap-3">
                       {category?.image ? (
-                        <img src={category.image} className="w-12 h-12 rounded-md object-cover border" alt="" />
+                        <img
+                          src={category.image}
+                          className="w-12 h-12 rounded-md object-cover border"
+                          alt=""
+                        />
                       ) : (
                         <div className="w-12 h-12 rounded-md bg-muted flex items-center justify-center border">
                           <Layers className="w-6 h-6 text-muted-foreground/30" />
                         </div>
                       )}
                       <div className="flex-1">
-                        <p className="font-bold text-sm">{variety?.name || "Unknown Variety"}</p>
-                        <p className="text-xs font-mono text-muted-foreground">{lot?.lotNumber || "N/A"}</p>
+                        <p className="font-bold text-sm">
+                          {variety?.name || "Unknown Variety"}
+                        </p>
+                        <p className="text-xs font-mono text-muted-foreground">
+                          {lot?.lotNumber || "N/A"}
+                        </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-[10px] uppercase font-bold text-muted-foreground">Qty</p>
-                        <p className="font-black text-2xl text-primary">{order.bookedQty}</p>
+                        <p className="text-[10px] uppercase font-bold text-muted-foreground">
+                          Qty
+                        </p>
+                        <p className="font-black text-2xl text-primary">
+                          {order.bookedQty}
+                        </p>
                       </div>
                     </div>
 
                     <div className="flex justify-between items-center pt-2 border-t border-dashed">
                       <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                         <div>
-                          <p className="text-[9px] uppercase font-bold text-muted-foreground">Total</p>
-                          <p className="font-bold text-sm">₹{Number(order.totalAmount || 0).toLocaleString()}</p>
+                          <p className="text-[9px] uppercase font-bold text-muted-foreground">
+                            Total
+                          </p>
+                          <p className="font-bold text-sm">
+                            ₹{Number(order.totalAmount || 0).toLocaleString()}
+                          </p>
                         </div>
                         <div>
-                          <p className="text-[9px] uppercase font-bold text-muted-foreground">Advance</p>
-                          <p className="font-bold text-sm text-blue-600">₹{Number(order.advanceAmount || 0).toLocaleString()}</p>
+                          <p className="text-[9px] uppercase font-bold text-muted-foreground">
+                            Advance
+                          </p>
+                          <p className="font-bold text-sm text-blue-600">
+                            ₹{Number(order.advanceAmount || 0).toLocaleString()}
+                          </p>
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        {order.status === 'BOOKED' ? (
-                          <Button 
+                        {order.status === "BOOKED" ? (
+                          <Button
                             size="sm"
                             onClick={() => markDelivered(order.id)}
                             className="bg-emerald-600 hover:bg-emerald-700 h-10 px-4 font-bold"
                           >
                             <CheckCircle className="w-4 h-4 mr-1.5" /> Deliver
                           </Button>
-                        ) : order.status === 'DELIVERED' && (
-                          <Button 
-                            size="sm"
-                            variant="outline"
-                            onClick={() => undoDelivery(order.id)}
-                            className="h-10 px-3 text-muted-foreground border-dashed"
-                          >
-                            Undo
-                          </Button>
+                        ) : (
+                          order.status === "DELIVERED" && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => undoDelivery(order.id)}
+                              className="h-10 px-3 text-muted-foreground border-dashed"
+                            >
+                              Undo
+                            </Button>
+                          )
                         )}
                       </div>
                     </div>
