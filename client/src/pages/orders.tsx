@@ -130,12 +130,13 @@ function SearchableSelect({
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredOptions = useMemo(() => {
+    if (!options) return [];
     if (!searchQuery) return options;
     const searchLower = searchQuery.toLowerCase();
     return options.filter((option) =>
       searchFields.some((field) => {
         const val = option[field];
-        return val && val.toString().toLowerCase().includes(searchLower);
+        return val != null && val.toString().toLowerCase().includes(searchLower);
       })
     );
   }, [options, searchQuery, searchFields]);
@@ -156,7 +157,10 @@ function SearchableSelect({
           <div className="flex-1 truncate text-left">
             {value ? (
               <div className="flex items-center gap-2">
-                {renderItem(options.find((opt) => opt.id.toString() === value))}
+                {(() => {
+                  const selectedOption = options?.find((opt) => opt.id?.toString() === value);
+                  return selectedOption ? renderItem(selectedOption) : <span className="text-muted-foreground">{placeholder}</span>;
+                })()}
               </div>
             ) : (
               <span className="text-muted-foreground">{placeholder}</span>
