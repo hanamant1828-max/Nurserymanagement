@@ -93,7 +93,7 @@ export const auditLogs = sqliteTable("audit_logs", {
   entityType: text("entity_type").notNull(), // category, variety, lot, order
   entityId: integer("entity_id").notNull(),
   details: text("details"),
-  timestamp: integer("timestamp", { mode: "timestamp" }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+  timestamp: integer("timestamp", { mode: "timestamp" }).default(sql`(strftime('%s', 'now'))`).notNull(),
 });
 
 // Relations
