@@ -1213,8 +1213,13 @@ export default function OrdersPage() {
     return relevantOrders.filter((o) => {
       // Date filter
       const deliveryDate = new Date(o.deliveryDate);
+      const fromDate = new Date(dateRange.from);
+      fromDate.setHours(0, 0, 0, 0);
+      const toDate = new Date(dateRange.to);
+      toDate.setHours(23, 59, 59, 999);
+      
       const isWithinDateRange =
-        deliveryDate >= dateRange.from && deliveryDate <= dateRange.to;
+        deliveryDate >= fromDate && deliveryDate <= toDate;
       if (!isWithinDateRange) return false;
 
       const matchesSearch =
