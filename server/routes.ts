@@ -220,75 +220,11 @@ export async function registerRoutes(
     res.json(logs);
   });
 
-  // Seed Data - Run in background to avoid blocking server startup
-  seedDatabase().catch(err => {
-    console.error("Failed to seed database:", err);
-  });
-
   return httpServer;
 }
 
 async function seedDatabase() {
   const existingCategories = await storage.getCategories();
-  if (existingCategories.length < 15) {
-    const categoriesToCreate = [
-      { name: "Watermelon", image: "https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=100&q=80" },
-      { name: "Tomato", image: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&w=100&q=80" },
-      { name: "Green Chili", image: "https://images.unsplash.com/photo-1588253518679-119c709cbef5?auto=format&fit=crop&w=100&q=80" },
-      { name: "Eggplant", image: "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=100&q=80" },
-      { name: "Cucumber", image: "https://images.unsplash.com/photo-1449300079323-02e209d9d3a6?auto=format&fit=crop&w=100&q=80" },
-      { name: "Bell Pepper", image: "https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?auto=format&fit=crop&w=100&q=80" },
-      { name: "Cabbage", image: "https://images.unsplash.com/photo-1550258114-b83033991628?auto=format&fit=crop&w=100&q=80" },
-      { name: "Cauliflower", image: "https://images.unsplash.com/photo-1568584711075-3d021a7c3ca3?auto=format&fit=crop&w=100&q=80" },
-      { name: "Broccoli", image: "https://images.unsplash.com/photo-1453360994457-13d704300f98?auto=format&fit=crop&w=100&q=80" },
-      { name: "Onion", image: "https://images.unsplash.com/photo-1508747703725-719777637510?auto=format&fit=crop&w=100&q=80" },
-      { name: "Garlic", image: "https://images.unsplash.com/photo-1540148426945-6cf22a6b2383?auto=format&fit=crop&w=100&q=80" },
-      { name: "Ginger", image: "https://images.unsplash.com/photo-1615485500704-8e990f9900f7?auto=format&fit=crop&w=100&q=80" },
-      { name: "Carrot", image: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?auto=format&fit=crop&w=100&q=80" },
-      { name: "Radish", image: "https://images.unsplash.com/photo-1590779033100-9f60702a053b?auto=format&fit=crop&w=100&q=80" },
-      { name: "Spinach", image: "https://images.unsplash.com/photo-1576045057995-568f588f82fb?auto=format&fit=crop&w=100&q=80" }
-    ];
-
-    for (const catData of categoriesToCreate) {
-      const category = await storage.createCategory({ name: catData.name, image: catData.image, active: true });
-      
-      for (let i = 1; i <= 5; i++) {
-        const variety = await storage.createVariety({ 
-          categoryId: category.id, 
-          name: `${category.name} Variety ${i}`, 
-          active: true 
-        });
-
-        for (let j = 1; j <= 4; j++) {
-          const lot = await storage.createLot({
-            lotNumber: `LOT-${category.name.substring(0, 2).toUpperCase()}-${variety.id}-${j}`,
-            categoryId: category.id,
-            varietyId: variety.id,
-            sowingDate: "2025-12-01",
-            seedsSown: 1000,
-            damaged: 10,
-            expectedReadyDate: "2026-02-01",
-            remarks: "Batch seeding"
-          });
-
-          for (let k = 1; k <= 10; k++) {
-            await storage.createOrder({
-              lotId: lot.id,
-              customerName: `Customer ${k} for ${lot.lotNumber}`,
-              phone: `90000000${k}`,
-              village: "Seeded Village",
-              bookedQty: 5,
-              totalAmount: "500",
-              advanceAmount: "100",
-              remainingBalance: "400",
-              paymentMode: "Cash",
-              deliveryDate: "2026-02-15",
-              status: "BOOKED",
-              paymentStatus: "Partially Paid"
-            });
-          }
-        }
-      }
-    }
-  }
+  // Seeding is disabled to prevent unwanted data on publish/restart
+  return;
 }
