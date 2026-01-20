@@ -5,11 +5,11 @@ import { z } from "zod";
 type CreateOrderInput = z.infer<typeof api.orders.create.input>;
 type UpdateOrderInput = z.infer<typeof api.orders.update.input>;
 
-export function useOrders(page: number = 1, limit: number = 50) {
+export function useOrders(page: number = 1, limit: number = 50, sortField: string = "id", sortOrder: "asc" | "desc" = "desc") {
   return useQuery({
-    queryKey: [api.orders.list.path, page, limit],
+    queryKey: [api.orders.list.path, page, limit, sortField, sortOrder],
     queryFn: async () => {
-      const url = `${api.orders.list.path}?page=${page}&limit=${limit}`;
+      const url = `${api.orders.list.path}?page=${page}&limit=${limit}&sortField=${sortField}&sortOrder=${sortOrder}`;
       const res = await fetch(url, { credentials: "include" });
       if (!res.ok) {
         const error = await res.json().catch(() => ({}));

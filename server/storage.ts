@@ -182,7 +182,7 @@ export class DatabaseStorage implements IStorage {
     await db.delete(lots).where(eq(lots.id, id));
   }
 
-  async getOrders(page: number = 1, limit: number = 50): Promise<{ orders: (Order & { lot: Lot & { variety: Variety }; creator?: User })[]; total: number }> {
+  async getOrders(page: number = 1, limit: number = 50, sortField: string = "id", sortOrder: "asc" | "desc" = "desc"): Promise<{ orders: (Order & { lot: Lot & { variety: Variety }; creator?: User })[]; total: number }> {
     const offset = (page - 1) * limit;
     
     const [totalResult] = await db.select({ count: sql<number>`count(*)` }).from(orders);
@@ -197,7 +197,10 @@ export class DatabaseStorage implements IStorage {
         },
         creator: true,
       },
-      orderBy: (orders, { desc }) => [desc(orders.id)],
+      orderBy: (orders, { asc, desc }) => {
+        const field = (orders as any)[sortField];
+        return [sortOrder === "asc" ? asc(field) : desc(field)];
+      },
       limit: limit,
       offset: offset,
     });

@@ -108,7 +108,9 @@ export async function registerRoutes(
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 50;
-    const result = await storage.getOrders(page, limit);
+    const sortField = (req.query.sortField as string) || "id";
+    const sortOrder = (req.query.sortOrder as "asc" | "desc") || "desc";
+    const result = await storage.getOrders(page, limit, sortField, sortOrder);
     res.json(result);
   });
 

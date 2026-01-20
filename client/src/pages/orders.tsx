@@ -1098,8 +1098,28 @@ const DISTRICTS_DATA: Record<string, typeof MAHARASHTRA_DISTRICTS> = {
 export default function OrdersPage() {
   const { toast } = useToast();
   const [page, setPage] = useState(1);
+  const [sortField, setSortField] = useState<string>("id");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const limit = 50;
-  const { data: ordersData, isLoading } = useOrders(page, limit);
+  const { data: ordersData, isLoading } = useOrders(page, limit, sortField, sortOrder);
+
+  const toggleSort = (field: string) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortOrder("asc");
+    }
+  };
+
+  const SortIcon = ({ field }: { field: string }) => {
+    if (sortField !== field) return <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />;
+    return sortOrder === "asc" ? (
+      <ChevronRight className="ml-2 h-4 w-4 -rotate-90 transition-transform" />
+    ) : (
+      <ChevronRight className="ml-2 h-4 w-4 rotate-90 transition-transform" />
+    );
+  };
   const orders = ordersData?.orders || [];
   const totalOrders = ordersData?.total || 0;
   const totalPages = Math.ceil(totalOrders / limit);
@@ -2513,8 +2533,14 @@ export default function OrdersPage() {
               <TableHead className="w-[80px] font-bold text-muted-foreground uppercase tracking-wider h-12">
                 ID
               </TableHead>
-              <TableHead className="font-bold text-muted-foreground uppercase tracking-wider h-12">
-                Customer
+              <TableHead 
+                className="font-bold text-muted-foreground uppercase tracking-wider h-12 cursor-pointer hover:bg-muted/50 transition-colors select-none"
+                onClick={() => toggleSort("customerName")}
+              >
+                <div className="flex items-center">
+                  Customer
+                  <SortIcon field="customerName" />
+                </div>
               </TableHead>
               <TableHead className="font-bold text-muted-foreground uppercase tracking-wider h-12">
                 Plant Details
@@ -2534,8 +2560,14 @@ export default function OrdersPage() {
               <TableHead className="font-bold text-muted-foreground uppercase tracking-wider text-center h-12">
                 Adv/Bal
               </TableHead>
-              <TableHead className="font-bold text-muted-foreground uppercase tracking-wider h-12">
-                Delive Date
+              <TableHead 
+                className="font-bold text-muted-foreground uppercase tracking-wider h-12 cursor-pointer hover:bg-muted/50 transition-colors select-none"
+                onClick={() => toggleSort("deliveryDate")}
+              >
+                <div className="flex items-center">
+                  Delive Date
+                  <SortIcon field="deliveryDate" />
+                </div>
               </TableHead>
               <TableHead className="font-bold text-muted-foreground uppercase tracking-wider text-center h-12">
                 Status
@@ -2815,21 +2847,20 @@ export default function OrdersPage() {
                   <div
                     className={`p-3 flex justify-between items-center ${order.status === "BOOKED" ? "bg-amber-500/10" : "bg-emerald-500/10"}`}
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="bg-background p-2 rounded-lg shadow-sm">
-                        <ShoppingCart
-                          className={`w-5 h-5 ${order.status === "BOOKED" ? "text-amber-600" : "text-emerald-600"}`}
-                        />
-                      </div>
-                      <div>
-                        <p className="font-black text-lg leading-tight">
-                          {order.customerName}
-                        </p>
+                      <div
+                        className="flex flex-col flex-1 cursor-pointer hover:bg-muted/50 p-2 rounded-lg transition-colors"
+                        onClick={() => toggleSort("customerName")}
+                      >
+                        <div className="flex items-center justify-between">
+                          <p className="font-black text-lg leading-tight">
+                            {order.customerName}
+                          </p>
+                          <SortIcon field="customerName" />
+                        </div>
                         <p className="text-sm font-mono text-muted-foreground">
                           {order.phone}
                         </p>
                       </div>
-                    </div>
                     <Badge
                       className={`font-black text-xs px-2 py-1 rounded-md shadow-sm border-none ${
                         order.status === "BOOKED"
@@ -2844,7 +2875,10 @@ export default function OrdersPage() {
                   </div>
 
                   <div className="p-4 space-y-4">
-                    <div className="flex items-center gap-3">
+                    <div 
+                      className="flex items-center gap-3 cursor-pointer hover:bg-muted/50 p-2 rounded-lg transition-colors"
+                      onClick={() => toggleSort("deliveryDate")}
+                    >
                       {category?.image ? (
                         <img
                           src={category.image}
@@ -2857,9 +2891,12 @@ export default function OrdersPage() {
                         </div>
                       )}
                       <div className="flex-1">
-                        <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
-                          Category & Variety
-                        </p>
+                        <div className="flex items-center justify-between">
+                          <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+                            Category & Variety
+                          </p>
+                          <SortIcon field="deliveryDate" />
+                        </div>
                         <p className="font-bold text-sm leading-tight text-primary uppercase">
                           {category?.name}
                         </p>
