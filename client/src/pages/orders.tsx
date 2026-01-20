@@ -1145,7 +1145,7 @@ export default function OrdersPage() {
   const [step, setStep] = useState(1);
   const [search, setSearch] = useState(initialState.search);
   const [currentPage, setCurrentPage] = useState(initialState.currentPage);
-  const itemsPerPage = 25;
+  const itemsPerPage = 10000;
 
   const [pageCategoryId, setPageCategoryId] = useState<string>(initialState.pageCategoryId);
   const [pageVarietyId, setPageVarietyId] = useState<string>(initialState.pageVarietyId);
