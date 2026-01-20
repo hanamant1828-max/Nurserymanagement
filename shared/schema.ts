@@ -1,11 +1,24 @@
-import { pgTable, text, serial, integer, boolean, date, decimal, json, timestamp, index } from "drizzle-orm/pg-core";
+import { sqliteTable, text, integer, numeric, customType } from "drizzle-orm/sqlite-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
+
+// Custom decimal type for SQLite
+const decimal = customType<{ data: string }>( {
+  dataType() {
+    return "numeric";
+  },
+  fromDriver(value: unknown) {
+    return String(value);
+  },
+  toDriver(value: string) {
+    return value;
+  }
+});
 
 // 1. Users (Login View)
-export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
+export const users = sqliteTable("users", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
   role: text("role").default("staff").notNull(),
@@ -15,27 +28,25 @@ export const users = pgTable("users", {
 });
 
 // 3. Categories
-export const categories = pgTable("categories", {
-  id: serial("id").primaryKey(),
+export const categories = sqliteTable("categories", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
   image: text("image"), // Base64 string
   pricePerUnit: decimal("price_per_unit").default("1.00").notNull(),
-  active: boolean("active").default(true).notNull(),
+  active: integer("active", { mode: "boolean" }).default(true).notNull(),
 });
 
 // 4. Varieties
-export const varieties = pgTable("varieties", {
-  id: serial("id").primaryKey(),
+export const varieties = sqliteTable("varieties", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   categoryId: integer("category_id").notNull(),
   name: text("name").notNull(),
-  active: boolean("active").default(true).notNull(),
-}, (table) => [
-  index("varieties_category_id_idx").on(table.categoryId),
-]);
+  active: integer("active", { mode: "boolean" }).default(true).notNull(),
+});
 
 // 5. Lots (Sowing Lot Entry)
-export const lots = pgTable("lots", {
-  id: serial("id").primaryKey(),
+export const lots = sqliteTable("lots", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   lotNumber: text("lot_number").notNull().unique(),
   categoryId: integer("category_id").notNull(),
   varietyId: integer("variety_id").notNull(),
@@ -46,14 +57,11 @@ export const lots = pgTable("lots", {
   damagePercentage: decimal("damage_percentage").default("0.00"),
   expectedReadyDate: text("expected_ready_date"),
   remarks: text("remarks"),
-}, (table) => [
-  index("lots_category_id_idx").on(table.categoryId),
-  index("lots_variety_id_idx").on(table.varietyId),
-]);
+});
 
 // 8. Orders (Order Booking)
-export const orders = pgTable("orders", {
-  id: serial("id").primaryKey(),
+export const orders = sqliteTable("orders", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   lotId: integer("lot_id").notNull(),
   customerName: text("customer_name").notNull(),
   phone: text("phone").notNull(),
@@ -75,24 +83,18 @@ export const orders = pgTable("orders", {
   actualDeliveryTime: text("actual_delivery_time"),
   deliveredQty: integer("delivered_qty").default(0),
   createdBy: integer("created_by"),
-}, (table) => [
-  index("orders_lot_id_idx").on(table.lotId),
-  index("orders_created_by_idx").on(table.createdBy),
-]);
+});
 
 // 9. Audit Logs
-export const auditLogs = pgTable("audit_logs", {
-  id: serial("id").primaryKey(),
+export const auditLogs = sqliteTable("audit_logs", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   userId: integer("user_id").notNull(),
   action: text("action").notNull(), // CREATE, UPDATE, DELETE
   entityType: text("entity_type").notNull(), // category, variety, lot, order
   entityId: integer("entity_id").notNull(),
   details: text("details"),
-  timestamp: timestamp("timestamp").defaultNow().notNull(),
-}, (table) => [
-  index("audit_logs_user_id_idx").on(table.userId),
-  index("audit_logs_entity_idx").on(table.entityType, table.entityId),
-]);
+  timestamp: integer("timestamp", { mode: "timestamp" }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
 
 // Relations
 export const categoriesRelations = relations(categories, ({ many }) => ({

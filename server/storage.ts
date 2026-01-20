@@ -2,14 +2,14 @@ import {
   users, categories, varieties, lots, orders, auditLogs,
   type User, type Category, type Variety, type Lot, type Order, type AuditLog,
 } from "@shared/schema";
-import { db, pool } from "./db";
+import { db } from "./db";
 import { eq, sql, and, desc } from "drizzle-orm";
 import session from "express-session";
-import connectPg from "connect-pg-simple";
+import MemoryStore from "memorystore";
 import { insertUserSchema, insertCategorySchema, insertVarietySchema, insertLotSchema, insertOrderSchema, insertAuditLogSchema } from "@shared/schema";
 import { z } from "zod";
 
-const PostgresSessionStore = connectPg(session);
+const SessionStore = MemoryStore(session);
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertCategory = z.infer<typeof insertCategorySchema>;
@@ -63,9 +63,8 @@ export class DatabaseStorage implements IStorage {
   sessionStore: session.Store;
 
   constructor() {
-    this.sessionStore = new PostgresSessionStore({
-      pool,
-      createTableIfMissing: true,
+    this.sessionStore = new SessionStore({
+      checkPeriod: 86400000,
     });
   }
 
