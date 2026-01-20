@@ -1097,7 +1097,13 @@ const DISTRICTS_DATA: Record<string, typeof MAHARASHTRA_DISTRICTS> = {
 
 export default function OrdersPage() {
   const { toast } = useToast();
-  const { data: orders, isLoading } = useOrders();
+  const [page, setPage] = useState(1);
+  const limit = 50;
+  const { data: ordersData, isLoading } = useOrders(page, limit);
+  const orders = ordersData?.orders || [];
+  const totalOrders = ordersData?.total || 0;
+  const totalPages = Math.ceil(totalOrders / limit);
+
   const { data: lots } = useLots();
   const { data: categories } = useCategories();
   const { data: varieties } = useVarieties();
@@ -1201,17 +1207,14 @@ export default function OrdersPage() {
       (pageVarietyId === "all" || l.varietyId.toString() === pageVarietyId),
   );
 
+  // We'll use the server-side pagination for the main list,
+  // but we still need some local filtering for the search query if it's used.
+  // Ideally search would be server-side too, but for now we'll filter the current page.
   const filteredOrdersList = useMemo(() => {
     if (!orders) return [];
 
-    // Include all orders by default unless they are cancelled/deleted
-    // We want to show BOOKED and DELIVERED by default
-    const relevantOrders = orders.filter(
-      (o) => o.status === "BOOKED" || o.status === "DELIVERED",
-    );
-
-    return relevantOrders.filter((o) => {
-      // Date filter
+    return orders.filter((o) => {
+      // Date filter (local for now)
       const deliveryDate = new Date(o.deliveryDate);
       const fromDate = new Date(dateRange.from);
       fromDate.setHours(0, 0, 0, 0);
@@ -1225,51 +1228,20 @@ export default function OrdersPage() {
       const matchesSearch =
         !search ||
         o.customerName?.toLowerCase().includes(search.toLowerCase()) ||
-        o.phone?.toLowerCase().includes(search.toLowerCase()) ||
-        lots
-          ?.find((l) => l.id === o.lotId)
-          ?.lotNumber?.toLowerCase()
-          .includes(search.toLowerCase()) ||
-        varieties
-          ?.find((v) => v.id === lots?.find((l) => l.id === o.lotId)?.varietyId)
-          ?.name?.toLowerCase()
-          .includes(search.toLowerCase());
+        o.phone?.toLowerCase().includes(search.toLowerCase());
 
       if (!matchesSearch) return false;
 
-      // If any filter is set to something other than "all", apply it
       if (pageCategoryId !== "all") {
         const lot = lots?.find((l) => l.id === o.lotId);
         if (lot?.categoryId.toString() !== pageCategoryId) return false;
       }
 
-      if (pageVarietyId !== "all") {
-        const lot = lots?.find((l) => l.id === o.lotId);
-        if (lot?.varietyId.toString() !== pageVarietyId) return false;
-      }
-
-      if (pageLotId !== "all") {
-        if (o.lotId.toString() !== pageLotId) return false;
-      }
-
       return true;
     });
-  }, [
-    orders,
-    search,
-    lots,
-    varieties,
-    pageLotId,
-    pageVarietyId,
-    pageCategoryId,
-    dateRange,
-  ]);
+  }, [orders, search, lots, pageCategoryId, dateRange]);
 
-  const totalPages = Math.ceil(filteredOrdersList.length / itemsPerPage);
-  const paginatedOrders = filteredOrdersList.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
-  );
+  const paginatedOrders = filteredOrdersList;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -1570,10 +1542,10 @@ export default function OrdersPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-display font-bold">
-            Orders ({filteredOrdersList.length})
+            Orders ({totalOrders})
           </h1>
           <p className="text-muted-foreground">
-            Book new orders and manage deliveries.
+            Book new orders and manage deliveries (Page {page} of {totalPages}).
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-4">
@@ -3003,6 +2975,29 @@ export default function OrdersPage() {
             );
           })
         )}
+      </div>
+      <div className="flex items-center justify-center space-x-2 py-4">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setPage((p) => Math.max(1, p - 1))}
+          disabled={page === 1}
+        >
+          <ChevronLeft className="h-4 w-4 mr-2" />
+          Previous
+        </Button>
+        <div className="text-sm font-medium">
+          Page {page} of {totalPages}
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+          disabled={page >= totalPages}
+        >
+          Next
+          <ChevronRight className="h-4 w-4 ml-2" />
+        </Button>
       </div>
     </div>
   );

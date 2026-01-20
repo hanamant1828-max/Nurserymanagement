@@ -5,16 +5,17 @@ import { z } from "zod";
 type CreateOrderInput = z.infer<typeof api.orders.create.input>;
 type UpdateOrderInput = z.infer<typeof api.orders.update.input>;
 
-export function useOrders() {
+export function useOrders(page: number = 1, limit: number = 50) {
   return useQuery({
-    queryKey: [api.orders.list.path],
+    queryKey: [api.orders.list.path, page, limit],
     queryFn: async () => {
-      const res = await fetch(api.orders.list.path, { credentials: "include" });
+      const url = `${api.orders.list.path}?page=${page}&limit=${limit}`;
+      const res = await fetch(url, { credentials: "include" });
       if (!res.ok) {
         const error = await res.json().catch(() => ({}));
         throw new Error(error.message || "Failed to fetch orders");
       }
-      return api.orders.list.responses[200].parse(await res.json());
+      return res.json();
     },
   });
 }
