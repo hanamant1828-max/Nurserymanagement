@@ -106,8 +106,10 @@ export async function registerRoutes(
   // Orders
   app.get(api.orders.list.path, async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
-    const orders = await storage.getOrders();
-    res.json(orders);
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 50;
+    const result = await storage.getOrders(page, limit);
+    res.json(result);
   });
 
   app.delete(api.lots.delete.path, async (req, res) => {
@@ -115,8 +117,8 @@ export async function registerRoutes(
     const id = Number(req.params.id);
 
     // Check for associated orders
-    const orders = await storage.getOrders();
-    const hasOrders = orders.some(o => o.lotId === id);
+    const { orders: relatedOrders } = await storage.getOrders(1, 1);
+    const hasOrders = relatedOrders.length > 0;
     if (hasOrders) {
       return res.status(400).json({ 
         message: "Cannot delete lot because it has associated customer orders. Please delete the orders first." 
@@ -162,8 +164,8 @@ export async function registerRoutes(
     const phone = req.query.phone as string;
     if (!phone) return res.status(400).json({ message: "Phone number is required" });
     
-    const orders = await storage.getOrders();
-    const customerOrder = orders.find(o => o.phone === phone);
+    const { orders: allOrders } = await storage.getOrders(1, 1000);
+    const customerOrder = allOrders.find(o => o.phone === phone);
     
     if (customerOrder) {
       res.json({

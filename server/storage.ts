@@ -47,7 +47,7 @@ export interface IStorage {
   deleteLot(id: number): Promise<void>;
 
   // Orders
-  getOrders(): Promise<(Order & { lot: Lot & { variety: Variety }; creator?: User })[]>;
+  getOrders(page?: number, limit?: number): Promise<{ orders: (Order & { lot: Lot & { variety: Variety }; creator?: User })[]; total: number }>;
   createOrder(order: InsertOrder): Promise<Order>;
   updateOrder(id: number, order: Partial<InsertOrder>): Promise<Order>;
   deleteOrder(id: number): Promise<void>;
@@ -181,7 +181,12 @@ export class DatabaseStorage implements IStorage {
     await db.delete(lots).where(eq(lots.id, id));
   }
 
-  async getOrders(): Promise<(Order & { lot: Lot & { variety: Variety }; creator?: User })[]> {
+  async getOrders(page: number = 1, limit: number = 50): Promise<{ orders: (Order & { lot: Lot & { variety: Variety }; creator?: User })[]; total: number }> {
+    const offset = (page - 1) * limit;
+    
+    const [totalResult] = await db.select({ count: sql<number>`count(*)` }).from(orders);
+    const total = Number(totalResult?.count || 0);
+
     const allOrders = await db.query.orders.findMany({
       with: {
         lot: {
@@ -192,10 +197,14 @@ export class DatabaseStorage implements IStorage {
         creator: true,
       },
       orderBy: (orders, { desc }) => [desc(orders.id)],
-      limit: 1000, // Increased limit while keeping performance optimizations
+      limit: limit,
+      offset: offset,
     });
 
-    return allOrders as any;
+    return { 
+      orders: allOrders as any,
+      total 
+    };
   }
 
   async createOrder(insertOrder: InsertOrder): Promise<Order> {
