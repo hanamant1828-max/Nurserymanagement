@@ -1587,8 +1587,8 @@ export default function OrdersPage() {
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="deliveryDate-desc">Date (Newest)</SelectItem>
-              <SelectItem value="deliveryDate-asc">Date (Oldest)</SelectItem>
+              <SelectItem value="deliveryDate-desc">Ready Date (Newest)</SelectItem>
+              <SelectItem value="deliveryDate-asc">Ready Date (Oldest)</SelectItem>
               <SelectItem value="customerName-asc">Name (A-Z)</SelectItem>
               <SelectItem value="customerName-desc">Name (Z-A)</SelectItem>
             </SelectContent>
@@ -2583,7 +2583,7 @@ export default function OrdersPage() {
                 onClick={() => toggleSort("deliveryDate")}
               >
                 <div className="flex items-center">
-                  Delive Date
+                  Ready Date
                   <SortIcon field="deliveryDate" />
                 </div>
               </TableHead>
@@ -2911,7 +2911,7 @@ export default function OrdersPage() {
                       <div className="flex-1">
                         <div className="flex items-center justify-between">
                           <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
-                            Category & Variety
+                            Ready Date & Variety
                           </p>
                           <SortIcon field="deliveryDate" />
                         </div>
@@ -2943,7 +2943,7 @@ export default function OrdersPage() {
                     <div className="grid grid-cols-2 gap-4 pt-2 border-t border-dashed">
                       <div className="space-y-1">
                         <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
-                          Delivery Date
+                          Ready Date
                         </p>
                         <p className="text-sm font-bold">
                           {format(new Date(order.deliveryDate), "dd MMM yyyy")}
