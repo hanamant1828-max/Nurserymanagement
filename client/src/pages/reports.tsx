@@ -27,7 +27,15 @@ import { cn } from "@/lib/utils";
 
 export default function ReportsPage() {
   const { data: lots, isLoading: loadingLots } = useLots();
-  const { data: orders, isLoading: loadingOrders } = useOrders();
+  const { data: ordersData, isLoading: loadingOrders } = useOrders(1, 10000);
+  const orders = useMemo(() => {
+    if (!ordersData) return [];
+    if (Array.isArray(ordersData)) return ordersData;
+    if (ordersData && typeof ordersData === 'object' && 'orders' in ordersData) {
+      return ordersData.orders;
+    }
+    return [];
+  }, [ordersData]);
   const { data: categories } = useCategories();
   const { data: varieties } = useVarieties();
   
@@ -75,8 +83,6 @@ export default function ReportsPage() {
 
   const [location] = useLocation();
   const queryParams = new URLSearchParams(location.split('?')[1] || "");
-  const view = queryParams.get("view");
-
   const [activeTab, setActiveTab] = useState<string>("sowing");
 
   // Persist state changes
@@ -150,14 +156,14 @@ export default function ReportsPage() {
     let filtered = lots;
 
     if (selectedCategory !== "all") {
-      filtered = filtered.filter(l => l.categoryId.toString() === selectedCategory);
+      filtered = filtered.filter((l: any) => l.categoryId.toString() === selectedCategory);
     }
     if (selectedVariety !== "all") {
-      filtered = filtered.filter(l => l.varietyId.toString() === selectedVariety);
+      filtered = filtered.filter((l: any) => l.varietyId.toString() === selectedVariety);
     }
     if (searchTerm) {
       const s = searchTerm.toLowerCase();
-      filtered = filtered.filter(l => 
+      filtered = filtered.filter((l: any) => 
         l.lotNumber.toLowerCase().includes(s) ||
         (l as any).variety?.name.toLowerCase().includes(s)
       );
@@ -165,16 +171,16 @@ export default function ReportsPage() {
     return filtered;
   }, [lots, selectedCategory, selectedVariety, searchTerm]);
 
-  const dailySowingData = useMemo(() => filteredLots.filter(l => isInRange(l.expectedReadyDate || l.sowingDate)) || [], [filteredLots, dateRange]);
+  const dailySowingData = useMemo(() => filteredLots.filter((l: any) => isInRange(l.expectedReadyDate || l.sowingDate)) || [], [filteredLots, dateRange]);
 
-  const lotStockData = useMemo(() => filteredLots.map(l => ({
+  const lotStockData = useMemo(() => filteredLots.map((l: any) => ({
     ...l,
     available: (l as any).available || 0
   })) || [], [filteredLots]);
 
   const varietyPerformance = useMemo(() => {
     const report: Record<string, any> = {};
-    filteredLots.forEach(lot => {
+    filteredLots.forEach((lot: any) => {
       const varietyName = (lot as any).variety?.name || "N/A";
       if (!report[varietyName]) {
         report[varietyName] = { name: varietyName, sown: 0, damaged: 0, available: 0 };
@@ -188,7 +194,7 @@ export default function ReportsPage() {
 
   const paymentSummary = useMemo(() => {
     const report: Record<string, any> = {};
-    orders?.forEach(order => {
+    orders?.forEach((order: any) => {
       if (!isInRange(order.deliveryDate)) return;
       const mode = order.paymentMode || "Cash";
       if (!report[mode]) report[mode] = { mode, count: 0, totalAdvance: 0 };
@@ -230,7 +236,7 @@ export default function ReportsPage() {
                   <Calendar
                     mode="single"
                     selected={dateRange.from}
-                    onSelect={(date) => setDateRange((prev: { from: Date | undefined; to: Date | undefined }) => ({ ...prev, from: date || undefined }))}
+                    onSelect={(date) => setDateRange((prev: any) => ({ ...prev, from: date || undefined }))}
                     initialFocus
                   />
                 </PopoverContent>
@@ -256,7 +262,7 @@ export default function ReportsPage() {
                   <Calendar
                     mode="single"
                     selected={dateRange.to}
-                    onSelect={(date) => setDateRange((prev: { from: Date | undefined; to: Date | undefined }) => ({ ...prev, to: date || undefined }))}
+                    onSelect={(date) => setDateRange((prev: any) => ({ ...prev, to: date || undefined }))}
                     initialFocus
                   />
                 </PopoverContent>
@@ -298,7 +304,7 @@ export default function ReportsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
-                {categories?.map(c => (
+                {categories?.map((c: any) => (
                   <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
                 ))}
               </SelectContent>
@@ -313,7 +319,7 @@ export default function ReportsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Varieties</SelectItem>
-                {varieties?.filter(v => v.categoryId.toString() === selectedCategory).map(v => (
+                {varieties?.filter((v: any) => v.categoryId.toString() === selectedCategory).map((v: any) => (
                   <SelectItem key={v.id} value={v.id.toString()}>{v.name}</SelectItem>
                 ))}
               </SelectContent>
@@ -371,7 +377,7 @@ export default function ReportsPage() {
                       <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No sowing data found.</TableCell>
                     </TableRow>
                   ) : (
-                    dailySowingData.map((lot) => (
+                    dailySowingData.map((lot: any) => (
                       <TableRow key={lot.id}>
                         <TableCell>{lot.sowingDate}</TableCell>
                         <TableCell className="font-medium">{lot.lotNumber}</TableCell>
@@ -410,7 +416,7 @@ export default function ReportsPage() {
                       <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No stock data available.</TableCell>
                     </TableRow>
                   ) : (
-                    lotStockData.map((lot) => (
+                    lotStockData.map((lot: any) => (
                       <TableRow key={lot.id}>
                         <TableCell>{lot.lotNumber}</TableCell>
                         <TableCell>{(lot as any).variety?.name || "N/A"}</TableCell>

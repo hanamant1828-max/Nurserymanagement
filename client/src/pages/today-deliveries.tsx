@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { useOrders } from "@/hooks/use-orders";
+import { useOrders, useUpdateOrder } from "@/hooks/use-orders";
 import { useLots } from "@/hooks/use-lots";
 import { useVarieties } from "@/hooks/use-varieties";
 import { useCategories } from "@/hooks/use-categories";
@@ -36,7 +36,6 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { useUpdateOrder } from "@/hooks/use-orders";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -64,7 +63,16 @@ import confetti from "canvas-confetti";
 
 export default function TodayDeliveriesPage() {
   const { toast } = useToast();
-  const { data: orders, isLoading } = useOrders();
+  const { data: ordersData, isLoading } = useOrders(1, 10000);
+  const orders = useMemo(() => {
+    if (!ordersData) return [];
+    if (Array.isArray(ordersData)) return ordersData;
+    if (ordersData && typeof ordersData === 'object' && 'orders' in ordersData) {
+      return ordersData.orders;
+    }
+    return [];
+  }, [ordersData]);
+  
   const { data: lots } = useLots();
   const { data: varieties } = useVarieties();
   const { data: categories } = useCategories();
@@ -122,7 +130,7 @@ export default function TodayDeliveriesPage() {
   const filteredOrders = useMemo(() => {
     if (!orders) return [];
 
-    return orders.filter((order) => {
+    return orders.filter((order: any) => {
       if (!order) return false;
       try {
         const deliveryDateStr = order.deliveryDate;
@@ -614,7 +622,7 @@ export default function TodayDeliveriesPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              paginatedOrders.map((order) => {
+              paginatedOrders.map((order: any) => {
                 const lot = lots?.find((l) => l.id === order.lotId);
                 const variety = varieties?.find((v) => v.id === lot?.varietyId);
                 const category = categories?.find(
@@ -622,93 +630,89 @@ export default function TodayDeliveriesPage() {
                 );
 
                 return (
-                  <TableRow
-                    key={order.id}
-                    className="hover:bg-muted/30 transition-colors"
-                  >
+                  <TableRow key={order.id} className="group hover:bg-muted/30 transition-colors">
                     <TableCell>
-                      <div className="font-bold">{order.customerName}</div>
-                      <div className="text-xs text-muted-foreground font-mono">
-                        {order.phone}
+                      <div className="flex flex-col">
+                        <span className="font-bold text-foreground">
+                          {order.customerName}
+                        </span>
+                        <span className="text-xs text-muted-foreground font-mono">
+                          {order.phone}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground mt-0.5">
+                          {order.village}
+                        </span>
                       </div>
-                      {order.village && (
-                        <div className="text-[10px] text-muted-foreground italic truncate">
-                          ({order.village})
-                        </div>
-                      )}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-3">
                         {category?.image ? (
                           <img
                             src={category.image}
-                            className="w-10 h-10 rounded-md object-cover border"
+                            className="w-10 h-10 rounded-lg object-cover border shadow-sm"
                             alt=""
                           />
                         ) : (
-                          <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center border">
-                            <Layers className="w-5 h-5 text-muted-foreground/30" />
+                          <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center border">
+                            <Layers className="w-5 h-5 text-muted-foreground/40" />
                           </div>
                         )}
-                        <div>
-                          <span className="font-bold text-sm block leading-tight">
-                            {variety?.name || "Unknown Variety"}
+                        <div className="flex flex-col">
+                          <span className="font-bold text-sm">
+                            {category?.name}
                           </span>
-                          <p className="text-[10px] text-muted-foreground uppercase font-mono">
-                            {lot?.lotNumber || "N/A"}
-                          </p>
+                          <span className="text-xs text-muted-foreground">
+                            {variety?.name}
+                          </span>
+                          <span className="text-[10px] font-mono bg-muted px-1 rounded self-start mt-0.5">
+                            {lot?.lotNumber}
+                          </span>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="text-right font-black text-primary text-lg">
+                    <TableCell className="text-right font-black text-primary">
                       {order.bookedQty}
                     </TableCell>
-                    <TableCell className="text-right font-medium">
-                      ₹{Number(order.perUnitPrice || 0).toLocaleString()}
+                    <TableCell className="text-right font-medium text-muted-foreground">
+                      ₹{order.perUnitPrice}
                     </TableCell>
                     <TableCell className="text-right font-black">
-                      ₹{Number(order.totalAmount || 0).toLocaleString()}
+                      ₹{Number(order.totalAmount).toLocaleString()}
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="font-bold text-blue-600">
-                        ₹{Number(order.advanceAmount || 0).toLocaleString()}
-                      </div>
-                      <div className="text-[10px] font-bold text-amber-600">
-                        ₹{Number(order.remainingBalance || 0).toLocaleString()}
+                      <div className="flex flex-col items-end">
+                        <span className="text-xs font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
+                          ₹{Number(order.advanceAmount).toLocaleString()}
+                        </span>
+                        <span className="text-xs font-bold text-orange-600 mt-1">
+                          ₹{Number(order.remainingBalance).toLocaleString()}
+                        </span>
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex flex-col gap-2 items-end">
-                        {order.status === "BOOKED" ? (
+                      {order.status === "DELIVERED" ? (
+                        <div className="flex items-center justify-end gap-2">
+                          <Badge className="bg-green-100 text-green-700 border-green-200 hover:bg-green-100">
+                            <CheckCircle className="w-3 h-3 mr-1" /> Delivered
+                          </Badge>
                           <Button
+                            variant="ghost"
                             size="sm"
-                            variant="outline"
-                            className="h-8 text-emerald-600 border-emerald-200 hover:bg-emerald-50"
-                            onClick={() => markDelivered(order.id)}
+                            onClick={() => undoDelivery(order.id)}
+                            className="h-8 text-[10px] uppercase font-bold text-muted-foreground hover:text-destructive"
                           >
-                            <CheckCircle className="w-4 h-4 mr-1.5" /> Deliver
+                            Undo
                           </Button>
-                        ) : order.status === "DELIVERED" ? (
-                          <div className="flex flex-col items-end gap-1">
-                            <Badge
-                              variant="outline"
-                              className="bg-emerald-50 text-emerald-700 border-emerald-200 py-1 px-2"
-                            >
-                              <CheckCircle className="w-3 h-3 mr-1" /> DELIVERED
-                            </Badge>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-6 text-[10px] text-muted-foreground hover:text-destructive"
-                              onClick={() => undoDelivery(order.id)}
-                            >
-                              Undo Delivery
-                            </Button>
-                          </div>
-                        ) : (
-                          <Badge variant="destructive">{order.status}</Badge>
-                        )}
-                      </div>
+                        </div>
+                      ) : (
+                        <Button
+                          size="sm"
+                          onClick={() => markDelivered(order.id)}
+                          className="bg-green-600 hover:bg-green-700 shadow-sm font-bold"
+                        >
+                          Mark Delivered
+                        </Button>
+                      )}
                     </TableCell>
                   </TableRow>
                 );
@@ -718,196 +722,95 @@ export default function TodayDeliveriesPage() {
         </Table>
       </div>
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between px-2 py-4 border-t bg-card rounded-b-xl border-x border-b">
-          <p className="text-sm text-muted-foreground">
-            Showing{" "}
-            <span className="font-medium">{(currentPage - 1) * 25 + 1}</span> to{" "}
-            <span className="font-medium">
-              {Math.min(currentPage * 25, filteredOrders.length)}
-            </span>{" "}
-            of <span className="font-medium">{filteredOrders.length}</span>{" "}
-            results
-          </p>
-          <Pagination className="mx-0 w-auto">
-            <PaginationContent>
-              <PaginationItem>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    setCurrentPage((prev) => Math.max(1, prev - 1))
-                  }
-                  disabled={currentPage === 1}
-                  className="gap-1"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  Previous
-                </Button>
-              </PaginationItem>
-
-              {Array.from({ length: totalPages }, (_, i) => i + 1)
-                .filter((page) => {
-                  return (
-                    page === 1 ||
-                    page === totalPages ||
-                    Math.abs(page - currentPage) <= 1
-                  );
-                })
-                .map((page, index, array) => {
-                  const items = [];
-                  if (index > 0 && page - array[index - 1] > 1) {
-                    items.push(
-                      <PaginationItem key={`ellipsis-${page}`}>
-                        <span className="px-2 text-muted-foreground">...</span>
-                      </PaginationItem>,
-                    );
-                  }
-                  items.push(
-                    <PaginationItem key={page}>
-                      <Button
-                        variant={currentPage === page ? "default" : "outline"}
-                        size="sm"
-                        className="w-9"
-                        onClick={() => setCurrentPage(page)}
-                      >
-                        {page}
-                      </Button>
-                    </PaginationItem>,
-                  );
-                  return items;
-                })}
-
-              <PaginationItem>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    setCurrentPage((prev) => Math.min(totalPages, prev + 1))
-                  }
-                  disabled={currentPage === totalPages}
-                  className="gap-1"
-                >
-                  Next
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
-      )}
-
-      <div className="md:hidden space-y-4 pb-12">
+      <div className="md:hidden space-y-4">
         {filteredOrders.length === 0 ? (
-          <div className="py-12 text-center text-muted-foreground italic bg-muted/20 rounded-lg border-2 border-dashed">
-            No deliveries scheduled for this date.
+          <div className="h-32 flex flex-col items-center justify-center text-muted-foreground bg-muted/20 rounded-xl border border-dashed">
+            <CalendarIcon className="w-8 h-8 opacity-20 mb-2" />
+            No deliveries scheduled.
           </div>
         ) : (
-          paginatedOrders.map((order) => {
+          paginatedOrders.map((order: any) => {
             const lot = lots?.find((l) => l.id === order.lotId);
             const variety = varieties?.find((v) => v.id === lot?.varietyId);
             const category = categories?.find((c) => c.id === lot?.categoryId);
 
             return (
-              <Card
-                key={order.id}
-                className="overflow-hidden border-2 shadow-sm"
-              >
+              <Card key={order.id} className="overflow-hidden border-2">
                 <CardContent className="p-0">
-                  <div
-                    className={`p-3 flex justify-between items-center border-b ${order.status === "DELIVERED" ? "bg-emerald-50" : "bg-primary/5"}`}
-                  >
-                    <div>
-                      <p className="font-black text-lg leading-tight">
-                        {order.customerName}
-                      </p>
-                      <p className="text-sm font-mono text-muted-foreground">
-                        {order.phone}
-                      </p>
-                    </div>
-                    <Badge
-                      className={
-                        order.status === "DELIVERED"
-                          ? "bg-emerald-600 text-white"
-                          : "bg-primary text-white"
-                      }
-                    >
-                      {order.status}
-                    </Badge>
-                  </div>
-
-                  <div className="p-4 space-y-4">
+                  <div className="p-4 bg-muted/10 border-b flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      {category?.image ? (
+                      {category?.image && (
                         <img
                           src={category.image}
-                          className="w-12 h-12 rounded-md object-cover border"
+                          className="w-10 h-10 rounded-md object-cover border shadow-sm"
                           alt=""
                         />
-                      ) : (
-                        <div className="w-12 h-12 rounded-md bg-muted flex items-center justify-center border">
-                          <Layers className="w-6 h-6 text-muted-foreground/30" />
-                        </div>
                       )}
-                      <div className="flex-1">
-                        <p className="font-bold text-sm">
-                          {variety?.name || "Unknown Variety"}
+                      <div>
+                        <p className="font-bold text-sm leading-tight">
+                          {order.customerName}
                         </p>
-                        <p className="text-xs font-mono text-muted-foreground">
-                          {lot?.lotNumber || "N/A"}
+                        <p className="text-xs text-muted-foreground font-mono">
+                          {order.phone}
                         </p>
                       </div>
-                      <div className="text-right">
-                        <p className="text-[10px] uppercase font-bold text-muted-foreground">
-                          Qty
+                    </div>
+                    <Badge variant="outline" className="bg-background font-mono">
+                      #{order.id}
+                    </Badge>
+                  </div>
+                  <div className="p-4 space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider">
+                          Plant Details
                         </p>
-                        <p className="font-black text-2xl text-primary">
+                        <p className="text-sm font-bold">{category?.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {variety?.name}
+                        </p>
+                      </div>
+                      <div className="space-y-1 text-right">
+                        <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider">
+                          Quantity
+                        </p>
+                        <p className="text-lg font-black text-primary">
                           {order.bookedQty}
                         </p>
                       </div>
                     </div>
-
-                    <div className="flex justify-between items-center pt-2 border-t border-dashed">
-                      <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                        <div>
-                          <p className="text-[9px] uppercase font-bold text-muted-foreground">
-                            Total
-                          </p>
-                          <p className="font-bold text-sm">
-                            ₹{Number(order.totalAmount || 0).toLocaleString()}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-[9px] uppercase font-bold text-muted-foreground">
-                            Advance
-                          </p>
-                          <p className="font-bold text-sm text-blue-600">
-                            ₹{Number(order.advanceAmount || 0).toLocaleString()}
-                          </p>
-                        </div>
+                    <div className="pt-2 border-t flex items-center justify-between">
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                          Balance
+                        </span>
+                        <span className="text-sm font-black text-orange-600">
+                          ₹{Number(order.remainingBalance).toLocaleString()}
+                        </span>
                       </div>
-                      <div className="flex gap-2">
-                        {order.status === "BOOKED" ? (
+                      {order.status === "DELIVERED" ? (
+                        <div className="flex items-center gap-2">
+                          <Badge className="bg-green-100 text-green-700 border-green-200">
+                            Delivered
+                          </Badge>
                           <Button
+                            variant="ghost"
                             size="sm"
-                            onClick={() => markDelivered(order.id)}
-                            className="bg-emerald-600 hover:bg-emerald-700 h-10 px-4 font-bold"
+                            onClick={() => undoDelivery(order.id)}
+                            className="h-8 text-[10px] font-bold text-muted-foreground"
                           >
-                            <CheckCircle className="w-4 h-4 mr-1.5" /> Deliver
+                            Undo
                           </Button>
-                        ) : (
-                          order.status === "DELIVERED" && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => undoDelivery(order.id)}
-                              className="h-10 px-3 text-muted-foreground border-dashed"
-                            >
-                              Undo
-                            </Button>
-                          )
-                        )}
-                      </div>
+                        </div>
+                      ) : (
+                        <Button
+                          size="sm"
+                          onClick={() => markDelivered(order.id)}
+                          className="bg-green-600 hover:bg-green-700 font-bold"
+                        >
+                          Deliver Now
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </CardContent>
@@ -915,6 +818,30 @@ export default function TodayDeliveriesPage() {
             );
           })
         )}
+      </div>
+
+      <div className="flex items-center justify-center space-x-2 py-4">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+          disabled={currentPage === 1}
+        >
+          <ChevronLeft className="h-4 w-4 mr-2" />
+          Previous
+        </Button>
+        <div className="text-sm font-medium">
+          Page {currentPage} of {totalPages || 1}
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+          disabled={currentPage >= totalPages}
+        >
+          Next
+          <ChevronRight className="h-4 w-4 ml-2" />
+        </Button>
       </div>
     </div>
   );

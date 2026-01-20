@@ -26,7 +26,15 @@ import { cn } from "@/lib/utils";
 
 export default function DeliveryReportsPage() {
   const { data: lots, isLoading: loadingLots } = useLots();
-  const { data: orders, isLoading: loadingOrders } = useOrders();
+  const { data: ordersData, isLoading: loadingOrders } = useOrders(1, 10000);
+  const orders = useMemo(() => {
+    if (!ordersData) return [];
+    if (Array.isArray(ordersData)) return ordersData;
+    if (ordersData && typeof ordersData === 'object' && 'orders' in ordersData) {
+      return ordersData.orders;
+    }
+    return [];
+  }, [ordersData]);
   const { data: categories } = useCategories();
   const { data: varieties } = useVarieties();
 
@@ -159,7 +167,7 @@ export default function DeliveryReportsPage() {
 
   const uniqueDistricts = useMemo(() => {
     if (!orders) return [];
-    const districts = new Set(orders.map(o => o.district).filter(Boolean));
+    const districts = new Set(orders.map((o: any) => o.district).filter(Boolean));
     return Array.from(districts).sort();
   }, [orders]);
 
@@ -167,8 +175,8 @@ export default function DeliveryReportsPage() {
     if (!orders) return [];
     const taluks = new Set(
       orders
-        .filter(o => pageDistrictId === "all" || o.district === pageDistrictId)
-        .map(o => o.taluk)
+        .filter((o: any) => pageDistrictId === "all" || o.district === pageDistrictId)
+        .map((o: any) => o.taluk)
         .filter(Boolean)
     );
     return Array.from(taluks).sort();
@@ -179,30 +187,30 @@ export default function DeliveryReportsPage() {
     let filtered = orders;
 
     if (pageDistrictId !== "all") {
-      filtered = filtered.filter(item => item.district === pageDistrictId);
+      filtered = filtered.filter((item: any) => item.district === pageDistrictId);
     }
     
     if (pageTalukId !== "all") {
-      filtered = filtered.filter(item => item.taluk === pageTalukId);
+      filtered = filtered.filter((item: any) => item.taluk === pageTalukId);
     }
 
     if (selectedCategory !== "all") {
-      filtered = filtered.filter(item => {
-        const lot = lots?.find(l => l.id === item.lotId);
+      filtered = filtered.filter((item: any) => {
+        const lot = lots?.find((l: any) => l.id === item.lotId);
         return lot?.categoryId.toString() === selectedCategory;
       });
     }
 
     if (selectedVariety !== "all") {
-      filtered = filtered.filter(item => {
-        const lot = lots?.find(l => l.id === item.lotId);
+      filtered = filtered.filter((item: any) => {
+        const lot = lots?.find((l: any) => l.id === item.lotId);
         return lot?.varietyId.toString() === selectedVariety;
       });
     }
 
     if (searchTerm) {
       const s = searchTerm.toLowerCase();
-      filtered = filtered.filter(item => 
+      filtered = filtered.filter((item: any) => 
         (item.customerName?.toLowerCase().includes(s)) ||
         (item.village?.toLowerCase().includes(s)) ||
         (item.phone?.toLowerCase().includes(s))
@@ -213,8 +221,8 @@ export default function DeliveryReportsPage() {
   }, [orders, searchTerm, pageDistrictId, pageTalukId]);
 
   const pendingDeliveries = useMemo(() => {
-    return filteredOrders.filter(o => o.status === "BOOKED" && isInRange(null, o.deliveryDate)).map(o => {
-      const lot = lots?.find(l => l.id === o.lotId);
+    return filteredOrders.filter((o: any) => o.status === "BOOKED" && isInRange(null, o.deliveryDate)).map((o: any) => {
+      const lot = lots?.find((l: any) => l.id === o.lotId);
       return {
         ...o,
         varietyName: (lot as any)?.variety?.name || "N/A",
@@ -224,8 +232,8 @@ export default function DeliveryReportsPage() {
   }, [filteredOrders, lots, dateRange]);
 
   const deliveredOrders = useMemo(() => {
-    return filteredOrders.filter(o => o.status === "DELIVERED" && isInRange(o.actualDeliveryDate, o.deliveryDate)).map(o => {
-      const lot = lots?.find(l => l.id === o.lotId);
+    return filteredOrders.filter((o: any) => o.status === "DELIVERED" && isInRange(o.actualDeliveryDate, o.deliveryDate)).map((o: any) => {
+      const lot = lots?.find((l: any) => l.id === o.lotId);
       return {
         ...o,
         varietyName: (lot as any)?.variety?.name || "N/A",
@@ -236,7 +244,7 @@ export default function DeliveryReportsPage() {
 
   const deliveryVarietyReport = useMemo(() => {
     const report: Record<string, any> = {};
-    deliveredOrders.forEach(order => {
+    deliveredOrders.forEach((order: any) => {
       const key = order.varietyName;
       if (!report[key]) {
         report[key] = {
@@ -255,7 +263,7 @@ export default function DeliveryReportsPage() {
 
   const deliveryVillageReport = useMemo(() => {
     const report: Record<string, any> = {};
-    deliveredOrders.forEach(order => {
+    deliveredOrders.forEach((order: any) => {
       const key = order.village || "Unknown";
       if (!report[key]) {
         report[key] = {
@@ -306,7 +314,7 @@ export default function DeliveryReportsPage() {
                   <Calendar
                     mode="single"
                     selected={dateRange.from}
-                    onSelect={(date) => setDateRange((prev: { from: Date | undefined; to: Date | undefined }) => ({ ...prev, from: date || undefined }))}
+                    onSelect={(date) => setDateRange((prev: any) => ({ ...prev, from: date || undefined }))}
                     initialFocus
                   />
                 </PopoverContent>
@@ -332,7 +340,7 @@ export default function DeliveryReportsPage() {
                   <Calendar
                     mode="single"
                     selected={dateRange.to}
-                    onSelect={(date) => setDateRange((prev: { from: Date | undefined; to: Date | undefined }) => ({ ...prev, to: date || undefined }))}
+                    onSelect={(date) => setDateRange((prev: any) => ({ ...prev, to: date || undefined }))}
                     initialFocus
                   />
                 </PopoverContent>
@@ -374,7 +382,7 @@ export default function DeliveryReportsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Districts</SelectItem>
-                {uniqueDistricts.map(d => (
+                {uniqueDistricts.map((d: string) => (
                   <SelectItem key={d} value={d || "Unknown"}>{d || "Unknown"}</SelectItem>
                 ))}
               </SelectContent>
@@ -389,7 +397,7 @@ export default function DeliveryReportsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Taluks</SelectItem>
-                {uniqueTaluks.map(t => (
+                {uniqueTaluks.map((t: string) => (
                   <SelectItem key={t} value={t || "Unknown"}>{t || "Unknown"}</SelectItem>
                 ))}
               </SelectContent>
@@ -407,7 +415,7 @@ export default function DeliveryReportsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
-                {categories?.map(c => (
+                {categories?.map((c: any) => (
                   <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
                 ))}
               </SelectContent>
@@ -422,7 +430,7 @@ export default function DeliveryReportsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Varieties</SelectItem>
-                {varieties?.filter(v => v.categoryId.toString() === selectedCategory).map(v => (
+                {varieties?.filter((v: any) => v.categoryId.toString() === selectedCategory).map((v: any) => (
                   <SelectItem key={v.id} value={v.id.toString()}>{v.name}</SelectItem>
                 ))}
               </SelectContent>
@@ -479,7 +487,7 @@ export default function DeliveryReportsPage() {
                       <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No pending deliveries found.</TableCell>
                     </TableRow>
                   ) : (
-                    pendingDeliveries.map((order) => (
+                    pendingDeliveries.map((order: any) => (
                       <TableRow key={order.id}>
                         <TableCell className="font-medium">{order.customerName}</TableCell>
                         <TableCell>{order.varietyName}</TableCell>
@@ -533,7 +541,7 @@ export default function DeliveryReportsPage() {
                       <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No delivered orders found.</TableCell>
                     </TableRow>
                   ) : (
-                    deliveredOrders.map((order) => (
+                    deliveredOrders.map((order: any) => (
                       <TableRow key={order.id}>
                         <TableCell className="font-medium">{order.customerName}</TableCell>
                         <TableCell>{order.varietyName}</TableCell>
@@ -560,34 +568,25 @@ export default function DeliveryReportsPage() {
             </TabsList>
             <TabsContent value="variety">
               <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle>Variety Delivery Analysis</CardTitle>
-                </CardHeader>
-                <CardContent>
+                <CardContent className="p-0">
                   <Table>
                     <TableHeader>
                       <TableRow>
                         <TableHead>Variety</TableHead>
                         <TableHead className="text-right">Orders</TableHead>
-                        <TableHead className="text-right">Qty</TableHead>
-                        <TableHead className="text-right">Revenue</TableHead>
+                        <TableHead className="text-right">Total Qty</TableHead>
+                        <TableHead className="text-right">Total Value</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {deliveryVarietyReport.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">No data available for the selected period.</TableCell>
+                      {deliveryVarietyReport.map((v: any) => (
+                        <TableRow key={v.name}>
+                          <TableCell className="font-bold">{v.name}</TableCell>
+                          <TableCell className="text-right">{v.orderCount}</TableCell>
+                          <TableCell className="text-right">{v.totalQty}</TableCell>
+                          <TableCell className="text-right">₹{v.totalAmount.toLocaleString()}</TableCell>
                         </TableRow>
-                      ) : (
-                        deliveryVarietyReport.map((v: any, idx) => (
-                          <TableRow key={idx}>
-                            <TableCell className="font-medium">{v.name}</TableCell>
-                            <TableCell className="text-right">{v.orderCount}</TableCell>
-                            <TableCell className="text-right">{v.totalQty}</TableCell>
-                            <TableCell className="text-right">₹{v.totalAmount.toLocaleString()}</TableCell>
-                          </TableRow>
-                        ))
-                      )}
+                      ))}
                     </TableBody>
                   </Table>
                 </CardContent>
@@ -595,36 +594,25 @@ export default function DeliveryReportsPage() {
             </TabsContent>
             <TabsContent value="village">
               <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle>Village Delivery Analysis</CardTitle>
-                </CardHeader>
-                <CardContent>
+                <CardContent className="p-0">
                   <Table>
                     <TableHeader>
                       <TableRow>
                         <TableHead>Village</TableHead>
                         <TableHead className="text-right">Orders</TableHead>
-                        <TableHead className="text-right">Qty</TableHead>
                         <TableHead className="text-right">Collected</TableHead>
                         <TableHead className="text-right">Pending</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {deliveryVillageReport.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No data available for the selected period.</TableCell>
+                      {deliveryVillageReport.map((v: any) => (
+                        <TableRow key={v.village}>
+                          <TableCell className="font-bold">{v.village}</TableCell>
+                          <TableCell className="text-right">{v.orderCount}</TableCell>
+                          <TableCell className="text-right text-green-600">₹{v.paymentCollected.toLocaleString()}</TableCell>
+                          <TableCell className="text-right text-orange-600">₹{v.pendingBalance.toLocaleString()}</TableCell>
                         </TableRow>
-                      ) : (
-                        deliveryVillageReport.map((v: any, idx) => (
-                          <TableRow key={idx}>
-                            <TableCell className="font-medium">{v.village}</TableCell>
-                            <TableCell className="text-right">{v.orderCount}</TableCell>
-                            <TableCell className="text-right">{v.totalQty}</TableCell>
-                            <TableCell className="text-right">₹{v.paymentCollected.toLocaleString()}</TableCell>
-                            <TableCell className="text-right">₹{v.pendingBalance.toLocaleString()}</TableCell>
-                          </TableRow>
-                        ))
-                      )}
+                      ))}
                     </TableBody>
                   </Table>
                 </CardContent>

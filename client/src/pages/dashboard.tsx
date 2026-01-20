@@ -1,3 +1,4 @@
+import { useState, useEffect, useMemo } from "react";
 import { useLots } from "@/hooks/use-lots";
 import { useOrders } from "@/hooks/use-orders";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,7 +20,16 @@ import {
 
 export default function Dashboard() {
   const { data: lots, isLoading: loadingLots } = useLots();
-  const { data: orders, isLoading: loadingOrders } = useOrders();
+  const { data: ordersData, isLoading: loadingOrders } = useOrders(1, 10000);
+  
+  const orders = useMemo(() => {
+    if (!ordersData) return [];
+    if (Array.isArray(ordersData)) return ordersData;
+    if (ordersData && typeof ordersData === 'object' && 'orders' in ordersData) {
+      return ordersData.orders;
+    }
+    return [];
+  }, [ordersData]);
 
   if (loadingLots || loadingOrders) {
     return (
@@ -33,20 +43,20 @@ export default function Dashboard() {
 
   // Calculate Metrics
   const today = new Date();
-  const sowingToday = lots?.filter(l => l && l.sowingDate === format(today, 'yyyy-MM-dd')).length || 0;
-  const activeLots = lots?.filter(l => l && (l as any).available > 0).length || 0;
-  const pendingOrders = orders?.filter(o => o && o.status === 'BOOKED').length || 0;
-  const deliveriesToday = orders?.filter(o => 
+  const sowingToday = lots?.filter((l: any) => l && l.sowingDate === format(today, 'yyyy-MM-dd')).length || 0;
+  const activeLots = lots?.filter((l: any) => l && (l as any).available > 0).length || 0;
+  const pendingOrders = orders?.filter((o: any) => o && o.status === 'BOOKED').length || 0;
+  const deliveriesToday = orders?.filter((o: any) => 
     o && 
     o.status === 'BOOKED' && 
     o.deliveryDate === format(today, 'yyyy-MM-dd')
   ).length || 0;
 
-  const totalRevenue = orders?.filter(o => o && o.status === 'DELIVERED')
-    .reduce((sum, o) => sum + Number(o.totalAmount || 0), 0) || 0;
+  const totalRevenue = orders?.filter((o: any) => o && o.status === 'DELIVERED')
+    .reduce((sum: number, o: any) => sum + Number(o.totalAmount || 0), 0) || 0;
   
   // Upcoming deliveries (next 7 days)
-  const upcomingDeliveries = orders?.filter(o => {
+  const upcomingDeliveries = orders?.filter((o: any) => {
     if (!o || o.status !== 'BOOKED' || !o.deliveryDate) return false;
     try {
       const deliveryDate = parseISO(o.deliveryDate);
@@ -107,7 +117,7 @@ export default function Dashboard() {
   ];
 
   // Prepare chart data (Sales by Variety)
-  const salesByVariety = orders?.reduce((acc, order) => {
+  const salesByVariety = orders?.reduce((acc: Record<string, number>, order: any) => {
     if (!order) return acc;
     // variety name is accessed via order.lot.variety.name because of drizzle relations
     const varietyName = (order as any).lot?.variety?.name || "Unknown Variety";
@@ -223,7 +233,7 @@ export default function Dashboard() {
           <CardContent className="p-0 flex-1">
             {upcomingDeliveries.length > 0 ? (
               <div className="divide-y divide-border/50">
-                {upcomingDeliveries.slice(0, 6).map(order => (
+                {upcomingDeliveries.slice(0, 6).map((order: any) => (
                   <div key={order.id} className="p-4 hover:bg-muted/30 transition-colors flex items-center justify-between group">
                     <div className="min-w-0">
                       <p className="font-bold text-sm truncate">{order.customerName}</p>
@@ -261,27 +271,5 @@ export default function Dashboard() {
         </Card>
       </div>
     </div>
-  );
-}
-
-// Icon helper
-function LayersIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg 
-      {...props} 
-      xmlns="http://www.w3.org/2000/svg" 
-      width="24" 
-      height="24" 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
-      strokeWidth="2" 
-      strokeLinecap="round" 
-      strokeLinejoin="round"
-    >
-      <path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z" />
-      <path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65" />
-      <path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65" />
-    </svg>
   );
 }
