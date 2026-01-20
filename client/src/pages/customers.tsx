@@ -13,7 +13,7 @@ export default function CustomersPage() {
   const { data: orders, isLoading } = useOrders();
 
   // Aggregate unique customers from orders
-  const customers = orders ? Object.values(orders.reduce((acc, order) => {
+  const customers = Array.isArray(orders) ? Object.values(orders.reduce((acc, order) => {
     const key = order.phone; // Using phone as unique key
     if (!acc[key]) {
       acc[key] = {
@@ -30,7 +30,7 @@ export default function CustomersPage() {
         acc[key].lastOrderDate = order.deliveryDate;
     }
     return acc;
-  }, {} as Record<string, { name: string, phone: string, village: string | null, totalOrders: number, lastOrderDate: string }>)) : [];
+  }, {} as Record<string, any>)) : [] as any[];
 
   return (
     <div className="space-y-8">
