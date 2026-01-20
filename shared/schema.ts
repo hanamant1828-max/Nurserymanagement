@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, numeric, customType } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, numeric, customType, index } from "drizzle-orm/sqlite-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations, sql } from "drizzle-orm";
@@ -42,6 +42,10 @@ export const varieties = sqliteTable("varieties", {
   categoryId: integer("category_id").notNull(),
   name: text("name").notNull(),
   active: integer("active", { mode: "boolean" }).default(true).notNull(),
+}, (table) => {
+  return {
+    categoryIdIdx: index("idx_varieties_category_id").on(table.categoryId),
+  };
 });
 
 // 5. Lots (Sowing Lot Entry)
@@ -57,6 +61,11 @@ export const lots = sqliteTable("lots", {
   damagePercentage: decimal("damage_percentage").default("0.00"),
   expectedReadyDate: text("expected_ready_date"),
   remarks: text("remarks"),
+}, (table) => {
+  return {
+    varietyIdIdx: index("idx_lots_variety_id").on(table.varietyId),
+    categoryIdIdx: index("idx_lots_category_id").on(table.categoryId),
+  };
 });
 
 // 8. Orders (Order Booking)
@@ -83,6 +92,11 @@ export const orders = sqliteTable("orders", {
   actualDeliveryTime: text("actual_delivery_time"),
   deliveredQty: integer("delivered_qty").default(0),
   createdBy: integer("created_by"),
+}, (table) => {
+  return {
+    lotIdIdx: index("idx_orders_lot_id").on(table.lotId),
+    phoneIdx: index("idx_orders_phone").on(table.phone),
+  };
 });
 
 // 9. Audit Logs
