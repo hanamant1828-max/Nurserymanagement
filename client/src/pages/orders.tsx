@@ -1098,7 +1098,7 @@ const DISTRICTS_DATA: Record<string, typeof MAHARASHTRA_DISTRICTS> = {
 export default function OrdersPage() {
   const { toast } = useToast();
   const [page, setPage] = useState(1);
-  const [sortField, setSortField] = useState<string>("id");
+  const [sortField, setSortField] = useState<string>("deliveryDate");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const limit = 50;
   const { data: ordersData, isLoading } = useOrders(page, limit, sortField, sortOrder);
@@ -1570,11 +1570,29 @@ export default function OrdersPage() {
         </div>
         <div className="flex flex-col sm:flex-row gap-4">
           <Input
-            placeholder="Search customer, phone, lot..."
+            placeholder="Search customer, phone, village, lot..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full sm:w-64"
           />
+          <Select 
+            value={`${sortField}-${sortOrder}`} 
+            onValueChange={(val) => {
+              const [field, order] = val.split("-");
+              setSortField(field);
+              setSortOrder(order as "asc" | "desc");
+            }}
+          >
+            <SelectTrigger className="w-full sm:w-48">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="deliveryDate-desc">Date (Newest)</SelectItem>
+              <SelectItem value="deliveryDate-asc">Date (Oldest)</SelectItem>
+              <SelectItem value="customerName-asc">Name (A-Z)</SelectItem>
+              <SelectItem value="customerName-desc">Name (Z-A)</SelectItem>
+            </SelectContent>
+          </Select>
           <Dialog
             open={open}
             onOpenChange={(v) => {
