@@ -1,24 +1,11 @@
-import { sqliteTable, text, integer, numeric, customType, index } from "drizzle-orm/sqlite-core";
+import { pgTable, text, integer, numeric, timestamp, index, serial, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations, sql } from "drizzle-orm";
 
-// Custom decimal type for SQLite
-const decimal = customType<{ data: string }>( {
-  dataType() {
-    return "numeric";
-  },
-  fromDriver(value: unknown) {
-    return String(value);
-  },
-  toDriver(value: string) {
-    return value;
-  }
-});
-
 // 1. Users (Login View)
-export const users = sqliteTable("users", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
   role: text("role").default("staff").notNull(),
@@ -28,20 +15,20 @@ export const users = sqliteTable("users", {
 });
 
 // 3. Categories
-export const categories = sqliteTable("categories", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const categories = pgTable("categories", {
+  id: serial("id").primaryKey(),
   name: text("name").notNull(),
   image: text("image"), // Base64 string
-  pricePerUnit: decimal("price_per_unit").default("1.00").notNull(),
-  active: integer("active", { mode: "boolean" }).default(true).notNull(),
+  pricePerUnit: numeric("price_per_unit", { precision: 10, scale: 2 }).default("1.00").notNull(),
+  active: boolean("active").default(true).notNull(),
 });
 
 // 4. Varieties
-export const varieties = sqliteTable("varieties", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const varieties = pgTable("varieties", {
+  id: serial("id").primaryKey(),
   categoryId: integer("category_id").notNull(),
   name: text("name").notNull(),
-  active: integer("active", { mode: "boolean" }).default(true).notNull(),
+  active: boolean("active").default(true).notNull(),
 }, (table) => {
   return {
     categoryIdIdx: index("idx_varieties_category_id").on(table.categoryId),
@@ -49,8 +36,8 @@ export const varieties = sqliteTable("varieties", {
 });
 
 // 5. Lots (Sowing Lot Entry)
-export const lots = sqliteTable("lots", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const lots = pgTable("lots", {
+  id: serial("id").primaryKey(),
   lotNumber: text("lot_number").notNull().unique(),
   categoryId: integer("category_id").notNull(),
   varietyId: integer("variety_id").notNull(),
@@ -58,7 +45,7 @@ export const lots = sqliteTable("lots", {
   seedsSown: integer("seeds_sown").notNull(),
   packetsSown: integer("packets_sown").default(0).notNull(),
   damaged: integer("damaged").default(0).notNull(),
-  damagePercentage: decimal("damage_percentage").default("0.00"),
+  damagePercentage: numeric("damage_percentage", { precision: 5, scale: 2 }).default("0.00"),
   expectedReadyDate: text("expected_ready_date"),
   remarks: text("remarks"),
 }, (table) => {
@@ -69,8 +56,8 @@ export const lots = sqliteTable("lots", {
 });
 
 // 8. Orders (Order Booking)
-export const orders = sqliteTable("orders", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const orders = pgTable("orders", {
+  id: serial("id").primaryKey(),
   lotId: integer("lot_id").notNull(),
   customerName: text("customer_name").notNull(),
   phone: text("phone").notNull(),
@@ -78,12 +65,12 @@ export const orders = sqliteTable("orders", {
   state: text("state"),
   district: text("district"),
   taluk: text("taluk"),
-  perUnitPrice: decimal("per_unit_price").default("0.00").notNull(),
+  perUnitPrice: numeric("per_unit_price", { precision: 10, scale: 2 }).default("0.00").notNull(),
   bookedQty: integer("booked_qty").notNull(),
-  discount: decimal("discount").default("0.00").notNull(),
-  totalAmount: decimal("total_amount").notNull(),
-  advanceAmount: decimal("advance_amount").notNull(),
-  remainingBalance: decimal("remaining_balance").notNull(),
+  discount: numeric("discount", { precision: 10, scale: 2 }).default("0.00").notNull(),
+  totalAmount: numeric("total_amount", { precision: 10, scale: 2 }).notNull(),
+  advanceAmount: numeric("advance_amount", { precision: 10, scale: 2 }).notNull(),
+  remainingBalance: numeric("remaining_balance", { precision: 10, scale: 2 }).notNull(),
   paymentMode: text("payment_mode").notNull(), // Cash, PhonePe
   deliveryDate: text("delivery_date").notNull(),
   status: text("status").default("BOOKED").notNull(), // BOOKED, DELIVERED, CANCELLED
@@ -100,14 +87,14 @@ export const orders = sqliteTable("orders", {
 });
 
 // 9. Audit Logs
-export const auditLogs = sqliteTable("audit_logs", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const auditLogs = pgTable("audit_logs", {
+  id: serial("id").primaryKey(),
   userId: integer("user_id").notNull(),
   action: text("action").notNull(), // CREATE, UPDATE, DELETE
   entityType: text("entity_type").notNull(), // category, variety, lot, order
   entityId: integer("entity_id").notNull(),
   details: text("details"),
-  timestamp: integer("timestamp", { mode: "timestamp" }).default(sql`(strftime('%s', 'now'))`).notNull(),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
 });
 
 // Relations
