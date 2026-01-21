@@ -45,7 +45,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/today-deliveries", label: "Today's Deliveries", icon: CalendarCheck },
     { href: "/customers", label: "Customers", icon: Users },
     { href: "/delivery-reports", label: "Delivery Reports", icon: Truck },
-    { href: "/reports", label: "Reports", icon: BarChart3 },
+    { href: "/reports?view=standard", label: "Reports", icon: BarChart3 },
   ];
 
   const adminItems = [
