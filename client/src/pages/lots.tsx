@@ -614,7 +614,11 @@ export default function LotsPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all-lots">All Lots</SelectItem>
-              {lots?.map(l => (
+              {lots?.filter(l => {
+                const matchesCategory = selectedCategory === "all" || l.categoryId.toString() === selectedCategory;
+                const matchesVariety = selectedVariety === "all" || l.varietyId.toString() === selectedVariety;
+                return matchesCategory && matchesVariety;
+              }).map(l => (
                 <SelectItem key={l.id} value={l.lotNumber}>{l.lotNumber}</SelectItem>
               ))}
             </SelectContent>
