@@ -10,7 +10,8 @@ import {
 import { Users, Phone, MapPin } from "lucide-react";
 
 export default function CustomersPage() {
-  const { data: orders, isLoading } = useOrders();
+  const { data, isLoading } = useOrders();
+  const orders = data?.orders || [];
 
   // Aggregate unique customers from orders
   const customers = Array.isArray(orders) ? Object.values(orders.reduce((acc, order) => {
