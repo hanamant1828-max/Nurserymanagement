@@ -1257,9 +1257,18 @@ export default function OrdersPage() {
         if (lot?.categoryId.toString() !== pageCategoryId) return false;
       }
 
+      if (pageVarietyId !== "all") {
+        const lot = lots?.find((l) => l.id === o.lotId);
+        if (lot?.varietyId.toString() !== pageVarietyId) return false;
+      }
+
+      if (pageLotId !== "all") {
+        if (o.lotId.toString() !== pageLotId) return false;
+      }
+
       return true;
     });
-  }, [orders, search, lots, pageCategoryId, dateRange]);
+  }, [orders, search, lots, pageCategoryId, pageVarietyId, pageLotId, dateRange]);
 
   const paginatedOrders = filteredOrdersList;
 
