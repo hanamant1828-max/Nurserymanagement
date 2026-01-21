@@ -157,6 +157,8 @@ export default function LotsPage() {
       l.category?.name.toLowerCase().includes(search.toLowerCase());
     
     const matchesCategory = selectedCategory === "all" || l.categoryId.toString() === selectedCategory;
+    
+    // Fix: Respect the selected variety filter
     const matchesVariety = selectedVariety === "all" || l.varietyId.toString() === selectedVariety;
 
     // Date range filtering
