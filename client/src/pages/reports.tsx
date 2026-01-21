@@ -83,7 +83,16 @@ export default function ReportsPage() {
 
   const [location] = useLocation();
   const queryParams = new URLSearchParams(location.split('?')[1] || "");
-  const [activeTab, setActiveTab] = useState<string>("sowing");
+  const viewParam = queryParams.get("view");
+  const [activeTab, setActiveTab] = useState<string>(viewParam === "standard" ? "sowing" : "sowing");
+
+  useEffect(() => {
+    if (viewParam === "standard") {
+      setActiveTab("sowing");
+    } else if (viewParam === "delivery") {
+      setActiveTab("payments");
+    }
+  }, [viewParam]);
 
   // Persist state changes
   useEffect(() => {
