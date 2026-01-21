@@ -158,7 +158,7 @@ export default function LotsPage() {
     
     const matchesCategory = selectedCategory === "all" || l.categoryId.toString() === selectedCategory;
     
-    // Fix: Respect the selected variety filter
+    // Fix: Respect the selected variety filter when explicitly selected
     const matchesVariety = selectedVariety === "all" || l.varietyId.toString() === selectedVariety;
 
     // Date range filtering
