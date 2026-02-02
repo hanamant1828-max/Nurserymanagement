@@ -256,14 +256,15 @@ export default function LotsPage() {
     };
     
     if (editingLot) {
+      setOpen(false); 
       update({ id: editingLot.id, ...payload }, { 
         onSuccess: () => { 
-          setOpen(false); 
           setEditingLot(null);
           form.reset(); 
           toast({ title: "Success", description: "Lot updated successfully" });
         },
         onError: (error: any) => {
+          setOpen(true);
           toast({ 
             title: "Error", 
             description: error.message || "Failed to update lot",
@@ -272,13 +273,14 @@ export default function LotsPage() {
         }
       });
     } else {
+      setOpen(false);
       create(payload, { 
         onSuccess: () => { 
-          setOpen(false); 
           form.reset();
           toast({ title: "Success", description: "Lot created successfully" });
         },
         onError: (error: any) => {
+          setOpen(true);
           toast({ 
             title: "Error", 
             description: error.message || "Failed to create lot",
