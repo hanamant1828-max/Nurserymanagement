@@ -1635,7 +1635,7 @@ export default function OrdersPage() {
                           name="categoryId"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Select Category</FormLabel>
+                              <FormLabel>Select Category <span className="text-destructive">*</span></FormLabel>
                               <FormControl>
                                 <SearchableSelect
                                   options={sortedCategories || []}
@@ -1676,7 +1676,7 @@ export default function OrdersPage() {
                           name="varietyId"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Select Variety</FormLabel>
+                              <FormLabel>Select Variety <span className="text-destructive">*</span></FormLabel>
                               <FormControl>
                                 <SearchableSelect
                                   options={filteredVarieties || []}
@@ -1719,17 +1719,17 @@ export default function OrdersPage() {
                         />
                       </div>
 
-                      <FormField
-                        control={form.control}
-                        name="lotId"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="flex justify-between">
-                              <span>Select Stock Lot</span>
-                              <span className="text-destructive text-xs font-normal">
-                                Required
-                              </span>
-                            </FormLabel>
+                        <FormField
+                          control={form.control}
+                          name="lotId"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="flex justify-between">
+                                <span>Select Stock Lot <span className="text-destructive">*</span></span>
+                                <span className="text-destructive text-xs font-normal">
+                                  Required
+                                </span>
+                              </FormLabel>
                             <FormControl>
                               <SearchableSelect
                                 options={availableLots || []}
@@ -1855,7 +1855,7 @@ export default function OrdersPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
-                                Customer Name
+                                Customer Name <span className="text-destructive">*</span>
                               </FormLabel>
                               <FormControl>
                                 <Input
@@ -1874,7 +1874,7 @@ export default function OrdersPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
-                                Mobile Number
+                                Mobile Number <span className="text-destructive">*</span>
                               </FormLabel>
                               <div className="flex gap-2">
                                 <FormControl>
@@ -1912,7 +1912,7 @@ export default function OrdersPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
-                                State
+                                State <span className="text-destructive">*</span>
                               </FormLabel>
                               <Select
                                 onValueChange={(val) => {
@@ -1952,7 +1952,7 @@ export default function OrdersPage() {
                             return (
                               <FormItem>
                                 <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
-                                  District
+                                  District <span className="text-destructive">*</span>
                                 </FormLabel>
                                 <Select
                                   onValueChange={(val) => {
@@ -2000,7 +2000,7 @@ export default function OrdersPage() {
                             return (
                               <FormItem>
                                 <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
-                                  Taluk
+                                  Taluk <span className="text-destructive">*</span>
                                 </FormLabel>
                                 <Select
                                   onValueChange={field.onChange}
@@ -2055,7 +2055,7 @@ export default function OrdersPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
-                                Quantity
+                                Quantity <span className="text-destructive">*</span>
                               </FormLabel>
                               <FormControl>
                                 <Input
@@ -2087,7 +2087,7 @@ export default function OrdersPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
-                                Price per Unit (₹)
+                                Price per Unit (₹) <span className="text-destructive">*</span>
                               </FormLabel>
                               <FormControl>
                                 <Input
@@ -2163,7 +2163,7 @@ export default function OrdersPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
-                                Total Amount (₹)
+                                Total Amount (₹) <span className="text-destructive">*</span>
                               </FormLabel>
                               <FormControl>
                                 <Input
