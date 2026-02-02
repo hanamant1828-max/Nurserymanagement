@@ -598,9 +598,9 @@ export default function LotsPage() {
             <SelectTrigger className="bg-background h-12">
               <SelectValue placeholder="All Varieties" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="z-[100]">
               <SelectItem value="all">All Varieties</SelectItem>
-              {varieties?.filter(v => v.categoryId.toString() === selectedCategory && v.active).map(v => (
+              {varieties?.filter(v => (selectedCategory === "all" || v.categoryId.toString() === selectedCategory) && v.active).map(v => (
                 <SelectItem key={v.id} value={v.id.toString()}>{v.name}</SelectItem>
               ))}
             </SelectContent>

@@ -382,7 +382,7 @@ export default function DeliveryReportsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Districts</SelectItem>
-                {uniqueDistricts.map((d: string) => (
+                {uniqueDistricts.map((d: any) => (
                   <SelectItem key={d} value={d || "Unknown"}>{d || "Unknown"}</SelectItem>
                 ))}
               </SelectContent>
@@ -397,7 +397,7 @@ export default function DeliveryReportsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Taluks</SelectItem>
-                {uniqueTaluks.map((t: string) => (
+                {uniqueTaluks.map((t: any) => (
                   <SelectItem key={t} value={t || "Unknown"}>{t || "Unknown"}</SelectItem>
                 ))}
               </SelectContent>
@@ -428,9 +428,9 @@ export default function DeliveryReportsPage() {
               <SelectTrigger className="bg-background">
                 <SelectValue placeholder="All Varieties" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="z-[100]">
                 <SelectItem value="all">All Varieties</SelectItem>
-                {varieties?.filter((v: any) => v.categoryId.toString() === selectedCategory).map((v: any) => (
+                {varieties?.filter((v: any) => selectedCategory === "all" || v.categoryId.toString() === selectedCategory).map((v: any) => (
                   <SelectItem key={v.id} value={v.id.toString()}>{v.name}</SelectItem>
                 ))}
               </SelectContent>

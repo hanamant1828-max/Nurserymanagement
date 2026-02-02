@@ -170,7 +170,7 @@ function SearchableSelect({
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-[calc(100vw-2rem)] sm:w-[--radix-popover-trigger-width] p-0"
+        className="w-[calc(100vw-2rem)] sm:w-[--radix-popover-trigger-width] p-0 z-[100]"
         align="start"
         sideOffset={4}
       >
@@ -196,7 +196,7 @@ function SearchableSelect({
                     setOpen(false);
                     setSearchQuery("");
                   }}
-                  className="flex items-center justify-between py-1"
+                  className="flex items-center justify-between py-1 cursor-pointer"
                 >
                   <div className="flex items-center gap-2">
                     {renderItem(option)}
@@ -1233,7 +1233,7 @@ export default function OrdersPage() {
   const filteredOrdersList = useMemo(() => {
     if (!orders) return [];
 
-    return orders.filter((o) => {
+    return orders.filter((o: any) => {
       // Date filter (local for now)
       const deliveryDate = new Date(o.deliveryDate);
       const fromDate = new Date(dateRange.from);
@@ -1319,7 +1319,7 @@ export default function OrdersPage() {
       .map((lot) => {
         // Get orders for this lot that are BOOKED or DELIVERED
         const lotOrders = orders.filter(
-          (o) =>
+          (o: any) =>
             o.lotId === lot.id &&
             (o.status === "BOOKED" || o.status === "DELIVERED"),
         );
