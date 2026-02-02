@@ -84,13 +84,6 @@ export default function Dashboard() {
       bg: "bg-blue-100"
     },
     { 
-      label: "Total Revenue", 
-      value: `₹${totalRevenue.toLocaleString()}`, 
-      icon: TrendingUp, 
-      color: "text-emerald-600",
-      bg: "bg-emerald-100"
-    },
-    { 
       label: "Pending Orders", 
       value: pendingOrders, 
       icon: ShoppingCart, 
