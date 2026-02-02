@@ -2246,7 +2246,7 @@ export default function OrdersPage() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
-                              Payment Mode
+                              Payment Mode <span className="text-destructive">*</span>
                             </FormLabel>
                             <Select
                               onValueChange={field.onChange}
