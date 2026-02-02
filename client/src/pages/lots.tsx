@@ -247,6 +247,8 @@ export default function LotsPage() {
       ...data,
       categoryId: Number(data.categoryId),
       varietyId: Number(data.varietyId),
+      seedsSown: Number(data.seedsSown),
+      packetsSown: Number(data.packetsSown || 0),
       damaged: damageQty,
       damagePercentage: data.damagePercentage?.toString() || "0.00",
       sowingDate: format(data.sowingDate, "yyyy-MM-dd"),
@@ -260,10 +262,30 @@ export default function LotsPage() {
           setEditingLot(null);
           form.reset(); 
           toast({ title: "Success", description: "Lot updated successfully" });
-        } 
+        },
+        onError: (error: any) => {
+          toast({ 
+            title: "Error", 
+            description: error.message || "Failed to update lot",
+            variant: "destructive"
+          });
+        }
       });
     } else {
-      create(payload, { onSuccess: () => { setOpen(false); form.reset(); } });
+      create(payload, { 
+        onSuccess: () => { 
+          setOpen(false); 
+          form.reset();
+          toast({ title: "Success", description: "Lot created successfully" });
+        },
+        onError: (error: any) => {
+          toast({ 
+            title: "Error", 
+            description: error.message || "Failed to create lot",
+            variant: "destructive"
+          });
+        }
+      });
     }
   };
   
