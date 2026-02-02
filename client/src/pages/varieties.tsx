@@ -194,52 +194,52 @@ export default function VarietiesPage() {
               </DialogHeader>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-4">
-                  <FormField
-                    control={form.control}
-                    name="categoryId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Category</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormField
+                      control={form.control}
+                      name="categoryId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Category <span className="text-destructive">*</span></FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a category" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {categories?.filter(c => c.active).map(category => (
+                                <SelectItem key={category.id} value={category.id.toString()}>
+                                  <div className="flex items-center gap-2">
+                                    {category.image && (
+                                      <img 
+                                        src={category.image} 
+                                        alt={category.name} 
+                                        className="w-6 h-6 rounded-full object-cover border"
+                                      />
+                                    )}
+                                    {category.name}
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Variety Name <span className="text-destructive">*</span></FormLabel>
                           <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a category" />
-                            </SelectTrigger>
+                            <Input placeholder="e.g. Cherry Tomato, Hybrid Rose" {...field} />
                           </FormControl>
-                          <SelectContent>
-                            {categories?.filter(c => c.active).map(category => (
-                              <SelectItem key={category.id} value={category.id.toString()}>
-                                <div className="flex items-center gap-2">
-                                  {category.image && (
-                                    <img 
-                                      src={category.image} 
-                                      alt={category.name} 
-                                      className="w-6 h-6 rounded-full object-cover border"
-                                    />
-                                  )}
-                                  {category.name}
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Variety Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. Cherry Tomato, Hybrid Rose" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   <FormField
                     control={form.control}
                     name="active"

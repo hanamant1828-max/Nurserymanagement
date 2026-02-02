@@ -364,7 +364,7 @@ export default function LotsPage() {
                       name="categoryId"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Category</FormLabel>
+                          <FormLabel>Category <span className="text-destructive">*</span></FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>
@@ -388,7 +388,7 @@ export default function LotsPage() {
                       name="varietyId"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Variety</FormLabel>
+                          <FormLabel>Variety <span className="text-destructive">*</span></FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!selectedCategoryId}>
                             <FormControl>
                               <SelectTrigger>
@@ -412,7 +412,7 @@ export default function LotsPage() {
                       name="lotNumber"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Lot Number</FormLabel>
+                          <FormLabel>Lot Number <span className="text-destructive">*</span></FormLabel>
                           <FormControl>
                             <Input placeholder="Auto or Manual (e.g. L-101)" {...field} />
                           </FormControl>
@@ -427,7 +427,7 @@ export default function LotsPage() {
                       name="seedsSown"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Seeds Sown Quantity</FormLabel>
+                          <FormLabel>Seeds Sown Quantity <span className="text-destructive">*</span></FormLabel>
                           <FormControl>
                             <Input 
                               type="number" 
@@ -488,7 +488,7 @@ export default function LotsPage() {
                       name="sowingDate"
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
-                          <FormLabel>Sowing Date</FormLabel>
+                          <FormLabel>Sowing Date <span className="text-destructive">*</span></FormLabel>
                           <Popover>
                             <PopoverTrigger asChild>
                               <FormControl>

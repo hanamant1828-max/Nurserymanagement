@@ -144,7 +144,7 @@ export default function CategoriesPage() {
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Category Name</FormLabel>
+                        <FormLabel>Category Name <span className="text-destructive">*</span></FormLabel>
                         <FormControl>
                           <Input placeholder="e.g. Vegetables, Flowers" {...field} />
                         </FormControl>
