@@ -12,6 +12,11 @@ export async function registerRoutes(
   // Set up Passport auth
   setupAuth(app);
 
+  app.use("/api", (req, res, next) => {
+    res.setHeader('Content-Type', 'application/json');
+    next();
+  });
+
   // Categories
   app.get(api.categories.list.path, async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);

@@ -219,6 +219,20 @@ export default function LotsPage() {
     setOpen(true);
   };
 
+  const resetForm = () => {
+    setEditingLot(null);
+    form.reset({
+      categoryId: "",
+      varietyId: "",
+      lotNumber: "",
+      seedsSown: 0,
+      packetsSown: 0,
+      damagePercentage: 0,
+      sowingDate: new Date(),
+      remarks: "",
+    });
+  };
+
   const handleDelete = (id: number) => {
     deleteLot(id, {
       onSuccess: () => {
@@ -259,8 +273,7 @@ export default function LotsPage() {
       setOpen(false); 
       update({ id: editingLot.id, ...payload }, { 
         onSuccess: () => { 
-          setEditingLot(null);
-          form.reset(); 
+          resetForm(); 
           toast({ title: "Success", description: "Lot updated successfully" });
         },
         onError: (error: any) => {
@@ -276,7 +289,7 @@ export default function LotsPage() {
       setOpen(false);
       create(payload, { 
         onSuccess: () => { 
-          form.reset();
+          resetForm();
           toast({ title: "Success", description: "Lot created successfully" });
         },
         onError: (error: any) => {
@@ -342,8 +355,7 @@ export default function LotsPage() {
           <Dialog open={open} onOpenChange={(v) => {
             setOpen(v);
             if (!v) {
-              setEditingLot(null);
-              form.reset();
+              resetForm();
             }
           }}>
             <DialogTrigger asChild>
