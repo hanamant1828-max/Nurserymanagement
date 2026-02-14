@@ -122,6 +122,7 @@ export default function LotsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>(initialState.selectedCategory);
   const [selectedVariety, setSelectedVariety] = useState<string>(initialState.selectedVariety);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(initialState.dateRange);
+  const [sortBy, setSortBy] = useState<string>("sowingDate-desc");
 
   const [editingLot, setEditingLot] = useState<any>(null);
   const [currentPage, setCurrentPage] = useState(initialState.currentPage);
@@ -177,8 +178,26 @@ export default function LotsPage() {
     return matchesSearch && matchesCategory && matchesVariety && matchesDate;
   }) || [];
 
-  const totalPages = Math.ceil(filteredLotsList.length / PAGE_SIZE);
-  const paginatedLots = filteredLotsList.slice(
+  const sortedLots = useMemo(() => {
+    return [...filteredLotsList].sort((a, b) => {
+      if (sortBy === "sowingDate-desc") {
+        return new Date(b.sowingDate).getTime() - new Date(a.sowingDate).getTime();
+      }
+      if (sortBy === "sowingDate-asc") {
+        return new Date(a.sowingDate).getTime() - new Date(b.sowingDate).getTime();
+      }
+      if (sortBy === "lotNumber-asc") {
+        return a.lotNumber.localeCompare(b.lotNumber);
+      }
+      if (sortBy === "lotNumber-desc") {
+        return b.lotNumber.localeCompare(a.lotNumber);
+      }
+      return 0;
+    });
+  }, [filteredLotsList, sortBy]);
+
+  const totalPages = Math.ceil(sortedLots.length / PAGE_SIZE);
+  const paginatedLots = sortedLots.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE
   );
@@ -703,6 +722,20 @@ export default function LotsPage() {
               />
             </PopoverContent>
           </Popover>
+        </div>
+        <div className="space-y-2">
+          <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Sort By</label>
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="bg-background h-12">
+              <SelectValue placeholder="Sort order" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="sowingDate-desc">Sowing Date (Newest)</SelectItem>
+              <SelectItem value="sowingDate-asc">Sowing Date (Oldest)</SelectItem>
+              <SelectItem value="lotNumber-asc">Lot Number (A-Z)</SelectItem>
+              <SelectItem value="lotNumber-desc">Lot Number (Z-A)</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
