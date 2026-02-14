@@ -253,6 +253,10 @@ export default function TodayDeliveriesPage() {
     );
   }
 
+  const totalQuantityToDeliver = useMemo(() => {
+    return filteredOrders.reduce((sum: number, order: any) => sum + (order.bookedQty || 0), 0);
+  }, [filteredOrders]);
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -590,6 +594,19 @@ export default function TodayDeliveriesPage() {
           <CardContent>
             <div className="text-4xl font-black text-primary">
               {filteredOrders.length}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-emerald-50/50 border-emerald-200">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-emerald-700 uppercase tracking-wider flex items-center gap-2">
+              <CheckCircle className="w-4 h-4" /> Total Quantity
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-4xl font-black text-emerald-600">
+              {totalQuantityToDeliver.toLocaleString()}
             </div>
           </CardContent>
         </Card>
