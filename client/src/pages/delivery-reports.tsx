@@ -242,6 +242,14 @@ export default function DeliveryReportsPage() {
     });
   }, [filteredOrders, lots, dateRange]);
 
+  const totalQtyToDeliver = useMemo(() => {
+    return pendingDeliveries.reduce((sum: number, order: any) => sum + (order.bookedQty || 0), 0);
+  }, [pendingDeliveries]);
+
+  const totalQtyDelivered = useMemo(() => {
+    return deliveredOrders.reduce((sum: number, order: any) => sum + (order.bookedQty || 0), 0);
+  }, [deliveredOrders]);
+
   const deliveryVarietyReport = useMemo(() => {
     const report: Record<string, any> = {};
     deliveredOrders.forEach((order: any) => {
@@ -440,17 +448,37 @@ export default function DeliveryReportsPage() {
       </div>
 
       <Tabs defaultValue="pending" value={activeTab} className="w-full" onValueChange={setActiveTab}>
-        <TabsList className="flex w-full mb-6 overflow-x-auto pb-2 scrollbar-hide">
-          <TabsTrigger value="pending" className="flex items-center gap-2 flex-1 min-w-[160px]">
-            <Truck className="w-4 h-4" /> <span>Pending Deliveries</span>
-          </TabsTrigger>
-          <TabsTrigger value="delivered" className="flex items-center gap-2 flex-1 min-w-[160px]">
-            <CheckCircle className="w-4 h-4" /> <span>Delivered Orders</span>
-          </TabsTrigger>
-          <TabsTrigger value="analysis" className="flex items-center gap-2 flex-1 min-w-[160px]">
-            <BarChart3 className="w-4 h-4" /> <span>Stats Analysis</span>
-          </TabsTrigger>
-        </TabsList>
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <TabsList className="flex w-full overflow-x-auto pb-2 scrollbar-hide">
+            <TabsTrigger value="pending" className="flex items-center gap-2 flex-1 min-w-[160px]">
+              <Truck className="w-4 h-4" /> <span>Pending Deliveries</span>
+            </TabsTrigger>
+            <TabsTrigger value="delivered" className="flex items-center gap-2 flex-1 min-w-[160px]">
+              <CheckCircle className="w-4 h-4" /> <span>Delivered Orders</span>
+            </TabsTrigger>
+            <TabsTrigger value="analysis" className="flex items-center gap-2 flex-1 min-w-[160px]">
+              <BarChart3 className="w-4 h-4" /> <span>Stats Analysis</span>
+            </TabsTrigger>
+          </TabsList>
+
+          <Card className="sm:w-64 bg-primary/5 border-primary/20 shadow-sm">
+            <CardContent className="p-3 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-full">
+                  <Sprout className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider">
+                    {activeTab === "pending" ? "Total to Deliver" : "Total Delivered Qty"}
+                  </p>
+                  <p className="text-xl font-black text-primary">
+                    {(activeTab === "pending" ? totalQtyToDeliver : totalQtyDelivered).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         <TabsContent value="pending">
           <Card>
