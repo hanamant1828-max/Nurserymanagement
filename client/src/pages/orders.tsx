@@ -1074,6 +1074,8 @@ export default function OrdersPage() {
   const initialState = getInitialState();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(1);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const [selectedVarietyId, setSelectedVarietyId] = useState<string | null>(null);
   const [search, setSearch] = useState(initialState.search);
   const [currentPage, setCurrentPage] = useState(initialState.currentPage);
   const itemsPerPage = 10000;
@@ -1214,6 +1216,8 @@ export default function OrdersPage() {
           setEditingOrder(null);
           form.reset();
           setStep(1);
+          setSelectedCategoryId(null);
+          setSelectedVarietyId(null);
         }
       });
     } else {
@@ -1222,10 +1226,15 @@ export default function OrdersPage() {
           setOpen(false);
           form.reset();
           setStep(1);
+          setSelectedCategoryId(null);
+          setSelectedVarietyId(null);
         }
       });
     }
   };
+
+  const nextStep = () => setStep((s) => s + 1);
+  const prevStep = () => setStep((s) => s - 1);
 
   if (isLoading) return <Skeleton className="h-screen w-full" />;
 
@@ -1417,15 +1426,460 @@ export default function OrdersPage() {
       </div>
 
       {/* The booking dialog would go here - simplified for space */}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader><DialogTitle>Book New Order</DialogTitle></DialogHeader>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-               {/* Form fields here */}
-               <Button type="submit" className="w-full">Save Order</Button>
-            </form>
-          </Form>
+      <Dialog open={open} onOpenChange={(val) => {
+        setOpen(val);
+        if (!val) {
+          setStep(1);
+          setSelectedCategoryId(null);
+          setSelectedVarietyId(null);
+          form.reset();
+        }
+      }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editingOrder ? "Edit Order" : "Book New Order"} - Step {step} of 4
+            </DialogTitle>
+          </DialogHeader>
+
+          {step === 1 && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Select Category</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {categories?.map((cat: any) => (
+                  <Card 
+                    key={cat.id} 
+                    className={cn(
+                      "cursor-pointer hover-elevate transition-all border-2",
+                      selectedCategoryId === cat.id.toString() ? "border-green-600 bg-green-50/50" : "border-transparent"
+                    )}
+                    onClick={() => {
+                      setSelectedCategoryId(cat.id.toString());
+                      setStep(2);
+                    }}
+                  >
+                    <CardContent className="p-4 flex flex-col items-center justify-center text-center space-y-2">
+                      {cat.image ? (
+                        <img src={cat.image} alt={cat.name} className="w-16 h-16 object-cover rounded-md" />
+                      ) : (
+                        <div className="w-16 h-16 bg-muted rounded-md flex items-center justify-center">
+                          <Layers className="h-8 w-8 text-muted-foreground" />
+                        </div>
+                      )}
+                      <span className="font-medium">{cat.name}</span>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {step === 2 && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" onClick={prevStep}>
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <h3 className="text-lg font-medium">Select Variety</h3>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {varieties
+                  ?.filter((v: any) => v.categoryId.toString() === selectedCategoryId)
+                  .map((v: any) => (
+                    <Card 
+                      key={v.id} 
+                      className={cn(
+                        "cursor-pointer hover-elevate transition-all border-2",
+                        selectedVarietyId === v.id.toString() ? "border-green-600 bg-green-50/50" : "border-transparent"
+                      )}
+                      onClick={() => {
+                        setSelectedVarietyId(v.id.toString());
+                        setStep(3);
+                      }}
+                    >
+                      <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+                        <span className="font-medium">{v.name}</span>
+                      </CardContent>
+                    </Card>
+                  ))}
+              </div>
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" onClick={prevStep}>
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <h3 className="text-lg font-medium">Select Lot</h3>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {lots
+                  ?.filter((l: any) => l.varietyId.toString() === selectedVarietyId)
+                  .map((l: any) => (
+                    <Card 
+                      key={l.id} 
+                      className={cn(
+                        "cursor-pointer hover-elevate transition-all border-2",
+                        form.watch("lotId") === l.id.toString() ? "border-green-600 bg-green-50/50" : "border-transparent"
+                      )}
+                      onClick={() => {
+                        form.setValue("lotId", l.id.toString());
+                        setStep(4);
+                      }}
+                    >
+                      <CardContent className="p-4 space-y-1">
+                        <div className="flex justify-between items-start">
+                          <span className="font-bold text-lg">Lot #{l.lotNumber}</span>
+                          <Badge variant="outline">Stock: {l.seedsSown - l.damaged}</Badge>
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          Sown: {format(parseISO(l.sowingDate), "dd MMM yyyy")}
+                        </div>
+                        {l.expectedReadyDate && (
+                          <div className="text-sm text-green-600 font-medium">
+                            Expected Ready: {format(parseISO(l.expectedReadyDate), "dd MMM yyyy")}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+              </div>
+            </div>
+          )}
+
+          {step === 4 && (
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <div className="flex items-center gap-2">
+                  <Button variant="ghost" size="icon" type="button" onClick={prevStep}>
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <h3 className="text-lg font-medium">Order Details</h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Customer Info Section */}
+                  <div className="space-y-4">
+                    <div className="p-4 bg-muted/50 rounded-lg space-y-4">
+                      <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                        <MapPin className="h-4 w-4" /> Customer Information
+                      </h4>
+                      
+                      <FormField
+                        control={form.control}
+                        name="phone"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Phone Number</FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <Input 
+                                  placeholder="10-digit mobile number" 
+                                  {...field} 
+                                  onChange={(e) => {
+                                    field.onChange(e);
+                                    checkPhone(e.target.value);
+                                  }}
+                                />
+                                {isSearchingPhone && (
+                                  <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+                                )}
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="customerName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Full Name</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Enter customer name" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="state"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>State</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select state" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="Maharashtra">Maharashtra</SelectItem>
+                                  <SelectItem value="Karnataka">Karnataka</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="district"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>District</FormLabel>
+                              <Select 
+                                onValueChange={field.onChange} 
+                                value={field.value}
+                                disabled={!form.watch("state")}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select district" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {form.watch("state") && DISTRICTS_DATA[form.watch("state")!]?.map((d: any) => (
+                                    <SelectItem key={d.name} value={d.name}>{d.name}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="taluk"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Taluk</FormLabel>
+                              <Select 
+                                onValueChange={field.onChange} 
+                                value={field.value}
+                                disabled={!form.watch("district")}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select taluk" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {form.watch("district") && DISTRICTS_DATA[form.watch("state")!]
+                                    ?.find((d: any) => d.name === form.watch("district"))
+                                    ?.taluks.map((t: string) => (
+                                      <SelectItem key={t} value={t}>{t}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="village"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Village</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Enter village" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Order Info Section */}
+                  <div className="space-y-4">
+                    <div className="p-4 border rounded-lg bg-green-50/30 space-y-4">
+                      <h4 className="font-semibold text-sm uppercase tracking-wider text-green-700 flex items-center gap-2">
+                        <ShoppingCart className="h-4 w-4" /> Pricing & Delivery
+                      </h4>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="bookedQty"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Quantity</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type="number" 
+                                  {...field} 
+                                  onChange={(e) => {
+                                    const qty = parseFloat(e.target.value) || 0;
+                                    field.onChange(qty);
+                                    const price = form.getValues("perUnitPrice") || 0;
+                                    form.setValue("totalAmount", qty * price);
+                                  }}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="perUnitPrice"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Unit Price (₹)</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type="number" 
+                                  {...field} 
+                                  onChange={(e) => {
+                                    const price = parseFloat(e.target.value) || 0;
+                                    field.onChange(price);
+                                    const qty = form.getValues("bookedQty") || 0;
+                                    form.setValue("totalAmount", qty * price);
+                                  }}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="totalAmount"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Total Amount (₹)</FormLabel>
+                              <FormControl>
+                                <Input type="number" {...field} readOnly className="bg-muted" />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="advanceAmount"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Advance Paid (₹)</FormLabel>
+                              <FormControl>
+                                <Input type="number" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="flex justify-between items-center p-3 bg-white rounded border border-green-100">
+                        <div className="text-sm">
+                          <span className="text-muted-foreground">Balance:</span>
+                          <span className="ml-2 font-bold text-red-600">₹{remainingBalance}</span>
+                        </div>
+                        <Badge variant={paymentStatus === "Paid" ? "default" : "outline"}>
+                          {paymentStatus}
+                        </Badge>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="paymentMode"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Payment Mode</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Mode" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {["Cash", "PhonePe", "UPI", "GPay"].map(mode => (
+                                    <SelectItem key={mode} value={mode}>{mode}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="deliveryDate"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                              <FormLabel className="mb-2">Delivery Date</FormLabel>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <FormControl>
+                                    <Button
+                                      variant={"outline"}
+                                      className={cn(
+                                        "w-full pl-3 text-left font-normal h-10",
+                                        !field.value && "text-muted-foreground"
+                                      )}
+                                    >
+                                      {field.value ? (
+                                        format(field.value, "PPP")
+                                      ) : (
+                                        <span>Pick a date</span>
+                                      )}
+                                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                    </Button>
+                                  </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                  <Calendar
+                                    mode="single"
+                                    selected={field.value}
+                                    onSelect={field.onChange}
+                                    disabled={(date) => date < new Date(new Date().setHours(0,0,0,0))}
+                                    initialFocus
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <Button variant="outline" type="button" className="flex-1 h-11" onClick={() => setOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" className="flex-1 h-11 bg-green-600 hover:bg-green-700">
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    {editingOrder ? "Update Order" : "Confirm Booking"}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          )}
         </DialogContent>
       </Dialog>
     </div>
