@@ -2298,6 +2298,7 @@ export default function OrdersPage() {
                           </span>
                         </div>
                       </div>
+                              </div>
 
                       <div className="flex gap-4 pt-4">
                         <Button
