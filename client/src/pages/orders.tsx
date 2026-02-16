@@ -1,4 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
+import { generateInvoice } from "@/lib/invoice";
+import { Receipt } from "lucide-react";
 import { useOrders, useCreateOrder, useUpdateOrder } from "@/hooks/use-orders";
 import { useLots } from "@/hooks/use-lots";
 import { useCategories } from "@/hooks/use-categories";
@@ -2735,6 +2737,37 @@ export default function OrdersPage() {
                     </TableCell>
                     <TableCell className="text-right pr-6 whitespace-nowrap">
                       <div className="flex items-center justify-end gap-2">
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          className="h-8 w-8 bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-600 hover:text-white transition-all font-bold"
+                          onClick={() => {
+                            const lot = lots?.find((l) => l.id === order.lotId);
+                            const variety = varieties?.find((v) => v.id === lot?.varietyId);
+                            generateInvoice({
+                              orderId: order.id.toString(),
+                              orderNumber: `ORD-${order.id}`,
+                              customerName: order.customerName,
+                              customerVillage: order.customerVillage,
+                              customerPhone: order.customerPhone,
+                              date: new Date(order.createdAt),
+                              items: [{
+                                variety: variety?.name || "Unknown",
+                                quantity: order.bookedQty,
+                                rate: order.perUnitPrice,
+                                total: order.totalAmount
+                              }],
+                              totalAmount: order.totalAmount,
+                              advancePaid: order.advanceAmount,
+                              remainingBalance: order.remainingBalance,
+                              vehicleDetails: order.vehicleDetails
+                            });
+                          }}
+                          data-testid={`button-billing-${order.id}`}
+                          title="Generate Invoice"
+                        >
+                          <Receipt className="h-4 w-4" />
+                        </Button>
                         {order.status === "BOOKED" && (
                           <Button
                             size="sm"
