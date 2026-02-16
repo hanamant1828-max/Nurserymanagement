@@ -28,8 +28,8 @@ interface InvoiceData {
   vehicleDetails?: string;
 }
 
-export const generateInvoice = (data: InvoiceData) => {
-  const doc = jsPDF({
+export const generateInvoice = (data: InvoiceData, shouldPrint: boolean = false) => {
+  const doc = new jsPDF({
     orientation: "portrait",
     unit: "mm",
     format: "a4",
@@ -114,5 +114,10 @@ export const generateInvoice = (data: InvoiceData) => {
   doc.text("Payment Info: G-Pay / Phone Pe: 9986589865", 15, finalY + 50);
   doc.text("Kisan Hitech Nursery, Kalloli | A/c No. 918020082321165 | IFSC: UTIB0000482", 15, finalY + 55);
 
-  doc.save(`Invoice_${data.orderNumber}.pdf`);
+  if (shouldPrint) {
+    doc.autoPrint();
+    window.open(doc.output('bloburl'), '_blank');
+  } else {
+    doc.save(`Invoice_${data.orderNumber}.pdf`);
+  }
 };

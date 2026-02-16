@@ -52,6 +52,7 @@ import {
   ChevronRight,
   MapPin,
   Edit2,
+  Printer,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { useForm } from "react-hook-form";
@@ -2767,6 +2768,37 @@ export default function OrdersPage() {
                           title="Generate Invoice"
                         >
                           <Receipt className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          className="h-8 w-8 bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-600 hover:text-white transition-all font-bold"
+                          onClick={() => {
+                            const lot = lots?.find((l) => l.id === order.lotId);
+                            const variety = varieties?.find((v) => v.id === lot?.varietyId);
+                            generateInvoice({
+                              orderId: order.id.toString(),
+                              orderNumber: `ORD-${order.id}`,
+                              customerName: order.customerName,
+                              customerVillage: order.customerVillage,
+                              customerPhone: order.customerPhone,
+                              date: order.createdAt ? new Date(order.createdAt) : new Date(),
+                              items: [{
+                                variety: variety?.name || "Unknown",
+                                quantity: order.bookedQty,
+                                rate: order.perUnitPrice,
+                                total: order.totalAmount
+                              }],
+                              totalAmount: order.totalAmount,
+                              advancePaid: order.advanceAmount,
+                              remainingBalance: order.remainingBalance,
+                              vehicleDetails: order.vehicleDetails
+                            }, true);
+                          }}
+                          data-testid={`button-print-${order.id}`}
+                          title="Print Invoice"
+                        >
+                          <Printer className="h-4 w-4" />
                         </Button>
                         {order.status === "BOOKED" && (
                           <Button
