@@ -67,8 +67,8 @@ export const generateInvoice = (data: InvoiceData) => {
     index + 1,
     item.variety,
     item.quantity,
-    item.rate.toFixed(2),
-    item.total.toFixed(2)
+    (Number(item.rate) || 0).toFixed(2),
+    (Number(item.total) || 0).toFixed(2)
   ]);
 
   doc.autoTable({
