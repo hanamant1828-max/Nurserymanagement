@@ -73,9 +73,9 @@ import {
 
 const formSchema = z
   .object({
-    categoryId: z.string().optional(),
-    varietyId: z.string().optional(),
-    lotId: z.string().min(1, "Please select a lot"),
+    lotId: z.string().optional(),
+    categoryId: z.string().min(1, "Please select a category"),
+    varietyId: z.string().min(1, "Please select a variety"),
     customerName: z.string().min(1, "Customer name is required"),
     phone: z.string().min(10, "Valid phone number required"),
     village: z.string().optional(),

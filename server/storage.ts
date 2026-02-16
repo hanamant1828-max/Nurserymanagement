@@ -47,7 +47,7 @@ export interface IStorage {
   deleteLot(id: number): Promise<void>;
 
   // Orders
-  getOrders(page?: number, limit?: number): Promise<{ orders: (Order & { lot: Lot & { variety: Variety }; creator?: User })[]; total: number }>;
+  getOrders(page?: number, limit?: number, sortField?: string, sortOrder?: "asc" | "desc"): Promise<{ orders: (Order & { lot: (Lot & { variety: Variety }) | null; creator?: User })[]; total: number }>;
   createOrder(order: InsertOrder): Promise<Order>;
   updateOrder(id: number, order: Partial<InsertOrder>): Promise<Order>;
   deleteOrder(id: number): Promise<void>;
@@ -170,7 +170,53 @@ export class DatabaseStorage implements IStorage {
 
   async createLot(insertLot: InsertLot): Promise<Lot> {
     const [lot] = await db.insert(lots).values(insertLot).returning();
+    
+    // Auto-sync pending orders with the new lot
+    await this.syncPendingOrdersWithNewLot(lot.id);
+    
     return lot;
+  }
+
+  async syncPendingOrdersWithNewLot(lotId: number): Promise<void> {
+    const lot = await this.getLot(lotId);
+    if (!lot) return;
+
+    // Get all pending orders for this category and variety
+    const pendingOrders = await db.select().from(orders).where(
+      and(
+        eq(orders.categoryId, lot.categoryId),
+        eq(orders.varietyId, lot.varietyId),
+        sql`${orders.lotStatus} IN ('PENDING_LOT', 'PARTIAL')`
+      )
+    ).orderBy(orders.id);
+
+    let currentLot = await this.getLot(lotId);
+    if (!currentLot) return;
+
+    // Calculate available stock
+    const ordersForLot = await db.select().from(orders).where(eq(orders.lotId, lotId));
+    const totalBooked = ordersForLot.reduce((sum, o) => sum + Number(o.bookedQty), 0);
+    let availableStock = Number(currentLot.seedsSown) - Number(currentLot.damaged) - totalBooked;
+
+    for (const order of pendingOrders) {
+      if (availableStock <= 0) break;
+
+      const neededQty = Number(order.pendingQuantity);
+      const allocation = Math.min(neededQty, availableStock);
+      
+      const newAllocated = Number(order.allocatedQuantity) + allocation;
+      const newPending = neededQty - allocation;
+      const newStatus = newPending === 0 ? "ALLOCATED" : "PARTIAL";
+
+      await db.update(orders).set({
+        lotId: lotId,
+        allocatedQuantity: newAllocated.toString(),
+        pendingQuantity: newPending.toString(),
+        lotStatus: newStatus
+      }).where(eq(orders.id, order.id));
+
+      availableStock -= allocation;
+    }
   }
 
   async updateLot(id: number, update: Partial<InsertLot>): Promise<Lot> {
@@ -182,7 +228,7 @@ export class DatabaseStorage implements IStorage {
     await db.delete(lots).where(eq(lots.id, id));
   }
 
-  async getOrders(page: number = 1, limit: number = 50, sortField: string = "id", sortOrder: "asc" | "desc" = "desc"): Promise<{ orders: (Order & { lot: Lot & { variety: Variety }; creator?: User })[]; total: number }> {
+  async getOrders(page: number = 1, limit: number = 50, sortField: string = "id", sortOrder: "asc" | "desc" = "desc"): Promise<{ orders: (Order & { lot: (Lot & { variety: Variety }) | null; creator?: User })[]; total: number }> {
     const offset = (page - 1) * limit;
     
     const [totalResult] = await db.select({ count: sql<number>`count(*)` }).from(orders);
@@ -212,7 +258,31 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createOrder(insertOrder: InsertOrder): Promise<Order> {
-    const [order] = await db.insert(orders).values(insertOrder).returning();
+    const lotId = insertOrder.lotId;
+    let lotStatus: "PENDING_LOT" | "ALLOCATED" | "PARTIAL" = "PENDING_LOT";
+    let allocatedQuantity = "0.00";
+    let pendingQuantity = insertOrder.bookedQty;
+
+    if (lotId) {
+      const lot = await this.getLot(lotId);
+      if (lot) {
+        const ordersForLot = await db.select().from(orders).where(eq(orders.lotId, lotId));
+        const totalBooked = ordersForLot.reduce((sum, o) => sum + Number(o.bookedQty), 0);
+        const availableStock = Number(lot.seedsSown) - Number(lot.damaged) - totalBooked;
+        
+        const allocation = Math.min(Number(insertOrder.bookedQty), availableStock);
+        allocatedQuantity = allocation.toString();
+        pendingQuantity = (Number(insertOrder.bookedQty) - allocation).toString();
+        lotStatus = Number(pendingQuantity) === 0 ? "ALLOCATED" : (allocation > 0 ? "PARTIAL" : "PENDING_LOT");
+      }
+    }
+
+    const [order] = await db.insert(orders).values({
+      ...insertOrder,
+      lotStatus,
+      allocatedQuantity,
+      pendingQuantity,
+    }).returning();
     return order;
   }
 

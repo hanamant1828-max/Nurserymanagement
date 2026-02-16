@@ -59,7 +59,9 @@ export const lots = pgTable("lots", {
 export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
   invoiceNumber: text("invoice_number").unique(),
-  lotId: integer("lot_id").notNull(),
+  lotId: integer("lot_id"), // Nullable for pending lots
+  categoryId: integer("category_id").notNull(),
+  varietyId: integer("variety_id").notNull(),
   customerName: text("customer_name").notNull(),
   phone: text("phone").notNull(),
   village: text("village"),
@@ -68,6 +70,9 @@ export const orders = pgTable("orders", {
   taluk: text("taluk"),
   perUnitPrice: numeric("per_unit_price", { precision: 10, scale: 2 }).default("0.00").notNull(),
   bookedQty: numeric("booked_qty", { precision: 10, scale: 2 }).notNull(),
+  allocatedQuantity: numeric("allocated_quantity", { precision: 10, scale: 2 }).default("0.00").notNull(),
+  pendingQuantity: numeric("pending_quantity", { precision: 10, scale: 2 }).notNull(),
+  lotStatus: text("lot_status").default("PENDING_LOT").notNull(), // PENDING_LOT, ALLOCATED, PARTIAL
   discount: numeric("discount", { precision: 10, scale: 2 }).default("0.00").notNull(),
   totalAmount: numeric("total_amount", { precision: 10, scale: 2 }).notNull(),
   advanceAmount: numeric("advance_amount", { precision: 10, scale: 2 }).notNull(),
@@ -88,6 +93,8 @@ export const orders = pgTable("orders", {
     lotIdIdx: index("idx_orders_lot_id").on(table.lotId),
     phoneIdx: index("idx_orders_phone").on(table.phone),
     invoiceNumberIdx: index("idx_orders_invoice_number").on(table.invoiceNumber),
+    categoryIdIdx: index("idx_orders_category_id").on(table.categoryId),
+    varietyIdIdx: index("idx_orders_variety_id").on(table.varietyId),
   };
 });
 

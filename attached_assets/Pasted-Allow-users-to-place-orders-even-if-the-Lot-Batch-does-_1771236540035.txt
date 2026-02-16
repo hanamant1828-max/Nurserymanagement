@@ -1,0 +1,155 @@
+Allow users to place orders even if the Lot/Batch does not exist yet, and automatically sync/link the orders later when the lot is created for the same Category and Variety.
+
+🧩 Detailed Functional Requirements
+1️⃣ Order Creation Without Existing Lot
+
+When creating an order:
+
+User selects:
+
+Category
+
+Variety
+
+If no lot exists for that Category + Variety:
+
+System should still allow order creation.
+
+Store the order with:
+
+lot_id = NULL
+
+lot_status = "PENDING_LOT"
+
+Save category_id and variety_id properly.
+
+2️⃣ Lot Creation Logic
+
+When a new Lot is created:
+
+It will contain:
+
+Category
+
+Variety
+
+Lot Number
+
+Available Quantity
+
+3️⃣ Auto Sync / Auto Allocation Logic
+
+After a new lot is created:
+
+System should:
+
+Check all orders where:
+
+lot_status = "PENDING_LOT"
+
+AND category_id matches
+
+AND variety_id matches
+
+Then:
+
+Allocate stock from the newly created lot.
+
+Update:
+
+lot_id
+
+lot_status = "ALLOCATED"
+
+Reduce lot available quantity.
+
+If lot quantity is not enough:
+
+Partially allocate
+
+Keep remaining quantity as pending.
+
+4️⃣ Database Changes Required
+
+Add fields in Orders table:
+
+lot_id (nullable)
+
+lot_status (PENDING_LOT / ALLOCATED / PARTIAL)
+
+allocated_quantity
+
+pending_quantity
+
+Ensure proper foreign key relationships.
+
+5️⃣ UI Changes Required
+
+In Orders Page:
+
+If lot is missing:
+
+Show badge: 🔴 “Lot Pending”
+
+After sync:
+
+Show 🟢 “Allocated”
+
+In Lot Creation Page:
+
+After saving lot:
+
+Automatically trigger sync function.
+
+6️⃣ Backend Logic
+
+Create a function:
+
+syncPendingOrdersWithNewLot(lot_id)
+
+
+Logic:
+
+Fetch lot details
+
+Fetch pending orders with matching category + variety
+
+Allocate stock sequentially (FIFO based on order date)
+
+Update database
+
+7️⃣ Edge Cases to Handle
+
+Multiple pending orders
+
+Multiple lots for same variety
+
+Partial allocation
+
+Editing orders before lot creation
+
+Deleting lot after allocation (reverse allocation properly)
+
+8️⃣ Technical Stack
+
+Use:
+
+Node.js / Express (if backend exists)
+
+MySQL / PostgreSQL
+
+Proper transaction handling
+
+Avoid race conditions
+
+Generate:
+
+Updated DB schema
+
+Backend sync logic
+
+Required API endpoints
+
+UI changes
+
+Clean, production-ready implementation
