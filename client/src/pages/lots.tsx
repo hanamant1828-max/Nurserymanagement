@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useLots, useCreateLot, useUpdateLot } from "@/hooks/use-lots";
 import { useCategories } from "@/hooks/use-categories";
 import { useVarieties } from "@/hooks/use-varieties";
