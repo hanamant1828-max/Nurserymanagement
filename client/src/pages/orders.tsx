@@ -1084,27 +1084,6 @@ export default function OrdersPage() {
 
   const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>(initialState.dateRange);
 
-  useEffect(() => {
-    const stateToSave = {
-      search,
-      pageCategoryId,
-      pageVarietyId,
-      pageLotId,
-      dateRange,
-      currentPage
-    };
-    localStorage.setItem(PERSISTENCE_KEY, JSON.stringify(stateToSave));
-  }, [search, pageCategoryId, pageVarietyId, pageLotId, dateRange, currentPage]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [search, pageCategoryId, pageVarietyId, pageLotId, dateRange]);
-
-  const sortedCategories = useMemo(() => {
-    if (!categories) return [];
-    return [...categories].sort((a, b) => a.name.localeCompare(b.name));
-  }, [categories]);
-
   const filteredOrdersList = useMemo(() => {
     if (!orders) return [];
     return orders.filter((o: any) => {
@@ -1113,13 +1092,28 @@ export default function OrdersPage() {
       fromDate.setHours(0, 0, 0, 0);
       const toDate = new Date(dateRange.to);
       toDate.setHours(23, 59, 59, 999);
+      
       const isWithinDateRange = deliveryDate >= fromDate && deliveryDate <= toDate;
       if (!isWithinDateRange) return false;
-      const matchesSearch = !search || o.customerName?.toLowerCase().includes(search.toLowerCase()) || o.phone?.toLowerCase().includes(search.toLowerCase());
-      if (!matchesSearch) return false;
-      return true;
+
+      const matchesCategory = pageCategoryId === "all" || o.lot?.categoryId?.toString() === pageCategoryId;
+      if (!matchesCategory) return false;
+
+      const matchesVariety = pageVarietyId === "all" || o.lot?.varietyId?.toString() === pageVarietyId;
+      if (!matchesVariety) return false;
+
+      const matchesLot = pageLotId === "all" || o.lotId?.toString() === pageLotId;
+      if (!matchesLot) return false;
+
+      const matchesSearch = !search || 
+        o.customerName?.toLowerCase().includes(search.toLowerCase()) || 
+        o.phone?.toLowerCase().includes(search.toLowerCase()) ||
+        o.village?.toLowerCase().includes(search.toLowerCase()) ||
+        o.lotId?.toString().includes(search);
+      
+      return matchesSearch;
     });
-  }, [orders, search, dateRange]);
+  }, [orders, search, dateRange, pageCategoryId, pageVarietyId, pageLotId]);
 
   const paginatedOrders = filteredOrdersList;
 
@@ -1218,14 +1212,142 @@ export default function OrdersPage() {
   if (isLoading) return <Skeleton className="h-screen w-full" />;
 
   return (
-    <div className="space-y-8 px-4 md:px-8">
+    <div className="space-y-6 px-4 md:px-8 py-6">
       {printingOrder && <div id="invoice-print" className="hidden print:block"><InvoicePrint order={printingOrder} /></div>}
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Orders</h1>
-        <div className="flex gap-4">
-          <Input placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} />
-          <Button onClick={() => setOpen(true)}><Plus className="mr-2 h-4 w-4" /> Book Order</Button>
+      
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Orders ({filteredOrdersList.length})</h1>
+          <p className="text-muted-foreground">Book new orders and manage deliveries (Page 1 of 1).</p>
         </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+            <Loader2 className="mr-2 h-4 w-4" />
+            Refresh Data
+          </Button>
+          <Button onClick={() => setOpen(true)} className="bg-green-600 hover:bg-green-700">
+            <Plus className="mr-2 h-4 w-4" /> 
+            Book Order
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="space-y-2">
+          <label className="text-xs font-medium uppercase text-muted-foreground">From Date</label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-full justify-start text-left font-normal h-10">
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {dateRange.from ? format(dateRange.from, "MMMM do, yyyy") : <span>Pick a date</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={dateRange.from}
+                onSelect={(date) => date && setDateRange(prev => ({ ...prev, from: date }))}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-xs font-medium uppercase text-muted-foreground">To Date</label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-full justify-start text-left font-normal h-10">
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {dateRange.to ? format(dateRange.to, "MMMM do, yyyy") : <span>Pick a date</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={dateRange.to}
+                onSelect={(date) => date && setDateRange(prev => ({ ...prev, to: date }))}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-xs font-medium uppercase text-muted-foreground">Category Filter</label>
+          <Select value={pageCategoryId} onValueChange={setPageCategoryId}>
+            <SelectTrigger className="h-10">
+              <div className="flex items-center gap-2">
+                <Layers className="h-4 w-4 text-green-600" />
+                <SelectValue placeholder="All Categories" />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {categories?.map((cat: any) => (
+                <SelectItem key={cat.id} value={cat.id.toString()}>{cat.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-xs font-medium uppercase text-muted-foreground">Variety Filter</label>
+          <Select value={pageVarietyId} onValueChange={setPageVarietyId}>
+            <SelectTrigger className="h-10">
+              <div className="flex items-center gap-2">
+                <Layers className="h-4 w-4 text-green-600" />
+                <SelectValue placeholder="All Varieties" />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Varieties</SelectItem>
+              {varieties?.filter(v => pageCategoryId === "all" || v.categoryId?.toString() === pageCategoryId).map((v: any) => (
+                <SelectItem key={v.id} value={v.id.toString()}>{v.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-xs font-medium uppercase text-muted-foreground">Lot Filter</label>
+          <Select value={pageLotId} onValueChange={setPageLotId}>
+            <SelectTrigger className="h-10">
+              <div className="flex items-center gap-2">
+                <Layers className="h-4 w-4 text-green-600" />
+                <SelectValue placeholder="All Lots" />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Lots</SelectItem>
+              {lots?.filter(l => (pageCategoryId === "all" || l.categoryId?.toString() === pageCategoryId) && (pageVarietyId === "all" || l.varietyId?.toString() === pageVarietyId)).map((l: any) => (
+                <SelectItem key={l.id} value={l.id.toString()}>Lot {l.id} - {l.variety?.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="flex gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input 
+            placeholder="Search customer, phone, village, lot..." 
+            value={search} 
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9 h-10"
+          />
+        </div>
+        <Select defaultValue="ready-newest">
+          <SelectTrigger className="w-[200px] h-10">
+            <SelectValue placeholder="Sort by" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ready-newest">Ready Date (Newest)</SelectItem>
+            <SelectItem value="ready-oldest">Ready Date (Oldest)</SelectItem>
+            <SelectItem value="delivery-newest">Delivery Date (Newest)</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="bg-card rounded-lg border shadow-sm">
