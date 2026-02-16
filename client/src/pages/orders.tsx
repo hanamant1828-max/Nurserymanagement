@@ -1864,6 +1864,56 @@ export default function OrdersPage() {
                           )}
                         />
                       </div>
+
+                      <div className="p-4 border rounded-lg bg-blue-50/30 space-y-4">
+                        <h4 className="font-semibold text-sm uppercase tracking-wider text-blue-700 flex items-center gap-2">
+                          <MapPin className="h-4 w-4" /> Vehicle & Driver Details
+                        </h4>
+                        
+                        <FormField
+                          control={form.control}
+                          name="vehicleDetails"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Vehicle Number / Details</FormLabel>
+                              <FormControl>
+                                <Input placeholder="e.g. MH 12 AB 1234" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="driverName"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Driver Name</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Name" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="driverPhone"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Driver Phone</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Phone" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
