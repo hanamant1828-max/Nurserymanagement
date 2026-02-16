@@ -1115,7 +1115,25 @@ export default function OrdersPage() {
     });
   }, [orders, search, dateRange, pageCategoryId, pageVarietyId, pageLotId]);
 
-  const paginatedOrders = filteredOrdersList;
+  const [sortOption, setSortOption] = useState<string>("delivery-newest");
+
+  const sortedOrders = useMemo(() => {
+    const list = [...filteredOrdersList];
+    return list.sort((a, b) => {
+      if (sortOption === "ready-newest") {
+        return new Date(b.deliveryDate).getTime() - new Date(a.deliveryDate).getTime();
+      }
+      if (sortOption === "ready-oldest") {
+        return new Date(a.deliveryDate).getTime() - new Date(b.deliveryDate).getTime();
+      }
+      if (sortOption === "delivery-newest") {
+        return new Date(b.deliveryDate).getTime() - new Date(a.deliveryDate).getTime();
+      }
+      return 0;
+    });
+  }, [filteredOrdersList, sortOption]);
+
+  const paginatedOrders = sortedOrders;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -1338,7 +1356,7 @@ export default function OrdersPage() {
             className="pl-9 h-10"
           />
         </div>
-        <Select defaultValue="ready-newest">
+        <Select value={sortOption} onValueChange={setSortOption}>
           <SelectTrigger className="w-[200px] h-10">
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
