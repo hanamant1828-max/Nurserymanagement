@@ -13,7 +13,7 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({ ord
   const deliveryDate = order.deliveryDate ? format(new Date(order.deliveryDate), "dd/MM/yyyy") : today;
 
   return (
-    <div ref={ref} className="p-8 bg-white text-black font-sans print:p-4 print:m-0" style={{ width: "210mm", minHeight: "297mm", margin: "auto" }}>
+    <div ref={ref} className="p-8 bg-white text-black font-sans print:p-4 print:m-0" style={{ width: "210mm", height: "297mm", margin: "auto", overflow: "hidden" }}>
       {/* Header */}
       <div className="border-2 border-black p-4 mb-4">
         <div className="flex justify-between items-start mb-2">
@@ -84,7 +84,7 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({ ord
             <td className="p-2 text-right">{order.totalAmount}</td>
           </tr>
           {/* Fill empty space */}
-          <tr className="h-64">
+          <tr className="h-40">
             <td className="border-r border-black"></td>
             <td className="border-r border-black"></td>
             <td className="border-r border-black"></td>
