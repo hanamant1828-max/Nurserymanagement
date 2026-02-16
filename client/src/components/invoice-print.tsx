@@ -98,9 +98,6 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({ ord
       <div className="grid grid-cols-2 gap-4">
         <div className="border-2 border-black p-4 space-y-2">
           <div className="flex items-center gap-4">
-            <div className="w-24 h-24 border border-black flex items-center justify-center bg-gray-50">
-              <span className="text-[10px] text-center px-1">G-Pay / Phone Pe QR</span>
-            </div>
             <div>
               <div className="font-bold">G-Pay / Phone Pe</div>
               <div className="font-bold text-lg">9986589865</div>
