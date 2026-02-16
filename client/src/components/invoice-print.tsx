@@ -13,7 +13,7 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({ ord
   const deliveryDate = order.deliveryDate ? format(new Date(order.deliveryDate), "dd/MM/yyyy") : today;
 
   return (
-    <div ref={ref} className="p-8 bg-white text-black font-sans print:p-4 print:m-0" style={{ width: "210mm", height: "297mm", margin: "auto", overflow: "hidden" }}>
+    <div ref={ref} className="p-8 bg-white text-black font-sans print:p-4 print:m-0 print:static" style={{ width: "210mm", height: "auto", minHeight: "297mm", margin: "auto", overflow: "visible" }}>
       {/* Header */}
       <div className="border-2 border-black p-4 mb-4">
         <div className="flex justify-between items-start mb-2">
@@ -144,7 +144,18 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({ ord
         @media print {
           body * { visibility: hidden; }
           #invoice-print, #invoice-print * { visibility: visible; }
-          #invoice-print { position: absolute; left: 0; top: 0; width: 100%; }
+          #invoice-print { 
+            position: absolute; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: auto !important;
+            overflow: visible !important;
+          }
+          @page {
+            size: auto;
+            margin: 0;
+          }
         }
       `}} />
     </div>
