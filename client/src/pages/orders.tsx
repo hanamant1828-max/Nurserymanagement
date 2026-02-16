@@ -2750,7 +2750,7 @@ export default function OrdersPage() {
                               customerName: order.customerName,
                               customerVillage: order.customerVillage,
                               customerPhone: order.customerPhone,
-                              date: new Date(order.createdAt),
+                              date: order.createdAt ? new Date(order.createdAt) : new Date(),
                               items: [{
                                 variety: variety?.name || "Unknown",
                                 quantity: order.bookedQty,

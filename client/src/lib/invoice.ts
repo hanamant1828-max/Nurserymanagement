@@ -55,8 +55,12 @@ export const generateInvoice = (data: InvoiceData) => {
   doc.text(`Village: ${data.customerVillage}`, 15, 50);
   doc.text(`Phone: ${data.customerPhone}`, 15, 58);
   
+  const invoiceDate = data.date instanceof Date && !isNaN(data.date.getTime()) 
+    ? data.date 
+    : new Date();
+
   doc.text(`No: ${data.orderNumber}`, 150, 42);
-  doc.text(`Date: ${format(data.date, "dd/MM/yyyy")}`, 150, 50);
+  doc.text(`Date: ${format(invoiceDate, "dd/MM/yyyy")}`, 150, 50);
 
   // Items Table
   const tableData = data.items.map((item, index) => [
