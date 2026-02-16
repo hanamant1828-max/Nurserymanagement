@@ -101,6 +101,8 @@ const formSchema = z
     advanceAmount: z.coerce.number().min(0),
     paymentMode: z.enum(["Cash", "PhonePe"]),
     deliveryDate: z.date(),
+    driverName: z.string().optional(),
+    driverPhone: z.string().optional(),
   })
   .refine((data) => data.advanceAmount <= data.totalAmount, {
     message: "Advance cannot be greater than Total Amount",
@@ -1414,8 +1416,10 @@ export default function OrdersPage() {
         deliveryDate: editingOrder.deliveryDate
           ? new Date(editingOrder.deliveryDate)
           : new Date(),
+        driverName: editingOrder.driverName || "",
+        driverPhone: editingOrder.driverPhone || "",
       });
-      setStep(2);
+      setStep(4);
       setOpen(true);
     }
   }, [editingOrder, lots, form]);
@@ -1445,6 +1449,8 @@ export default function OrdersPage() {
       paymentStatus: paymentStatus,
       paymentMode: data.paymentMode,
       deliveryDate: format(data.deliveryDate, "yyyy-MM-dd"),
+      driverName: data.driverName || "",
+      driverPhone: data.driverPhone || "",
     };
 
     if (editingOrder) {
@@ -2207,11 +2213,61 @@ export default function OrdersPage() {
                         )}
                       />
 
-                      <div className="bg-muted/30 p-4 rounded-lg border-2 border-dashed space-y-2">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-muted-foreground font-medium">
-                            Total Amount
-                          </span>
+                              <div className="bg-muted/30 p-4 rounded-lg border-2 border-dashed space-y-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                  <FormField
+                                    control={form.control}
+                                    name="driverName"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
+                                          Driver Name
+                                        </FormLabel>
+                                        <FormControl>
+                                          <Input
+                                            placeholder="Driver Name"
+                                            className="h-10 text-base bg-background border-muted focus-visible:ring-primary/20"
+                                            {...field}
+                                          />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+
+                                  <FormField
+                                    control={form.control}
+                                    name="driverPhone"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
+                                          Driver Phone
+                                        </FormLabel>
+                                        <FormControl>
+                                          <Input
+                                            placeholder="Driver Phone"
+                                            className="h-10 text-base bg-background border-muted focus-visible:ring-primary/20"
+                                            {...field}
+                                            onChange={(e) =>
+                                              field.onChange(
+                                                e.target.value
+                                                  .replace(/\D/g, "")
+                                                  .slice(0, 10),
+                                              )
+                                            }
+                                          />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                </div>
+
+                                <div className="space-y-2">
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-sm text-muted-foreground font-medium">
+                                      Total Amount
+                                    </span>
                           <span className="text-lg font-black text-foreground">
                             ₹{(totalAmountValue || 0).toLocaleString()}
                           </span>

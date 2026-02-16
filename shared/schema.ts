@@ -78,6 +78,8 @@ export const orders = pgTable("orders", {
   actualDeliveryDate: text("actual_delivery_date"),
   actualDeliveryTime: text("actual_delivery_time"),
   deliveredQty: integer("delivered_qty").default(0),
+  driverName: text("driver_name"),
+  driverPhone: text("driver_phone"),
   createdBy: integer("created_by"),
 }, (table) => {
   return {
