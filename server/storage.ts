@@ -169,6 +169,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createLot(insertLot: InsertLot): Promise<Lot> {
+    const [existing] = await db.select().from(lots).where(eq(lots.lotNumber, insertLot.lotNumber));
+    if (existing) {
+      throw new Error(`Lot number ${insertLot.lotNumber} already exists`);
+    }
     const [lot] = await db.insert(lots).values(insertLot).returning();
     
     // Auto-sync pending orders with the new lot
