@@ -1198,7 +1198,7 @@ export default function OrdersPage() {
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     const payload = {
       ...data,
-      lotId: parseInt(data.lotId),
+      lotId: data.lotId ? parseInt(data.lotId) : null,
       bookedQty: data.bookedQty.toString(),
       perUnitPrice: data.perUnitPrice.toString(),
       discount: data.discount.toString(),
@@ -1396,12 +1396,25 @@ export default function OrdersPage() {
                   <div className="text-xs text-muted-foreground">{order.phone}</div>
                 </TableCell>
                 <TableCell>
-                  <div className="text-sm">{order.lot?.variety?.name}</div>
-                  <div className="text-xs text-muted-foreground">{format(new Date(order.deliveryDate), "dd MMM yyyy")}</div>
+                  {order.lotId ? (
+                    <Badge variant="outline">
+                      {order.lot?.lotNumber}
+                    </Badge>
+                  ) : (
+                    <Badge variant="destructive" className="bg-red-500 hover:bg-red-600">
+                      Lot Pending
+                    </Badge>
+                  )}
                 </TableCell>
                 <TableCell>
-                  <div className="font-bold">₹{order.totalAmount}</div>
-                  <div className="text-xs text-orange-600">Bal: ₹{order.remainingBalance}</div>
+                  <div className="flex flex-col">
+                    <span>{Number(order.bookedQty).toLocaleString()}</span>
+                    {order.lotStatus !== "PENDING_LOT" && (
+                      <span className="text-xs text-muted-foreground">
+                        Allocated: {Number(order.allocatedQuantity).toLocaleString()}
+                      </span>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell>
                   <Badge variant={order.status === "DELIVERED" ? "default" : "outline"}>{order.status}</Badge>
@@ -1515,6 +1528,22 @@ export default function OrdersPage() {
                 <h3 className="text-lg font-medium">Select Lot</h3>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Card 
+                  className={cn(
+                    "cursor-pointer hover-elevate transition-all border-2 flex items-center justify-center min-h-[100px]",
+                    !form.watch("lotId") ? "border-red-500 bg-red-50/50" : "border-transparent"
+                  )}
+                  onClick={() => {
+                    form.setValue("lotId", "");
+                    setStep(4);
+                  }}
+                >
+                  <CardContent className="p-4 flex flex-col items-center justify-center text-center space-y-2">
+                    <ShoppingCart className="h-8 w-8 text-red-500" />
+                    <span className="font-bold text-red-600 text-lg uppercase">Book without Lot</span>
+                    <span className="text-xs text-muted-foreground italic">(Auto-allocates when lot created)</span>
+                  </CardContent>
+                </Card>
                 {lots
                   ?.filter((l: any) => l.varietyId.toString() === selectedVarietyId)
                   .map((l: any) => (
