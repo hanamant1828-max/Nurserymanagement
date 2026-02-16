@@ -152,9 +152,9 @@ export class DatabaseStorage implements IStorage {
       },
     });
 
-    return allLots.map((lot) => {
-      const totalBooked = lot.orders.reduce((sum, o) => sum + o.bookedQty, 0);
-      const available = (lot.seedsSown || 0) - lot.damaged - totalBooked;
+    return allLots.map((lot: any) => {
+      const totalBooked = (lot.orders || []).reduce((sum: number, o: any) => sum + Number(o.bookedQty || 0), 0);
+      const available = (Number(lot.seedsSown) || 0) - (Number(lot.damaged) || 0) - totalBooked;
 
       return {
         ...lot,

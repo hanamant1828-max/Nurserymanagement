@@ -58,7 +58,7 @@ export const lots = pgTable("lots", {
 // Orders (Order Booking)
 export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
-  invoiceNumber: text("invoice_number").notNull().unique(),
+  invoiceNumber: text("invoice_number").unique(),
   lotId: integer("lot_id").notNull(),
   customerName: text("customer_name").notNull(),
   phone: text("phone").notNull(),
