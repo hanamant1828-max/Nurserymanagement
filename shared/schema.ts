@@ -55,9 +55,10 @@ export const lots = pgTable("lots", {
   };
 });
 
-// 8. Orders (Order Booking)
+// Orders (Order Booking)
 export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
+  invoiceNumber: text("invoice_number").notNull().unique(),
   lotId: integer("lot_id").notNull(),
   customerName: text("customer_name").notNull(),
   phone: text("phone").notNull(),
@@ -66,18 +67,19 @@ export const orders = pgTable("orders", {
   district: text("district"),
   taluk: text("taluk"),
   perUnitPrice: numeric("per_unit_price", { precision: 10, scale: 2 }).default("0.00").notNull(),
-  bookedQty: integer("booked_qty").notNull(),
+  bookedQty: numeric("booked_qty", { precision: 10, scale: 2 }).notNull(),
   discount: numeric("discount", { precision: 10, scale: 2 }).default("0.00").notNull(),
   totalAmount: numeric("total_amount", { precision: 10, scale: 2 }).notNull(),
   advanceAmount: numeric("advance_amount", { precision: 10, scale: 2 }).notNull(),
   remainingBalance: numeric("remaining_balance", { precision: 10, scale: 2 }).notNull(),
-  paymentMode: text("payment_mode").notNull(), // Cash, PhonePe
+  paymentMode: text("payment_mode").notNull(), // Cash, PhonePe, UPI, GPay
   deliveryDate: text("delivery_date").notNull(),
   status: text("status").default("BOOKED").notNull(), // BOOKED, DELIVERED, CANCELLED
   paymentStatus: text("payment_status").notNull(), // Pending, Partially Paid, Paid
   actualDeliveryDate: text("actual_delivery_date"),
   actualDeliveryTime: text("actual_delivery_time"),
-  deliveredQty: integer("delivered_qty").default(0),
+  deliveredQty: numeric("delivered_qty", { precision: 10, scale: 2 }).default("0.00"),
+  vehicleDetails: text("vehicle_details"),
   driverName: text("driver_name"),
   driverPhone: text("driver_phone"),
   createdBy: integer("created_by"),
@@ -85,6 +87,7 @@ export const orders = pgTable("orders", {
   return {
     lotIdIdx: index("idx_orders_lot_id").on(table.lotId),
     phoneIdx: index("idx_orders_phone").on(table.phone),
+    invoiceNumberIdx: index("idx_orders_invoice_number").on(table.invoiceNumber),
   };
 });
 
