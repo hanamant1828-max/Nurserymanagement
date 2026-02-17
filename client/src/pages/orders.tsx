@@ -1198,18 +1198,35 @@ export default function OrdersPage() {
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     const payload = {
-      ...data,
+      categoryId: parseInt(data.categoryId),
+      varietyId: parseInt(data.varietyId),
       lotId: data.lotId ? parseInt(data.lotId) : null,
-      bookedQty: data.bookedQty.toString(),
+      customerName: data.customerName,
+      phone: data.phone,
+      village: data.village || null,
+      state: data.state,
+      district: data.district,
+      taluk: data.taluk,
       perUnitPrice: data.perUnitPrice.toString(),
+      bookedQty: data.bookedQty.toString(),
+      allocatedQuantity: "0",
+      pendingQuantity: data.bookedQty.toString(),
+      lotStatus: "PENDING_LOT",
       discount: data.discount.toString(),
       totalAmount: data.totalAmount.toString(),
       advanceAmount: data.advanceAmount.toString(),
       remainingBalance: remainingBalance.toString(),
-      paymentStatus,
+      paymentMode: data.paymentMode,
       deliveryDate: format(data.deliveryDate, "yyyy-MM-dd"),
+      status: "BOOKED",
+      paymentStatus,
       sowingDate: data.sowingDate ? format(data.sowingDate, "yyyy-MM-dd") : null,
+      vehicleDetails: data.vehicleDetails || null,
+      driverName: data.driverName || null,
+      driverPhone: data.driverPhone || null,
     };
+
+    console.log("Submitting order payload:", payload);
 
     if (editingOrder) {
       update({ id: editingOrder.id, ...payload }, {
@@ -1220,6 +1237,18 @@ export default function OrdersPage() {
           setStep(1);
           setSelectedCategoryId(null);
           setSelectedVarietyId(null);
+          toast({
+            title: "Success",
+            description: "Order updated successfully",
+          });
+        },
+        onError: (error: any) => {
+          console.error("Update error:", error);
+          toast({
+            title: "Error",
+            description: error.message || "Failed to update order",
+            variant: "destructive",
+          });
         }
       });
     } else {
@@ -1230,6 +1259,18 @@ export default function OrdersPage() {
           setStep(1);
           setSelectedCategoryId(null);
           setSelectedVarietyId(null);
+          toast({
+            title: "Success",
+            description: "Order booked successfully",
+          });
+        },
+        onError: (error: any) => {
+          console.error("Create error:", error);
+          toast({
+            title: "Error",
+            description: error.message || "Failed to book order",
+            variant: "destructive",
+          });
         }
       });
     }
@@ -1895,47 +1936,47 @@ export default function OrdersPage() {
                           )}
                         />
 
-                        {!form.watch("lotId") && (
-                          <FormField
-                            control={form.control}
-                            name="sowingDate"
-                            render={({ field }) => (
-                              <FormItem className="flex flex-col">
-                                <FormLabel className="mb-2">Sowing Date</FormLabel>
-                                <Popover>
-                                  <PopoverTrigger asChild>
-                                    <FormControl>
-                                      <Button
-                                        variant={"outline"}
-                                        className={cn(
-                                          "w-full pl-3 text-left font-normal h-10",
-                                          !field.value && "text-muted-foreground"
-                                        )}
-                                      >
-                                        {field.value ? (
-                                          format(field.value, "PPP")
-                                        ) : (
-                                          <span>Pick a date</span>
-                                        )}
-                                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                      </Button>
-                                    </FormControl>
-                                  </PopoverTrigger>
-                                  <PopoverContent className="w-auto p-0" align="start">
-                                    <Calendar
-                                      mode="single"
-                                      selected={field.value}
-                                      onSelect={field.onChange}
-                                      disabled={(date) => date < new Date(new Date().setHours(0,0,0,0))}
-                                      initialFocus
-                                    />
-                                  </PopoverContent>
-                                </Popover>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        )}
+                          {!form.watch("lotId") && (
+                            <FormField
+                              control={form.control}
+                              name="sowingDate"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-col">
+                                  <FormLabel className="text-sm font-semibold text-primary">Sowing Date (Required for New Sowing)</FormLabel>
+                                  <Popover>
+                                    <PopoverTrigger asChild>
+                                      <FormControl>
+                                        <Button
+                                          variant={"outline"}
+                                          className={cn(
+                                            "w-full h-10 pl-3 text-left font-normal text-sm border-primary/50 bg-primary/5",
+                                            !field.value && "text-muted-foreground"
+                                          )}
+                                        >
+                                          {field.value ? (
+                                            format(field.value, "PPP")
+                                          ) : (
+                                            <span>Pick sowing date</span>
+                                          )}
+                                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                        </Button>
+                                      </FormControl>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0 z-[110]" align="start">
+                                      <Calendar
+                                        mode="single"
+                                        selected={field.value}
+                                        onSelect={field.onChange}
+                                        disabled={(date) => date < new Date(new Date().setHours(0,0,0,0))}
+                                        initialFocus
+                                      />
+                                    </PopoverContent>
+                                  </Popover>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          )}
                       </div>
 
                       <div className="p-4 border rounded-lg bg-blue-50/30 space-y-4">
