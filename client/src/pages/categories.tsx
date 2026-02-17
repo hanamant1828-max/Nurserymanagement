@@ -136,6 +136,9 @@ export default function CategoriesPage() {
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>{editingId ? "Edit Category" : "New Category"}</DialogTitle>
+                <DialogDescription>
+                  {editingId ? "Modify category name and image." : "Create a new plant category for inventory organization."}
+                </DialogDescription>
               </DialogHeader>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-4">

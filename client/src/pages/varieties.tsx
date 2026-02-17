@@ -191,6 +191,9 @@ export default function VarietiesPage() {
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>{editingId ? "Edit Variety" : "New Variety"}</DialogTitle>
+                <DialogDescription>
+                  {editingId ? "Update variety information and active status." : "Add a new plant variety to your nursery inventory."}
+                </DialogDescription>
               </DialogHeader>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-4">

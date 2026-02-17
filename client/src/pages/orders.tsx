@@ -1523,6 +1523,9 @@ export default function OrdersPage() {
             <DialogTitle>
               {editingOrder ? "Edit Order" : "Book New Order"} - Step {step} of 4
             </DialogTitle>
+            <DialogDescription>
+              {editingOrder ? "Update existing order details and delivery status." : "Complete the 4-step process to book a new plant order."}
+            </DialogDescription>
           </DialogHeader>
 
           {step === 1 && (

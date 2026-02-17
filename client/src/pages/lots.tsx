@@ -385,6 +385,9 @@ export default function LotsPage() {
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{editingLot ? "Edit Sowing Lot" : "New Sowing Lot Entry"}</DialogTitle>
+                <DialogDescription>
+                  {editingLot ? "Update details for this sowing batch." : "Record a new batch of seeds sown in the nursery."}
+                </DialogDescription>
               </DialogHeader>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-4">
@@ -744,6 +747,9 @@ export default function LotsPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Update Damage / Loss</DialogTitle>
+            <DialogDescription>
+              Record any plant losses or damage for this specific lot.
+            </DialogDescription>
             {(() => {
               const lot = lots?.find(l => l.id === selectedLotId);
               if (lot) {
