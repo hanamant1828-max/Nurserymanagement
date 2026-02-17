@@ -1199,9 +1199,9 @@ export default function OrdersPage() {
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     const payload = {
-      categoryId: parseInt(data.categoryId),
-      varietyId: parseInt(data.varietyId),
-      lotId: data.lotId ? parseInt(data.lotId) : null,
+      categoryId: selectedCategoryId ? parseInt(selectedCategoryId) : (data.categoryId ? parseInt(data.categoryId) : null),
+      varietyId: selectedVarietyId ? parseInt(selectedVarietyId) : (data.varietyId ? parseInt(data.varietyId) : null),
+      lotId: data.lotId ? parseInt(data.lotId) : (selectedLotId ? parseInt(selectedLotId) : null),
       customerName: data.customerName,
       phone: data.phone,
       village: data.village || null,
