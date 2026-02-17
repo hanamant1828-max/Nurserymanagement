@@ -89,6 +89,7 @@ const formSchema = z
     advanceAmount: z.coerce.number().min(0),
     paymentMode: z.enum(["Cash", "PhonePe", "UPI", "GPay"]),
     deliveryDate: z.date(),
+    sowingDate: z.date().optional(),
     vehicleDetails: z.string().optional(),
     driverName: z.string().optional(),
     driverPhone: z.string().optional(),
@@ -1207,6 +1208,7 @@ export default function OrdersPage() {
       remainingBalance: remainingBalance.toString(),
       paymentStatus,
       deliveryDate: format(data.deliveryDate, "yyyy-MM-dd"),
+      sowingDate: data.sowingDate ? format(data.sowingDate, "yyyy-MM-dd") : null,
     };
 
     if (editingOrder) {
