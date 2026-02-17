@@ -997,7 +997,7 @@ export default function OrdersPage() {
   const [page, setPage] = useState(1);
   const [sortField, setSortField] = useState<string>("deliveryDate");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const limit = 50;
+  const [limit, setLimit] = useState(25);
   const { data: ordersData, isLoading } = useOrders(page, limit, sortField, sortOrder);
 
   const toggleSort = (field: string) => {
@@ -1229,8 +1229,10 @@ export default function OrdersPage() {
     console.log("Submitting order payload:", payload);
 
     if (editingOrder) {
+      console.log("Calling update mutation for order:", editingOrder.id);
       update({ id: editingOrder.id, ...payload }, {
         onSuccess: () => {
+          console.log("Order updated successfully");
           setOpen(false);
           setEditingOrder(null);
           form.reset();
@@ -1252,8 +1254,10 @@ export default function OrdersPage() {
         }
       });
     } else {
+      console.log("Calling create mutation");
       create(payload, {
-        onSuccess: () => {
+        onSuccess: (newOrder) => {
+          console.log("Order created successfully:", newOrder);
           setOpen(false);
           form.reset();
           setStep(1);
@@ -1474,11 +1478,34 @@ export default function OrdersPage() {
         </Table>
       </div>
       
-      {/* Pagination component would go here */}
-      <div className="flex justify-between items-center py-4">
-        <Button variant="outline" disabled={page === 1} onClick={() => setPage(p => p - 1)}>Previous</Button>
-        <span>Page {page} of {totalPages}</span>
-        <Button variant="outline" disabled={page === totalPages} onClick={() => setPage(p => p + 1)}>Next</Button>
+      <div className="flex flex-col sm:flex-row justify-between items-center py-4 gap-4">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Rows per page:</span>
+          <Select value={limit.toString()} onValueChange={(val) => {
+            setLimit(parseInt(val));
+            setPage(1);
+          }}>
+            <SelectTrigger className="w-[80px] h-9">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="25">25</SelectItem>
+              <SelectItem value="50">50</SelectItem>
+              <SelectItem value="100">100</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-muted-foreground">Page {page} of {totalPages}</span>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(p => p - 1)}>
+              <ChevronLeft className="h-4 w-4 mr-1" /> Previous
+            </Button>
+            <Button variant="outline" size="sm" disabled={page === totalPages} onClick={() => setPage(p => p + 1)}>
+              Next <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
+        </div>
       </div>
 
       {/* The booking dialog would go here - simplified for space */}
