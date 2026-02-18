@@ -58,6 +58,7 @@ const formSchema = z.object({
   categoryId: z.string().min(1, "Category is required"),
   varietyId: z.string().min(1, "Variety is required"),
   lotNumber: z.string().min(1, "Lot Number is required"),
+  lotSuffix: z.string().optional(),
   seedsSown: z.coerce.number().min(1, "Must be greater than 0"),
   packetsSown: z.coerce.number().min(0).default(0),
   damagePercentage: z.coerce.number().min(0).max(100).default(0),
@@ -301,8 +302,11 @@ export default function LotsPage() {
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     const damageQty = Math.floor((data.seedsSown * (data.damagePercentage || 0)) / 100);
+    const finalLotNumber = data.lotSuffix ? `${data.lotNumber}_${data.lotSuffix}` : data.lotNumber;
+    
     const payload = {
       ...data,
+      lotNumber: finalLotNumber,
       categoryId: Number(data.categoryId),
       varietyId: Number(data.varietyId),
       seedsSown: Number(data.seedsSown),
@@ -466,62 +470,78 @@ export default function LotsPage() {
                     />
 
                     {/* Lot Number */}
-                    <FormField
-                      control={form.control}
-                      name="lotNumber"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Lot Number <span className="text-destructive">*</span></FormLabel>
-                          <div className="relative">
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="absolute right-9 top-0 h-9 w-9 text-muted-foreground hover:text-primary z-10"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                const newLot = prompt("Enter custom lot number:", field.value);
-                                if (newLot !== null) field.onChange(newLot);
-                              }}
-                              title="Enter custom lot number"
-                            >
-                              <Edit2 className="h-4 w-4" />
-                            </Button>
-                            <Select 
-                              onValueChange={field.onChange} 
-                              value={field.value} 
-                              disabled={!selectedCategoryId || !selectedVarietyId || loadingSeedLots}
-                            >
-                              <FormControl>
-                                <SelectTrigger className="pr-16">
-                                  <SelectValue placeholder={loadingSeedLots ? "Loading lots..." : "Select Lot Number"} />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {availableSeedLots.length > 0 ? (
-                                  availableSeedLots.map(lot => (
-                                    <SelectItem key={lot.id} value={lot.lotNumber}>
-                                      {lot.lotNumber} ({lot.availableQuantity} available)
-                                    </SelectItem>
-                                  ))
-                                ) : (
-                                  editingLot && availableSeedLots.find(l => l.lotNumber === editingLot.lotNumber) ? null : (
-                                    editingLot ? (
-                                      <SelectItem value={editingLot.lotNumber}>{editingLot.lotNumber}</SelectItem>
-                                    ) : (
-                                      <div className="p-2 text-sm text-muted-foreground text-center">
-                                        No lots available for selected category & variety
-                                      </div>
+                    <div className="flex gap-2 items-end">
+                      <FormField
+                        control={form.control}
+                        name="lotNumber"
+                        render={({ field }) => (
+                          <FormItem className="flex-1">
+                            <FormLabel>Lot Number <span className="text-destructive">*</span></FormLabel>
+                            <div className="relative">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="absolute right-9 top-0 h-9 w-9 text-muted-foreground hover:text-primary z-10"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const newLot = prompt("Enter custom lot number:", field.value);
+                                  if (newLot !== null) field.onChange(newLot);
+                                }}
+                                title="Enter custom lot number"
+                              >
+                                <Edit2 className="h-4 w-4" />
+                              </Button>
+                              <Select 
+                                onValueChange={field.onChange} 
+                                value={field.value} 
+                                disabled={!selectedCategoryId || !selectedVarietyId || loadingSeedLots}
+                              >
+                                <FormControl>
+                                  <SelectTrigger className="pr-16">
+                                    <SelectValue placeholder={loadingSeedLots ? "Loading lots..." : "Select Lot Number"} />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {availableSeedLots.length > 0 ? (
+                                    availableSeedLots.map(lot => (
+                                      <SelectItem key={lot.id} value={lot.lotNumber}>
+                                        {lot.lotNumber} ({lot.availableQuantity} available)
+                                      </SelectItem>
+                                    ))
+                                  ) : (
+                                    editingLot && availableSeedLots.find(l => l.lotNumber === editingLot.lotNumber) ? null : (
+                                      editingLot ? (
+                                        <SelectItem value={editingLot.lotNumber}>{editingLot.lotNumber}</SelectItem>
+                                      ) : (
+                                        <div className="p-2 text-sm text-muted-foreground text-center">
+                                          No lots available for selected category & variety
+                                        </div>
+                                      )
                                     )
-                                  )
-                                )}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                                  )}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <div className="pb-2 text-muted-foreground">_</div>
+                      <FormField
+                        control={form.control}
+                        name="lotSuffix"
+                        render={({ field }) => (
+                          <FormItem className="flex-1">
+                            <FormLabel>Suffix (Optional)</FormLabel>
+                            <FormControl>
+                              <Input placeholder="e.g. string" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
 
                     {/* Seeds Sown */}
                     <FormField
