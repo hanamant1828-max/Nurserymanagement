@@ -109,15 +109,40 @@ export const auditLogs = pgTable("audit_logs", {
   timestamp: timestamp("timestamp").defaultNow().notNull(),
 });
 
+// Seed Inward
+export const seedInward = pgTable("seed_inward", {
+  id: serial("id").primaryKey(),
+  categoryId: integer("category_id").notNull(),
+  varietyId: integer("variety_id").notNull(),
+  lotNo: text("lot_no").notNull(),
+  expiryDate: text("expiry_date").notNull(),
+  numberOfPackets: integer("number_of_packets").notNull(),
+  typeOfPackage: text("type_of_package").notNull(),
+  receivedFrom: text("received_from").notNull(),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+}, (table) => {
+  return {
+    categoryIdIdx: index("idx_seed_inward_category_id").on(table.categoryId),
+    varietyIdIdx: index("idx_seed_inward_variety_id").on(table.varietyId),
+  };
+});
+
 // Relations
 export const categoriesRelations = relations(categories, ({ many }) => ({
   varieties: many(varieties),
   lots: many(lots),
+  seedInwards: many(seedInward),
 }));
 
 export const varietiesRelations = relations(varieties, ({ one, many }) => ({
   category: one(categories, { fields: [varieties.categoryId], references: [categories.id] }),
   lots: many(lots),
+  seedInwards: many(seedInward),
+}));
+
+export const seedInwardRelations = relations(seedInward, ({ one }) => ({
+  category: one(categories, { fields: [seedInward.categoryId], references: [categories.id] }),
+  variety: one(varieties, { fields: [seedInward.varietyId], references: [varieties.id] }),
 }));
 
 export const lotsRelations = relations(lots, ({ one, many }) => ({
@@ -142,6 +167,7 @@ export const insertVarietySchema = createInsertSchema(varieties).omit({ id: true
 export const insertLotSchema = createInsertSchema(lots).omit({ id: true });
 export const insertOrderSchema = createInsertSchema(orders).omit({ id: true });
 export const insertAuditLogSchema = createInsertSchema(auditLogs).omit({ id: true });
+export const insertSeedInwardSchema = createInsertSchema(seedInward).omit({ id: true });
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -150,3 +176,4 @@ export type Variety = typeof varieties.$inferSelect;
 export type Lot = typeof lots.$inferSelect;
 export type Order = typeof orders.$inferSelect;
 export type AuditLog = typeof auditLogs.$inferSelect;
+export type SeedInward = typeof seedInward.$inferSelect;

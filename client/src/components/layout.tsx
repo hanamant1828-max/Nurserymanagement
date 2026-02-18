@@ -41,6 +41,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/categories", label: "Categories", icon: Layers },
     { href: "/varieties", label: "Varieties", icon: Flower2 },
     { href: "/lots", label: "Lots & Stock", icon: Sprout },
+    { href: "/seed-inward", label: "Seed Inward", icon: Layers },
     { href: "/orders", label: "Orders", icon: ShoppingCart },
     { href: "/today-deliveries", label: "Today's Deliveries", icon: CalendarCheck },
     { href: "/customers", label: "Customers", icon: Users },

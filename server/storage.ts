@@ -1,12 +1,12 @@
 import {
-  users, categories, varieties, lots, orders, auditLogs,
-  type User, type Category, type Variety, type Lot, type Order, type AuditLog,
+  users, categories, varieties, lots, orders, auditLogs, seedInward,
+  type User, type Category, type Variety, type Lot, type Order, type AuditLog, type SeedInward,
 } from "@shared/schema";
 import { db, pool } from "./db";
 import { eq, sql, and, desc } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
-import { insertUserSchema, insertCategorySchema, insertVarietySchema, insertLotSchema, insertOrderSchema, insertAuditLogSchema } from "@shared/schema";
+import { insertUserSchema, insertCategorySchema, insertVarietySchema, insertLotSchema, insertOrderSchema, insertAuditLogSchema, insertSeedInwardSchema } from "@shared/schema";
 import { z } from "zod";
 
 const PostgresSessionStore = connectPg(session);
@@ -16,6 +16,7 @@ export type InsertCategory = z.infer<typeof insertCategorySchema>;
 export type InsertVariety = z.infer<typeof insertVarietySchema>;
 export type InsertLot = z.infer<typeof insertLotSchema>;
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
+export type InsertSeedInward = z.infer<typeof insertSeedInwardSchema>;
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -51,6 +52,11 @@ export interface IStorage {
   createOrder(order: InsertOrder): Promise<Order>;
   updateOrder(id: number, order: Partial<InsertOrder>): Promise<Order>;
   deleteOrder(id: number): Promise<void>;
+
+  // Seed Inward
+  getSeedInwards(): Promise<(SeedInward & { category: Category; variety: Variety })[]>;
+  createSeedInward(seedInward: InsertSeedInward): Promise<SeedInward>;
+  deleteSeedInward(id: number): Promise<void>;
 
   // Audit Logs
   createAuditLog(log: z.infer<typeof insertAuditLogSchema>): Promise<AuditLog>;
@@ -312,6 +318,25 @@ export class DatabaseStorage implements IStorage {
       orderBy: (auditLogs, { desc }) => [desc(auditLogs.timestamp)],
       limit: 100,
     });
+  }
+
+  async getSeedInwards(): Promise<(SeedInward & { category: Category; variety: Variety })[]> {
+    return await db.query.seedInward.findMany({
+      with: {
+        category: true,
+        variety: true,
+      },
+      orderBy: (seedInward, { desc }) => [desc(seedInward.timestamp)],
+    }) as any;
+  }
+
+  async createSeedInward(insertSeedInward: InsertSeedInward): Promise<SeedInward> {
+    const [result] = await db.insert(seedInward).values(insertSeedInward).returning();
+    return result;
+  }
+
+  async deleteSeedInward(id: number): Promise<void> {
+    await db.delete(seedInward).where(eq(seedInward.id, id));
   }
 }
 

@@ -220,6 +220,40 @@ export async function registerRoutes(
     res.sendStatus(200);
   });
 
+  // Seed Inward
+  app.get(api.seedInward.list.path, async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const seedInwards = await storage.getSeedInwards();
+    res.json(seedInwards);
+  });
+
+  app.post(api.seedInward.create.path, async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const result = await storage.createSeedInward(req.body);
+    await storage.createAuditLog({
+      userId: (req.user as any).id,
+      action: "CREATE",
+      entityType: "seed_inward",
+      entityId: result.id,
+      details: `Created seed inward entry for lot: ${result.lotNo}`,
+    });
+    res.status(201).json(result);
+  });
+
+  app.delete(api.seedInward.delete.path, async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const id = Number(req.params.id);
+    await storage.deleteSeedInward(id);
+    await storage.createAuditLog({
+      userId: (req.user as any).id,
+      action: "DELETE",
+      entityType: "seed_inward",
+      entityId: id,
+      details: `Deleted seed inward entry ID: ${id}`,
+    });
+    res.sendStatus(200);
+  });
+
   // Audit Logs
   app.get("/api/audit-logs", async (req, res) => {
     if (!req.isAuthenticated() || (req.user as any).role !== "admin") return res.sendStatus(403);

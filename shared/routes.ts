@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { insertUserSchema, insertCategorySchema, insertVarietySchema, insertLotSchema, insertOrderSchema, users, categories, varieties, lots, orders, auditLogs } from './schema';
+import { insertUserSchema, insertCategorySchema, insertVarietySchema, insertLotSchema, insertOrderSchema, insertSeedInwardSchema, users, categories, varieties, lots, orders, auditLogs, seedInward } from './schema';
 
 export const errorSchemas = {
   validation: z.object({
@@ -155,6 +155,24 @@ export const api = {
       method: 'GET' as const,
       path: '/api/audit-logs',
       responses: { 200: z.array(z.custom<typeof auditLogs.$inferSelect & { user: typeof users.$inferSelect }>()) },
+    },
+  },
+  seedInward: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/seed-inward',
+      responses: { 200: z.array(z.custom<typeof seedInward.$inferSelect & { category: typeof categories.$inferSelect, variety: typeof varieties.$inferSelect }>()) },
+    },
+    create: {
+      method: 'POST' as const,
+      path: '/api/seed-inward',
+      input: insertSeedInwardSchema,
+      responses: { 201: z.custom<typeof seedInward.$inferSelect>() },
+    },
+    delete: {
+      method: 'DELETE' as const,
+      path: '/api/seed-inward/:id',
+      responses: { 200: z.void() },
     },
   },
 };
