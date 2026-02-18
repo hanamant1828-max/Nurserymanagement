@@ -37,7 +37,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Loader2, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 
 export default function SeedInwardPage() {
@@ -71,6 +71,14 @@ export default function SeedInwardPage() {
 
   const selectedCategoryId = form.watch("categoryId");
   const filteredVarieties = varieties?.filter(v => v.categoryId === Number(selectedCategoryId)) || [];
+
+  // Reset varietyId if it's not in the filtered list
+  useEffect(() => {
+    const currentVarietyId = form.getValues("varietyId");
+    if (currentVarietyId !== 0 && !filteredVarieties.some(v => v.id === currentVarietyId)) {
+      form.setValue("varietyId", 0);
+    }
+  }, [selectedCategoryId, filteredVarieties, form]);
 
   const createMutation = useMutation({
     mutationFn: async (values: any) => {
