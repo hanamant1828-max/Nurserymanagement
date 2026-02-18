@@ -169,6 +169,12 @@ export const api = {
       input: insertSeedInwardSchema,
       responses: { 201: z.custom<typeof seedInward.$inferSelect>() },
     },
+    update: {
+      method: 'PUT' as const,
+      path: '/api/seed-inward/:id',
+      input: insertSeedInwardSchema.partial(),
+      responses: { 200: z.custom<typeof seedInward.$inferSelect>() },
+    },
     delete: {
       method: 'DELETE' as const,
       path: '/api/seed-inward/:id',
