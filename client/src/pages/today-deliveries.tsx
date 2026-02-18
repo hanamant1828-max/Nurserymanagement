@@ -16,6 +16,7 @@ import {
 import { format, isSameDay, parseISO } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { InvoicePrint } from "@/components/invoice-print";
+import { generateInvoice } from "@/lib/invoice";
 import { useRef } from "react";
 import {
   ChevronLeft,
@@ -29,6 +30,7 @@ import {
   ChevronsUpDown,
   Check,
   Printer,
+  FileSpreadsheet,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -728,6 +730,14 @@ export default function TodayDeliveriesPage() {
                           onClick={() => handlePrint(order)}
                         >
                           <Printer className="h-4 w-4 text-primary" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => generateInvoice(order)}
+                        >
+                          <FileSpreadsheet className="h-4 w-4 text-green-600" />
                         </Button>
                         {order.status === "DELIVERED" ? (
                           <div className="flex items-center justify-end gap-2">
