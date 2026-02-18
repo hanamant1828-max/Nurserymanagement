@@ -237,7 +237,7 @@ export async function registerRoutes(
     
     const results = inwardLots.map(inward => {
       const sownInThisLot = existingLots
-        .filter(l => l.lotNumber === inward.lotNo)
+        .filter(l => l.lotNumber === inward.lotNo && l.categoryId === inward.categoryId && l.varietyId === inward.varietyId)
         .reduce((sum, l) => sum + l.seedsSown, 0);
       
       const available = inward.numberOfPackets - sownInThisLot;
@@ -247,7 +247,7 @@ export async function registerRoutes(
         lotNumber: inward.lotNo,
         availableQuantity: available
       };
-    }).filter(lot => lot.availableQuantity > 0);
+    });
 
     res.json(results);
   });
