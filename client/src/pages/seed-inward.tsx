@@ -36,13 +36,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, Plus, Trash2 } from "lucide-react";
+import { Loader2, Plus, Trash2, Edit2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 
 export default function SeedInwardPage() {
   const { toast } = useToast();
   const [isAdding, setIsAdding] = useState(false);
+  const [editingItem, setEditingItem] = useState<(SeedInward & { category: Category; variety: Variety }) | null>(null);
 
   const { data: seedInwards, isLoading: isLoadingInwards } = useQuery<(SeedInward & { category: Category; variety: Variety })[]>({
     queryKey: [api.seedInward.list.path],
@@ -96,6 +97,22 @@ export default function SeedInwardPage() {
     },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, values }: { id: number; values: any }) => {
+      const res = await apiRequest(api.seedInward.update.method, buildUrl(api.seedInward.update.path, { id }), values);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [api.seedInward.list.path] });
+      toast({ title: "Success", description: "Seed inward entry updated successfully" });
+      form.reset();
+      setEditingItem(null);
+    },
+    onError: (error: Error) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
       await apiRequest(api.seedInward.delete.method, buildUrl(api.seedInward.delete.path, { id }));
@@ -105,6 +122,20 @@ export default function SeedInwardPage() {
       toast({ title: "Success", description: "Entry deleted successfully" });
     },
   });
+
+  useEffect(() => {
+    if (editingItem) {
+      form.reset({
+        categoryId: editingItem.categoryId,
+        varietyId: editingItem.varietyId,
+        lotNo: editingItem.lotNo,
+        expiryDate: editingItem.expiryDate,
+        numberOfPackets: editingItem.numberOfPackets,
+        typeOfPackage: editingItem.typeOfPackage,
+        receivedFrom: editingItem.receivedFrom,
+      });
+    }
+  }, [editingItem, form]);
 
   if (isLoadingInwards) {
     return (
@@ -121,20 +152,32 @@ export default function SeedInwardPage() {
           <h1 className="text-3xl font-bold tracking-tight">Seed Inward</h1>
           <p className="text-muted-foreground">Manage incoming seed stocks</p>
         </div>
-        <Button onClick={() => setIsAdding(!isAdding)}>
+        <Button onClick={() => {
+          if (editingItem) setEditingItem(null);
+          setIsAdding(!isAdding);
+        }}>
           <Plus className="mr-2 h-4 w-4" />
           {isAdding ? "Cancel" : "Add Entry"}
         </Button>
       </div>
 
-      {isAdding && (
+      {(isAdding || editingItem) && (
         <Card>
           <CardHeader>
-            <CardTitle>New Seed Inward Entry</CardTitle>
+            <CardTitle>{editingItem ? "Edit Seed Inward Entry" : "New Seed Inward Entry"}</CardTitle>
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit((data) => createMutation.mutate(data))} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <form 
+                onSubmit={form.handleSubmit((data) => {
+                  if (editingItem) {
+                    updateMutation.mutate({ id: editingItem.id, values: data });
+                  } else {
+                    createMutation.mutate(data);
+                  }
+                })} 
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+              >
                 <FormField
                   control={form.control}
                   name="categoryId"
@@ -252,10 +295,22 @@ export default function SeedInwardPage() {
                 />
 
                 <div className="md:col-span-2 lg:col-span-3 flex justify-end gap-2">
-                  <Button type="button" variant="outline" onClick={() => setIsAdding(false)}>Cancel</Button>
-                  <Button type="submit" disabled={createMutation.isPending}>
-                    {createMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Save Entry
+                  <Button type="button" variant="outline" onClick={() => {
+                    setIsAdding(false);
+                    setEditingItem(null);
+                    form.reset({
+                      categoryId: 0,
+                      varietyId: 0,
+                      lotNo: "",
+                      expiryDate: "",
+                      numberOfPackets: 0,
+                      typeOfPackage: "",
+                      receivedFrom: "",
+                    });
+                  }}>Cancel</Button>
+                  <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
+                    {(createMutation.isPending || updateMutation.isPending) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {editingItem ? "Update Entry" : "Save Entry"}
                   </Button>
                 </div>
               </form>
@@ -295,18 +350,30 @@ export default function SeedInwardPage() {
                   <TableCell>{item.typeOfPackage}</TableCell>
                   <TableCell>{item.receivedFrom}</TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        if (confirm("Are you sure you want to delete this entry?")) {
-                          deleteMutation.mutate(item.id);
-                        }
-                      }}
-                      disabled={deleteMutation.isPending}
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          setEditingItem(item);
+                          setIsAdding(false);
+                        }}
+                      >
+                        <Edit2 className="h-4 w-4 text-primary" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          if (confirm("Are you sure you want to delete this entry?")) {
+                            deleteMutation.mutate(item.id);
+                          }
+                        }}
+                        disabled={deleteMutation.isPending}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

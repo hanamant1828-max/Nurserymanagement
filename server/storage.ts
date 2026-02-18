@@ -56,6 +56,7 @@ export interface IStorage {
   // Seed Inward
   getSeedInwards(): Promise<(SeedInward & { category: Category; variety: Variety })[]>;
   createSeedInward(seedInward: InsertSeedInward): Promise<SeedInward>;
+  updateSeedInward(id: number, seedInward: Partial<InsertSeedInward>): Promise<SeedInward>;
   deleteSeedInward(id: number): Promise<void>;
 
   // Audit Logs
@@ -332,6 +333,11 @@ export class DatabaseStorage implements IStorage {
 
   async createSeedInward(insertSeedInward: InsertSeedInward): Promise<SeedInward> {
     const [result] = await db.insert(seedInward).values(insertSeedInward).returning();
+    return result;
+  }
+
+  async updateSeedInward(id: number, update: Partial<InsertSeedInward>): Promise<SeedInward> {
+    const [result] = await db.update(seedInward).set(update).where(eq(seedInward.id, id)).returning();
     return result;
   }
 

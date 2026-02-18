@@ -240,6 +240,20 @@ export async function registerRoutes(
     res.status(201).json(result);
   });
 
+  app.put(api.seedInward.update.path, async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const id = Number(req.params.id);
+    const result = await storage.updateSeedInward(id, req.body);
+    await storage.createAuditLog({
+      userId: (req.user as any).id,
+      action: "UPDATE",
+      entityType: "seed_inward",
+      entityId: id,
+      details: `Updated seed inward entry for lot: ${result.lotNo}`,
+    });
+    res.json(result);
+  });
+
   app.delete(api.seedInward.delete.path, async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const id = Number(req.params.id);
