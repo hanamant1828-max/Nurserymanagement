@@ -182,10 +182,10 @@ export class DatabaseStorage implements IStorage {
       throw new Error(`Lot number ${insertLot.lotNumber} already exists`);
     }
     const [lot] = await db.insert(lots).values(insertLot).returning();
-    
+
     // Auto-sync pending orders with the new lot
     await this.syncPendingOrdersWithNewLot(lot.id);
-    
+
     return lot;
   }
 
@@ -202,28 +202,29 @@ export class DatabaseStorage implements IStorage {
       )
     ).orderBy(orders.id);
 
-    let currentLot = await this.getLot(lotId);
-    if (!currentLot) return;
-
-    // Calculate available stock
+    // Re-fetch lot to get most up-to-date data if needed, though lotId is fresh
+    // Calculate available stock based on current seeds sown - damaged - already booked
     const ordersForLot = await db.select().from(orders).where(eq(orders.lotId, lotId));
     const totalBooked = ordersForLot.reduce((sum, o) => sum + Number(o.bookedQty), 0);
-    let availableStock = Number(currentLot.seedsSown) - Number(currentLot.damaged) - totalBooked;
+    let availableStock = Number(lot.seedsSown) - Number(lot.damaged) - totalBooked;
 
     for (const order of pendingOrders) {
       if (availableStock <= 0) break;
 
-      const neededQty = Number(order.pendingQuantity);
-      const allocation = Math.min(neededQty, availableStock);
+      const currentAllocated = Number(order.allocatedQuantity);
+      const currentPending = Number(order.pendingQuantity);
       
-      const newAllocated = Number(order.allocatedQuantity) + allocation;
-      const newPending = neededQty - allocation;
+      const allocation = Math.min(currentPending, availableStock);
+      if (allocation <= 0) continue;
+
+      const newAllocated = currentAllocated + allocation;
+      const newPending = currentPending - allocation;
       const newStatus = newPending === 0 ? "ALLOCATED" : "PARTIAL";
 
       await db.update(orders).set({
         lotId: lotId,
-        allocatedQuantity: newAllocated.toString(),
-        pendingQuantity: newPending.toString(),
+        allocatedQuantity: newAllocated.toFixed(2),
+        pendingQuantity: newPending.toFixed(2),
         lotStatus: newStatus
       }).where(eq(orders.id, order.id));
 
