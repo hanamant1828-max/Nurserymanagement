@@ -193,7 +193,7 @@ export default function TodayDeliveriesPage() {
       {
         id,
         status: "DELIVERED",
-        deliveredQty: 0,
+        deliveredQty: "0",
         actualDeliveryDate: format(now, "yyyy-MM-dd"),
         actualDeliveryTime: format(now, "HH:mm:ss"),
       },
@@ -217,7 +217,7 @@ export default function TodayDeliveriesPage() {
 
   const undoDelivery = (id: number) => {
     update(
-      { id, status: "BOOKED", deliveredQty: 0 },
+      { id, status: "BOOKED", deliveredQty: "0" },
       {
         onSuccess: () => {
           toast({
