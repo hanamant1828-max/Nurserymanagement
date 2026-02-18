@@ -58,7 +58,7 @@ const formSchema = z.object({
   categoryId: z.string().min(1, "Category is required"),
   varietyId: z.string().min(1, "Variety is required"),
   lotNumber: z.string().min(1, "Lot Number is required"),
-  lotSuffix: z.string().optional(),
+  lotSuffix: z.string().min(1, "Suffix is required"),
   seedsSown: z.coerce.number().min(1, "Must be greater than 0"),
   packetsSown: z.coerce.number().min(0).default(0),
   damagePercentage: z.coerce.number().min(0).max(100).default(0),
@@ -533,7 +533,7 @@ export default function LotsPage() {
                         name="lotSuffix"
                         render={({ field }) => (
                           <FormItem className="flex-1">
-                            <FormLabel>Suffix (Optional)</FormLabel>
+                            <FormLabel>Suffix <span className="text-destructive">*</span></FormLabel>
                             <FormControl>
                               <Input placeholder="e.g. string" {...field} />
                             </FormControl>
