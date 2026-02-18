@@ -163,17 +163,18 @@ export default function LotsPage() {
     // Fix: Respect the selected variety filter when explicitly selected
     const matchesVariety = selectedVariety === "all" || l.varietyId.toString() === selectedVariety;
 
-    // Date range filtering
-    let matchesDate = true;
+    const matchesDate = true;
     if (dateRange?.from) {
-      const readyDate = l.expectedReadyDate ? parseISO(l.expectedReadyDate) : parseISO(l.sowingDate);
+      const sowingDate = parseISO(l.sowingDate);
       const start = startOfDay(dateRange.from);
-      matchesDate = isAfter(readyDate, start) || readyDate.getTime() === start.getTime();
+      const matchesFrom = isAfter(sowingDate, start) || sowingDate.getTime() === start.getTime();
       
-      if (matchesDate && dateRange.to) {
+      let matchesTo = true;
+      if (dateRange.to) {
         const end = endOfDay(dateRange.to);
-        matchesDate = isBefore(readyDate, end) || readyDate.getTime() === end.getTime();
+        matchesTo = isBefore(sowingDate, end) || sowingDate.getTime() === end.getTime();
       }
+      return matchesSearch && matchesCategory && matchesVariety && matchesFrom && matchesTo;
     }
 
     return matchesSearch && matchesCategory && matchesVariety && matchesDate;
