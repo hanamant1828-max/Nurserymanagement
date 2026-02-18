@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/table";
 import { format, isSameDay, parseISO } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
+import { InvoicePrint } from "@/components/invoice-print";
+import { useRef } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -26,6 +28,7 @@ import {
   Loader2,
   ChevronsUpDown,
   Check,
+  Printer,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -231,6 +234,15 @@ export default function TodayDeliveriesPage() {
     );
   };
 
+  const [printingOrder, setPrintingOrder] = useState<any>(null);
+
+  const handlePrint = (order: any) => {
+    setPrintingOrder(order);
+    setTimeout(() => {
+      window.print();
+    }, 100);
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-8 animate-pulse">
@@ -259,6 +271,7 @@ export default function TodayDeliveriesPage() {
 
   return (
     <div className="space-y-8">
+      {printingOrder && <div id="invoice-print" className="hidden print:block"><InvoicePrint order={printingOrder} /></div>}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-display font-bold">
@@ -707,29 +720,39 @@ export default function TodayDeliveriesPage() {
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      {order.status === "DELIVERED" ? (
-                        <div className="flex items-center justify-end gap-2">
-                          <Badge className="bg-green-100 text-green-700 border-green-200 hover:bg-green-100">
-                            <CheckCircle className="w-3 h-3 mr-1" /> Delivered
-                          </Badge>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => undoDelivery(order.id)}
-                            className="h-8 text-[10px] uppercase font-bold text-muted-foreground hover:text-destructive"
-                          >
-                            Undo
-                          </Button>
-                        </div>
-                      ) : (
+                      <div className="flex justify-end gap-2">
                         <Button
-                          size="sm"
-                          onClick={() => markDelivered(order.id)}
-                          className="bg-green-600 hover:bg-green-700 shadow-sm font-bold"
+                          variant="outline"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => handlePrint(order)}
                         >
-                          Mark Delivered
+                          <Printer className="h-4 w-4 text-primary" />
                         </Button>
-                      )}
+                        {order.status === "DELIVERED" ? (
+                          <div className="flex items-center justify-end gap-2">
+                            <Badge className="bg-green-100 text-green-700 border-green-200 hover:bg-green-100">
+                              <CheckCircle className="w-3 h-3 mr-1" /> Delivered
+                            </Badge>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => undoDelivery(order.id)}
+                              className="h-8 text-[10px] uppercase font-bold text-muted-foreground hover:text-destructive"
+                            >
+                              Undo
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button
+                            size="sm"
+                            onClick={() => markDelivered(order.id)}
+                            className="bg-green-600 hover:bg-green-700 shadow-sm font-bold h-8"
+                          >
+                            Mark Delivered
+                          </Button>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 );
