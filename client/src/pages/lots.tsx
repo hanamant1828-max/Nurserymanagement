@@ -472,36 +472,51 @@ export default function LotsPage() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Lot Number <span className="text-destructive">*</span></FormLabel>
-                          <Select 
-                            onValueChange={field.onChange} 
-                            value={field.value} 
-                            disabled={!selectedCategoryId || !selectedVarietyId || loadingSeedLots}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder={loadingSeedLots ? "Loading lots..." : "Select Lot Number"} />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {availableSeedLots.length > 0 ? (
-                                availableSeedLots.map(lot => (
-                                  <SelectItem key={lot.id} value={lot.lotNumber}>
-                                    {lot.lotNumber} ({lot.availableQuantity} available)
-                                  </SelectItem>
-                                ))
-                              ) : (
-                                editingLot && availableSeedLots.find(l => l.lotNumber === editingLot.lotNumber) ? null : (
-                                  editingLot ? (
-                                    <SelectItem value={editingLot.lotNumber}>{editingLot.lotNumber}</SelectItem>
-                                  ) : (
-                                    <div className="p-2 text-sm text-muted-foreground text-center">
-                                      No lots available for selected category & variety
-                                    </div>
+                          <div className="relative">
+                            <Select 
+                              onValueChange={field.onChange} 
+                              value={field.value} 
+                              disabled={!selectedCategoryId || !selectedVarietyId || loadingSeedLots}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder={loadingSeedLots ? "Loading lots..." : "Select Lot Number"} />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {availableSeedLots.length > 0 ? (
+                                  availableSeedLots.map(lot => (
+                                    <SelectItem key={lot.id} value={lot.lotNumber}>
+                                      {lot.lotNumber} ({lot.availableQuantity} available)
+                                    </SelectItem>
+                                  ))
+                                ) : (
+                                  editingLot && availableSeedLots.find(l => l.lotNumber === editingLot.lotNumber) ? null : (
+                                    editingLot ? (
+                                      <SelectItem value={editingLot.lotNumber}>{editingLot.lotNumber}</SelectItem>
+                                    ) : (
+                                      <div className="p-2 text-sm text-muted-foreground text-center">
+                                        No lots available for selected category & variety
+                                      </div>
+                                    )
                                   )
-                                )
-                              )}
-                            </SelectContent>
-                          </Select>
+                                )}
+                              </SelectContent>
+                            </Select>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="absolute right-8 top-0 h-9 w-9 text-muted-foreground hover:text-primary"
+                              onClick={() => {
+                                const newLot = prompt("Enter custom lot number:");
+                                if (newLot) field.onChange(newLot);
+                              }}
+                              title="Enter custom lot number"
+                            >
+                              <Edit2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                           <FormMessage />
                         </FormItem>
                       )}
