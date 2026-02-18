@@ -1142,7 +1142,15 @@ export default function OrdersPage() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      categoryId: "",
+      varietyId: "",
+      customerName: "",
+      phone: "",
+      state: "",
+      district: "",
+      taluk: "",
       bookedQty: 1,
+      perUnitPrice: 0,
       totalAmount: 0,
       advanceAmount: 0,
       paymentMode: "Cash",
@@ -1150,8 +1158,14 @@ export default function OrdersPage() {
     },
   });
 
-  const { mutate: create } = useCreateOrder();
-  const { mutate: update } = useUpdateOrder();
+  useEffect(() => {
+    if (Object.keys(form.formState.errors).length > 0) {
+      console.log("Form Errors:", form.formState.errors);
+    }
+  }, [form.formState.errors]);
+
+  const { mutate: create, isPending: createLoading } = useCreateOrder();
+  const { mutate: update, isPending: updateLoading } = useUpdateOrder();
 
   const selectedLotId = form.watch("lotId");
   const selectedLot = lots?.find((l) => l.id.toString() === selectedLotId);
@@ -1542,6 +1556,7 @@ export default function OrdersPage() {
                     )}
                     onClick={() => {
                       setSelectedCategoryId(cat.id.toString());
+                      form.setValue("categoryId", cat.id.toString());
                       setStep(2);
                     }}
                   >
@@ -1581,6 +1596,7 @@ export default function OrdersPage() {
                       )}
                       onClick={() => {
                         setSelectedVarietyId(v.id.toString());
+                        form.setValue("varietyId", v.id.toString());
                         setStep(3);
                       }}
                     >
@@ -1967,47 +1983,45 @@ export default function OrdersPage() {
                           )}
                         />
 
-                          {!form.watch("lotId") && (
-                            <FormField
-                              control={form.control}
-                              name="sowingDate"
-                              render={({ field }) => (
-                                <FormItem className="flex flex-col">
-                                  <FormLabel className="text-sm font-semibold text-primary">Sowing Date (Required for New Sowing)</FormLabel>
-                                  <Popover>
-                                    <PopoverTrigger asChild>
-                                      <FormControl>
-                                        <Button
-                                          variant={"outline"}
-                                          className={cn(
-                                            "w-full h-10 pl-3 text-left font-normal text-sm border-primary/50 bg-primary/5",
-                                            !field.value && "text-muted-foreground"
-                                          )}
-                                        >
-                                          {field.value ? (
-                                            format(field.value, "PPP")
-                                          ) : (
-                                            <span>Pick sowing date</span>
-                                          )}
-                                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                        </Button>
-                                      </FormControl>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0 z-[110]" align="start">
-                                      <Calendar
-                                        mode="single"
-                                        selected={field.value}
-                                        onSelect={field.onChange}
-                                        disabled={(date) => date < new Date(new Date().setHours(0,0,0,0))}
-                                        initialFocus
-                                      />
-                                    </PopoverContent>
-                                  </Popover>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          )}
+                          <FormField
+                            control={form.control}
+                            name="sowingDate"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-col">
+                                <FormLabel className="text-sm font-semibold text-primary">Sowing Date (Required for New Sowing)</FormLabel>
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <FormControl>
+                                      <Button
+                                        variant={"outline"}
+                                        className={cn(
+                                          "w-full h-10 pl-3 text-left font-normal text-sm border-primary/50 bg-primary/5",
+                                          !field.value && "text-muted-foreground"
+                                        )}
+                                      >
+                                        {field.value ? (
+                                          format(field.value, "PPP")
+                                        ) : (
+                                          <span>Pick sowing date</span>
+                                        )}
+                                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                      </Button>
+                                    </FormControl>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-auto p-0 z-[110]" align="start">
+                                    <Calendar
+                                      mode="single"
+                                      selected={field.value}
+                                      onSelect={field.onChange}
+                                      disabled={(date) => date < new Date(new Date().setHours(0,0,0,0))}
+                                      initialFocus
+                                    />
+                                  </PopoverContent>
+                                </Popover>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
                       </div>
 
                       <div className="p-4 border rounded-lg bg-blue-50/30 space-y-4">
@@ -2067,8 +2081,12 @@ export default function OrdersPage() {
                   <Button variant="outline" type="button" className="flex-1 h-11" onClick={() => setOpen(false)}>
                     Cancel
                   </Button>
-                  <Button type="submit" className="flex-1 h-11 bg-green-600 hover:bg-green-700">
-                    <CheckCircle className="mr-2 h-4 w-4" />
+                  <Button type="submit" disabled={createLoading || updateLoading} className="flex-1 h-11 bg-green-600 hover:bg-green-700">
+                    {(createLoading || updateLoading) ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <CheckCircle className="mr-2 h-4 w-4" />
+                    )}
                     {editingOrder ? "Update Order" : "Confirm Booking"}
                   </Button>
                 </div>
