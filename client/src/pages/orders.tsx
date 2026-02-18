@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { InvoicePrint } from "@/components/invoice-print";
 import { generateInvoice } from "@/lib/invoice";
-import { Receipt, Printer, Edit2, Plus, ShoppingCart, CheckCircle, Layers, Check, ChevronsUpDown, Loader2, Search, ChevronLeft, ChevronRight, MapPin, Calendar as CalendarIcon } from "lucide-react";
+import { Receipt, Printer, Edit2, Plus, ShoppingCart, CheckCircle, Layers, Check, ChevronsUpDown, Loader2, Search, ChevronLeft, ChevronRight, MapPin, Calendar as CalendarIcon, FileSpreadsheet } from "lucide-react";
 import { useOrders, useCreateOrder, useUpdateOrder } from "@/hooks/use-orders";
 import { useLots } from "@/hooks/use-lots";
 import { useCategories } from "@/hooks/use-categories";
