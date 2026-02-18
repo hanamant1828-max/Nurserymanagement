@@ -55,6 +55,7 @@ export interface IStorage {
 
   // Seed Inward
   getSeedInwards(): Promise<(SeedInward & { category: Category; variety: Variety })[]>;
+  getSeedInwardLots(categoryId: number, varietyId: number): Promise<SeedInward[]>;
   createSeedInward(seedInward: InsertSeedInward): Promise<SeedInward>;
   updateSeedInward(id: number, seedInward: Partial<InsertSeedInward>): Promise<SeedInward>;
   deleteSeedInward(id: number): Promise<void>;
@@ -329,6 +330,15 @@ export class DatabaseStorage implements IStorage {
       },
       orderBy: (seedInward, { desc }) => [desc(seedInward.timestamp)],
     }) as any;
+  }
+
+  async getSeedInwardLots(categoryId: number, varietyId: number): Promise<SeedInward[]> {
+    return await db.select().from(seedInward).where(
+      and(
+        eq(seedInward.categoryId, categoryId),
+        eq(seedInward.varietyId, varietyId)
+      )
+    );
   }
 
   async createSeedInward(insertSeedInward: InsertSeedInward): Promise<SeedInward> {

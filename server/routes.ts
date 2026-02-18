@@ -221,6 +221,37 @@ export async function registerRoutes(
   });
 
   // Seed Inward
+  app.get("/api/seed-inward/lots", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const categoryId = Number(req.query.categoryId);
+    const varietyId = Number(req.query.varietyId);
+    
+    if (isNaN(categoryId) || isNaN(varietyId)) {
+      return res.status(400).json({ message: "Invalid categoryId or varietyId" });
+    }
+
+    const inwardLots = await storage.getSeedInwardLots(categoryId, varietyId);
+    
+    // Calculate available quantity for each inward lot by checking current lots (sowing entries)
+    const existingLots = await storage.getLots();
+    
+    const results = inwardLots.map(inward => {
+      const sownInThisLot = existingLots
+        .filter(l => l.lotNumber === inward.lotNo)
+        .reduce((sum, l) => sum + l.seedsSown, 0);
+      
+      const available = inward.numberOfPackets - sownInThisLot;
+      
+      return {
+        id: inward.id,
+        lotNumber: inward.lotNo,
+        availableQuantity: available
+      };
+    }).filter(lot => lot.availableQuantity > 0);
+
+    res.json(results);
+  });
+
   app.get(api.seedInward.list.path, async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const seedInwards = await storage.getSeedInwards();

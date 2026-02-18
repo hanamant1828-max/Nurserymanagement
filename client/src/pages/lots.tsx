@@ -224,6 +224,30 @@ export default function LotsPage() {
   const { mutate: deleteLot } = useDeleteLot();
   const { toast } = useToast();
 
+  const [availableSeedLots, setAvailableSeedLots] = useState<any[]>([]);
+  const [loadingSeedLots, setLoadingSeedLots] = useState(false);
+
+  const selectedCategoryId = form.watch("categoryId");
+  const selectedVarietyId = form.watch("varietyId");
+
+  useEffect(() => {
+    if (selectedCategoryId && selectedVarietyId) {
+      setLoadingSeedLots(true);
+      fetch(`/api/seed-inward/lots?categoryId=${selectedCategoryId}&varietyId=${selectedVarietyId}`)
+        .then(res => res.json())
+        .then(data => {
+          setAvailableSeedLots(data);
+          setLoadingSeedLots(false);
+        })
+        .catch(err => {
+          console.error("Error fetching seed lots:", err);
+          setLoadingSeedLots(false);
+        });
+    } else {
+      setAvailableSeedLots([]);
+    }
+  }, [selectedCategoryId, selectedVarietyId]);
+
   const handleEdit = (lot: any) => {
     setEditingLot(lot);
     form.reset({
@@ -273,7 +297,6 @@ export default function LotsPage() {
   };
 
   // Filter varieties based on selected category
-  const selectedCategoryId = form.watch("categoryId");
   const filteredVarieties = varieties?.filter(v => v.categoryId.toString() === selectedCategoryId && v.active);
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
@@ -449,9 +472,36 @@ export default function LotsPage() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Lot Number <span className="text-destructive">*</span></FormLabel>
-                          <FormControl>
-                            <Input placeholder="Auto or Manual (e.g. L-101)" {...field} />
-                          </FormControl>
+                          <Select 
+                            onValueChange={field.onChange} 
+                            value={field.value} 
+                            disabled={!selectedCategoryId || !selectedVarietyId || loadingSeedLots}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder={loadingSeedLots ? "Loading lots..." : "Select Lot Number"} />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {availableSeedLots.length > 0 ? (
+                                availableSeedLots.map(lot => (
+                                  <SelectItem key={lot.id} value={lot.lotNumber}>
+                                    {lot.lotNumber} ({lot.availableQuantity} available)
+                                  </SelectItem>
+                                ))
+                              ) : (
+                                editingLot && availableSeedLots.find(l => l.lotNumber === editingLot.lotNumber) ? null : (
+                                  editingLot ? (
+                                    <SelectItem value={editingLot.lotNumber}>{editingLot.lotNumber}</SelectItem>
+                                  ) : (
+                                    <div className="p-2 text-sm text-muted-foreground text-center">
+                                      No lots available for selected category & variety
+                                    </div>
+                                  )
+                                )
+                              )}
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
