@@ -473,13 +473,27 @@ export default function LotsPage() {
                         <FormItem>
                           <FormLabel>Lot Number <span className="text-destructive">*</span></FormLabel>
                           <div className="relative">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="absolute right-9 top-0 h-9 w-9 text-muted-foreground hover:text-primary z-10"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const newLot = prompt("Enter custom lot number:", field.value);
+                                if (newLot !== null) field.onChange(newLot);
+                              }}
+                              title="Enter custom lot number"
+                            >
+                              <Edit2 className="h-4 w-4" />
+                            </Button>
                             <Select 
                               onValueChange={field.onChange} 
                               value={field.value} 
                               disabled={!selectedCategoryId || !selectedVarietyId || loadingSeedLots}
                             >
                               <FormControl>
-                                <SelectTrigger>
+                                <SelectTrigger className="pr-16">
                                   <SelectValue placeholder={loadingSeedLots ? "Loading lots..." : "Select Lot Number"} />
                                 </SelectTrigger>
                               </FormControl>
@@ -503,19 +517,6 @@ export default function LotsPage() {
                                 )}
                               </SelectContent>
                             </Select>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="absolute right-8 top-0 h-9 w-9 text-muted-foreground hover:text-primary"
-                              onClick={() => {
-                                const newLot = prompt("Enter custom lot number:");
-                                if (newLot) field.onChange(newLot);
-                              }}
-                              title="Enter custom lot number"
-                            >
-                              <Edit2 className="h-4 w-4" />
-                            </Button>
                           </div>
                           <FormMessage />
                         </FormItem>
