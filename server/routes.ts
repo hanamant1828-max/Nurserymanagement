@@ -167,6 +167,20 @@ export async function registerRoutes(
     res.json(order);
   });
 
+  app.post("/api/orders/:id/deliver", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const id = Number(req.params.id);
+    const order = await storage.deliverOrder(id, req.body);
+    await storage.createAuditLog({
+      userId: (req.user as any).id,
+      action: "UPDATE",
+      entityType: "order",
+      entityId: order.id,
+      details: `Marked order as DELIVERED. Delivered Qty: ${order.deliveredQty}`,
+    });
+    res.json(order);
+  });
+
   app.get("/api/customers/lookup", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const phone = req.query.phone as string;

@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { InvoicePrint } from "@/components/invoice-print";
 import { generateInvoice } from "@/lib/invoice";
-import { Receipt, Printer, Edit2, Plus, ShoppingCart, CheckCircle, Layers, Check, ChevronsUpDown, Loader2, Search, ChevronLeft, ChevronRight, MapPin, Calendar as CalendarIcon, FileSpreadsheet } from "lucide-react";
+import { Receipt, Printer, Edit2, Plus, ShoppingCart, CheckCircle, Layers, Check, ChevronsUpDown, Loader2, Search, ChevronLeft, ChevronRight, MapPin, Calendar as CalendarIcon, FileSpreadsheet, Truck } from "lucide-react";
 import { useOrders, useCreateOrder, useUpdateOrder } from "@/hooks/use-orders";
 import { useLots } from "@/hooks/use-lots";
 import { useCategories } from "@/hooks/use-categories";
@@ -1166,6 +1166,46 @@ export default function OrdersPage() {
 
   const { mutate: create, isPending: createLoading } = useCreateOrder();
   const { mutate: update, isPending: updateLoading } = useUpdateOrder();
+  const [deliveryDialogOpen, setDeliveryDialogOpen] = useState(false);
+  const [selectedOrderForDelivery, setSelectedOrderForDelivery] = useState<any>(null);
+
+  const deliveryFormSchema = z.object({
+    actualDeliveryDate: z.date(),
+    actualDeliveryTime: z.string().min(1, "Time is required"),
+    deliveredQty: z.coerce.number().min(1, "Quantity must be > 0"),
+    vehicleDetails: z.string().optional(),
+    driverName: z.string().optional(),
+    driverPhone: z.string().optional(),
+  });
+
+  const deliveryForm = useForm({
+    resolver: zodResolver(deliveryFormSchema),
+    defaultValues: {
+      actualDeliveryDate: new Date(),
+      actualDeliveryTime: format(new Date(), "HH:mm"),
+      deliveredQty: 0,
+      vehicleDetails: "",
+      driverName: "",
+      driverPhone: "",
+    },
+  });
+
+  const onDeliverSubmit = async (data: any) => {
+    if (!selectedOrderForDelivery) return;
+    try {
+      const { apiRequest } = await import("@/lib/queryClient");
+      const { queryClient } = await import("@/lib/queryClient");
+      await apiRequest("POST", `/api/orders/${selectedOrderForDelivery.id}/deliver`, {
+        ...data,
+        actualDeliveryDate: format(data.actualDeliveryDate, "yyyy-MM-dd"),
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
+      setDeliveryDialogOpen(false);
+      toast({ title: "Success", description: "Order marked as delivered" });
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to mark as delivered", variant: "destructive" });
+    }
+  };
 
   const selectedLotId = form.watch("lotId");
   const selectedLot = lots?.find((l) => l.id.toString() === selectedLotId);

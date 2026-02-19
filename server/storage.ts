@@ -52,6 +52,14 @@ export interface IStorage {
   getUnallocatedOrders(categoryId: number, varietyId: number): Promise<Order[]>;
   createOrder(order: InsertOrder): Promise<Order>;
   updateOrder(id: number, order: Partial<InsertOrder>): Promise<Order>;
+  deliverOrder(id: number, deliveryData: { 
+    actualDeliveryDate: string; 
+    actualDeliveryTime: string; 
+    deliveredQty: string; 
+    vehicleDetails?: string; 
+    driverName?: string; 
+    driverPhone?: string;
+  }): Promise<Order>;
   deleteOrder(id: number): Promise<void>;
 
   // Seed Inward
@@ -320,6 +328,17 @@ export class DatabaseStorage implements IStorage {
 
   async updateOrder(id: number, update: Partial<InsertOrder>): Promise<Order> {
     const [order] = await db.update(orders).set(update).where(eq(orders.id, id)).returning();
+    return order;
+  }
+
+  async deliverOrder(id: number, deliveryData: any): Promise<Order> {
+    const [order] = await db.update(orders)
+      .set({
+        ...deliveryData,
+        status: "DELIVERED",
+      })
+      .where(eq(orders.id, id))
+      .returning();
     return order;
   }
 
