@@ -227,8 +227,9 @@ export default function LotsPage() {
 
   const [availableSeedLots, setAvailableSeedLots] = useState<any[]>([]);
   const [loadingSeedLots, setLoadingSeedLots] = useState(false);
-  const [unallocatedCount, setUnallocatedCount] = useState<number | null>(null);
+  const [unallocatedOrders, setUnallocatedOrders] = useState<any[]>([]);
   const [loadingUnallocated, setLoadingUnallocated] = useState(false);
+  const [selectedOrderIds, setSelectedOrderIds] = useState<number[]>([]);
 
   const selectedCategoryId = form.watch("categoryId");
   const selectedVarietyId = form.watch("varietyId");
@@ -250,20 +251,23 @@ export default function LotsPage() {
           setLoadingSeedLots(false);
         });
 
-      // Fetch unallocated order count
-      fetch(`/api/orders/unallocated-count?categoryId=${selectedCategoryId}&varietyId=${selectedVarietyId}`)
+      // Fetch unallocated orders
+      fetch(`/api/orders/unallocated?categoryId=${selectedCategoryId}&varietyId=${selectedVarietyId}`)
         .then(res => res.json())
         .then(data => {
-          setUnallocatedCount(data.count);
+          setUnallocatedOrders(data);
           setLoadingUnallocated(false);
+          // By default, don't select any orders for sync
+          setSelectedOrderIds([]);
         })
         .catch(err => {
-          console.error("Error fetching unallocated count:", err);
+          console.error("Error fetching unallocated orders:", err);
           setLoadingUnallocated(false);
         });
     } else {
       setAvailableSeedLots([]);
-      setUnallocatedCount(null);
+      setUnallocatedOrders([]);
+      setSelectedOrderIds([]);
     }
   }, [selectedCategoryId, selectedVarietyId]);
 
@@ -333,6 +337,7 @@ export default function LotsPage() {
       damagePercentage: data.damagePercentage?.toString() || "0.00",
       sowingDate: format(data.sowingDate, "yyyy-MM-dd"),
       expectedReadyDate: data.expectedReadyDate ? format(data.expectedReadyDate, "yyyy-MM-dd") : undefined,
+      orderIds: selectedOrderIds,
     };
     
     if (editingLot) {
@@ -469,9 +474,9 @@ export default function LotsPage() {
                         <FormItem>
                           <FormLabel className="flex justify-between items-center">
                             <span>Variety <span className="text-destructive">*</span></span>
-                            {unallocatedCount !== null && (
+                            {unallocatedOrders.length > 0 && (
                               <Badge variant="outline" className="text-orange-600 border-orange-200 bg-orange-50 font-normal">
-                                {loadingUnallocated ? "Checking..." : `${unallocatedCount} Pending Orders`}
+                                {loadingUnallocated ? "Checking..." : `${unallocatedOrders.length} Pending Orders`}
                               </Badge>
                             )}
                           </FormLabel>
@@ -552,7 +557,68 @@ export default function LotsPage() {
                       />
                     </div>
 
-                    {/* Seeds Sown */}
+                    {/* Pending Orders Selection */}
+                    {!editingLot && unallocatedOrders.length > 0 && (
+                      <div className="md:col-span-2 border rounded-lg p-4 bg-orange-50/30">
+                        <div className="flex justify-between items-center mb-3">
+                          <h4 className="text-sm font-bold flex items-center gap-2 text-orange-800">
+                            <ShoppingCart className="w-4 h-4" />
+                            Select Pending Orders to Sync
+                          </h4>
+                          <div className="flex gap-2">
+                            <Button 
+                              type="button" 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-7 text-[10px] font-bold uppercase tracking-tight"
+                              onClick={() => setSelectedOrderIds(unallocatedOrders.map(o => o.id))}
+                            >
+                              Select All
+                            </Button>
+                            <Button 
+                              type="button" 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-7 text-[10px] font-bold uppercase tracking-tight"
+                              onClick={() => setSelectedOrderIds([])}
+                            >
+                              Deselect All
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="max-h-40 overflow-y-auto border rounded divide-y bg-white">
+                          {unallocatedOrders.map(order => (
+                            <div key={order.id} className="flex items-center p-2 gap-3 hover:bg-muted/30">
+                              <input 
+                                type="checkbox"
+                                id={`order-${order.id}`}
+                                checked={selectedOrderIds.includes(order.id)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setSelectedOrderIds([...selectedOrderIds, order.id]);
+                                  } else {
+                                    setSelectedOrderIds(selectedOrderIds.filter(id => id !== order.id));
+                                  }
+                                }}
+                                className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                              />
+                              <label htmlFor={`order-${order.id}`} className="flex-1 flex justify-between items-center text-sm cursor-pointer">
+                                <div>
+                                  <span className="font-bold">{order.customerName}</span>
+                                  <span className="text-xs text-muted-foreground ml-2">{order.phone}</span>
+                                </div>
+                                <div className="text-right">
+                                  <span className="font-mono text-xs bg-muted px-1 rounded">{order.bookedQty} Qty</span>
+                                </div>
+                              </label>
+                            </div>
+                          ))}
+                        </div>
+                        <p className="text-[10px] text-muted-foreground mt-2">
+                          Only selected orders will be automatically allocated from this lot.
+                        </p>
+                      </div>
+                    )}
                     <FormField
                       control={form.control}
                       name="seedsSown"

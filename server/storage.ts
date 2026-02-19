@@ -43,12 +43,13 @@ export interface IStorage {
   // Lots
   getLots(): Promise<(Lot & { category: Category; variety: Variety; orders: Order[]; available: number })[]>;
   getLot(id: number): Promise<Lot | undefined>;
-  createLot(lot: InsertLot): Promise<Lot>;
+  createLot(lot: InsertLot, orderIds?: number[]): Promise<Lot>;
   updateLot(id: number, lot: Partial<InsertLot>): Promise<Lot>;
   deleteLot(id: number): Promise<void>;
 
   // Orders
   getOrders(page?: number, limit?: number, sortField?: string, sortOrder?: "asc" | "desc"): Promise<{ orders: (Order & { lot: (Lot & { variety: Variety }) | null; creator?: User })[]; total: number }>;
+  getUnallocatedOrders(categoryId: number, varietyId: number): Promise<Order[]>;
   createOrder(order: InsertOrder): Promise<Order>;
   updateOrder(id: number, order: Partial<InsertOrder>): Promise<Order>;
   deleteOrder(id: number): Promise<void>;
@@ -177,35 +178,51 @@ export class DatabaseStorage implements IStorage {
     return lot;
   }
 
-  async createLot(insertLot: InsertLot): Promise<Lot> {
+  async createLot(insertLot: InsertLot, orderIds?: number[]): Promise<Lot> {
     const [existing] = await db.select().from(lots).where(eq(lots.lotNumber, insertLot.lotNumber));
     if (existing) {
       throw new Error(`Lot number ${insertLot.lotNumber} already exists`);
     }
     const [lot] = await db.insert(lots).values(insertLot).returning();
 
-    // Auto-sync pending orders with the new lot
-    await this.syncPendingOrdersWithNewLot(lot.id);
+    // Selective sync of pending orders with the new lot
+    await this.syncPendingOrdersWithNewLot(lot.id, orderIds);
 
     return lot;
   }
 
-  async syncPendingOrdersWithNewLot(lotId: number): Promise<void> {
-    const lot = await this.getLot(lotId);
-    if (!lot) return;
-
-    // Get all pending orders for this category and variety
-    const pendingOrders = await db.select().from(orders).where(
+  async getUnallocatedOrders(categoryId: number, varietyId: number): Promise<Order[]> {
+    return await db.select().from(orders).where(
       and(
-        eq(orders.categoryId, lot.categoryId),
-        eq(orders.varietyId, lot.varietyId),
-        sql`${orders.lotStatus} IN ('PENDING_LOT', 'PARTIAL')`,
+        eq(orders.categoryId, categoryId),
+        eq(orders.varietyId, varietyId),
+        eq(orders.lotStatus, 'PENDING_LOT'),
         eq(orders.status, 'BOOKED')
       )
     ).orderBy(orders.id);
+  }
 
-    // Calculate available stock based on current seeds sown - damaged
-    // We need to account for orders already linked to this lot (though it's a new lot, better be safe)
+  async syncPendingOrdersWithNewLot(lotId: number, orderIds?: number[]): Promise<void> {
+    const lot = await this.getLot(lotId);
+    if (!lot) return;
+
+    // Get pending orders for this category and variety
+    let query = and(
+      eq(orders.categoryId, lot.categoryId),
+      eq(orders.varietyId, lot.varietyId),
+      sql`${orders.lotStatus} IN ('PENDING_LOT', 'PARTIAL')`,
+      eq(orders.status, 'BOOKED')
+    );
+
+    if (orderIds && orderIds.length > 0) {
+      query = and(query, sql`${orders.id} IN ${orderIds}`);
+    } else if (orderIds && orderIds.length === 0) {
+      // If empty array provided, don't sync anything
+      return;
+    }
+
+    const pendingOrders = await db.select().from(orders).where(query).orderBy(orders.id);
+
     const ordersForLot = await db.select().from(orders).where(eq(orders.lotId, lotId));
     const totalBookedOnLot = ordersForLot.reduce((sum, o) => sum + Number(o.bookedQty), 0);
     let availableStock = Number(lot.seedsSown) - Number(lot.damaged) - totalBookedOnLot;

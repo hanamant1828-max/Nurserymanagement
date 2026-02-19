@@ -98,7 +98,8 @@ export async function registerRoutes(
 
   app.post(api.lots.create.path, async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
-    const lot = await storage.createLot(req.body);
+    const { orderIds, ...lotData } = req.body;
+    const lot = await storage.createLot(lotData, orderIds);
     res.status(201).json(lot);
   });
 
@@ -304,6 +305,19 @@ export async function registerRoutes(
     if (!req.isAuthenticated() || (req.user as any).role !== "admin") return res.sendStatus(403);
     const logs = await storage.getAuditLogs();
     res.json(logs);
+  });
+
+  app.get("/api/orders/unallocated", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const categoryId = Number(req.query.categoryId);
+    const varietyId = Number(req.query.varietyId);
+    
+    if (isNaN(categoryId) || isNaN(varietyId)) {
+      return res.status(400).json({ message: "Invalid categoryId or varietyId" });
+    }
+
+    const orders = await storage.getUnallocatedOrders(categoryId, varietyId);
+    res.json(orders);
   });
 
   app.get("/api/orders/unallocated-count", async (req, res) => {
