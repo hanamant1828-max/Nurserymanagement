@@ -190,10 +190,16 @@ export default function LotsPage() {
         return new Date(a.sowingDate).getTime() - new Date(b.sowingDate).getTime();
       }
       if (sortBy === "lotNumber-asc") {
-        return a.lotNumber.localeCompare(b.lotNumber);
+        // Sort by Category Name first, then Variety Name
+        const categoryCompare = (a.category?.name || "").localeCompare(b.category?.name || "");
+        if (categoryCompare !== 0) return categoryCompare;
+        return (a.variety?.name || "").localeCompare(b.variety?.name || "");
       }
       if (sortBy === "lotNumber-desc") {
-        return b.lotNumber.localeCompare(a.lotNumber);
+        // Sort by Category Name first (desc), then Variety Name (desc)
+        const categoryCompare = (b.category?.name || "").localeCompare(a.category?.name || "");
+        if (categoryCompare !== 0) return categoryCompare;
+        return (b.variety?.name || "").localeCompare(a.variety?.name || "");
       }
       return 0;
     });
