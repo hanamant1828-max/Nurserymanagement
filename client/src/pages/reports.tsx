@@ -180,7 +180,15 @@ export default function ReportsPage() {
     return filtered;
   }, [lots, selectedCategory, selectedVariety, searchTerm]);
 
-  const dailySowingData = useMemo(() => filteredLots.filter((l: any) => isInRange(l.expectedReadyDate || l.sowingDate)) || [], [filteredLots, dateRange]);
+  const dailySowingData = useMemo(() => {
+    return filteredLots.filter((l: any) => {
+      // Priority 1: sowingDate (The actual date it was sown)
+      // Priority 2: expectedReadyDate
+      const dateToCompare = l.sowingDate || l.expectedReadyDate;
+      if (!dateToCompare) return false;
+      return isInRange(dateToCompare);
+    }) || [];
+  }, [filteredLots, dateRange]);
 
   const lotStockData = useMemo(() => filteredLots.map((l: any) => ({
     ...l,
