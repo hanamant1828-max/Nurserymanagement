@@ -342,8 +342,8 @@ export default function SeedInwardPage() {
               {seedInwards?.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell>{format(new Date(item.timestamp), "dd/MM/yyyy")}</TableCell>
-                  <TableCell>{item.category.name}</TableCell>
-                  <TableCell>{item.variety.name}</TableCell>
+                  <TableCell>{item.category?.name || "N/A"}</TableCell>
+                  <TableCell>{item.variety?.name || "N/A"}</TableCell>
                   <TableCell className="font-medium">{item.lotNo}</TableCell>
                   <TableCell>{item.expiryDate}</TableCell>
                   <TableCell>{item.numberOfPackets}</TableCell>
