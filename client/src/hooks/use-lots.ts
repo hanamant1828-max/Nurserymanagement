@@ -42,6 +42,9 @@ export function useCreateLot() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [api.lots.list.path] });
+      queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/seed-inward/lots"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/orders/unallocated-count"] });
     },
   });
 }
@@ -62,6 +65,9 @@ export function useDeleteLot() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [api.lots.list.path] });
+      queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/seed-inward/lots"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/orders/unallocated-count"] });
     },
   });
 }
