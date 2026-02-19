@@ -1439,59 +1439,117 @@ export default function OrdersPage() {
         </Select>
       </div>
 
-      <div className="bg-card rounded-lg border shadow-sm">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Customer</TableHead>
-              <TableHead>Details</TableHead>
-              <TableHead>Amount</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {paginatedOrders.map((order: any) => (
-              <TableRow key={order.id}>
-                <TableCell>
-                  <div className="font-bold">{order.customerName}</div>
-                  <div className="text-xs text-muted-foreground">{order.phone}</div>
-                </TableCell>
-                <TableCell>
+      <div className="bg-card rounded-lg border shadow-sm overflow-hidden">
+        <div className="hidden md:block">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Customer</TableHead>
+                <TableHead>Details</TableHead>
+                <TableHead>Amount</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {paginatedOrders.map((order: any) => (
+                <TableRow key={order.id}>
+                  <TableCell>
+                    <div className="font-bold">{order.customerName}</div>
+                    <div className="text-xs text-muted-foreground">{order.phone}</div>
+                  </TableCell>
+                  <TableCell>
+                    {order.lotId ? (
+                      <Badge variant="outline">
+                        {order.lot?.lotNumber}
+                      </Badge>
+                    ) : (
+                      <Badge variant="destructive" className="bg-red-500 hover:bg-red-600">
+                        Lot Pending
+                      </Badge>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col">
+                      <span>{Number(order.bookedQty).toLocaleString()}</span>
+                      {order.lotStatus !== "PENDING_LOT" && (
+                        <span className="text-xs text-muted-foreground">
+                          Allocated: {Number(order.allocatedQuantity).toLocaleString()}
+                        </span>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={order.status === "DELIVERED" ? "default" : "outline"}>{order.status}</Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" size="icon" onClick={() => handlePrint(order)} className="h-8 w-8"><Printer className="h-4 w-4 text-primary" /></Button>
+                      <Button variant="outline" size="icon" onClick={() => generateInvoice(order)} className="h-8 w-8"><FileSpreadsheet className="h-4 w-4 text-green-600" /></Button>
+                      <Button variant="outline" size="icon" onClick={() => { setEditingOrder(order); setOpen(true); }} className="h-8 w-8"><Edit2 className="h-4 w-4 text-muted-foreground" /></Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+        <div className="md:hidden divide-y">
+          {paginatedOrders.map((order: any) => (
+            <div key={order.id} className="p-4 space-y-3">
+              <div className="flex justify-between items-start">
+                <div>
+                  <div className="font-bold text-lg">{order.customerName}</div>
+                  <div className="text-sm text-muted-foreground">{order.phone}</div>
+                </div>
+                <Badge variant={order.status === "DELIVERED" ? "default" : "outline"}>{order.status}</Badge>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <div className="text-muted-foreground text-xs uppercase font-medium">Lot</div>
                   {order.lotId ? (
-                    <Badge variant="outline">
+                    <Badge variant="outline" className="mt-1">
                       {order.lot?.lotNumber}
                     </Badge>
                   ) : (
-                    <Badge variant="destructive" className="bg-red-500 hover:bg-red-600">
+                    <Badge variant="destructive" className="bg-red-500 hover:bg-red-600 mt-1">
                       Lot Pending
                     </Badge>
                   )}
-                </TableCell>
-                <TableCell>
-                  <div className="flex flex-col">
-                    <span>{Number(order.bookedQty).toLocaleString()}</span>
+                </div>
+                <div>
+                  <div className="text-muted-foreground text-xs uppercase font-medium">Quantity</div>
+                  <div className="font-medium mt-1">
+                    {Number(order.bookedQty).toLocaleString()}
                     {order.lotStatus !== "PENDING_LOT" && (
-                      <span className="text-xs text-muted-foreground">
+                      <div className="text-xs text-muted-foreground">
                         Allocated: {Number(order.allocatedQuantity).toLocaleString()}
-                      </span>
+                      </div>
                     )}
                   </div>
-                </TableCell>
-                <TableCell>
-                  <Badge variant={order.status === "DELIVERED" ? "default" : "outline"}>{order.status}</Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
-                    <Button variant="outline" size="icon" onClick={() => handlePrint(order)} className="h-8 w-8"><Printer className="h-4 w-4 text-primary" /></Button>
-                    <Button variant="outline" size="icon" onClick={() => generateInvoice(order)} className="h-8 w-8"><FileSpreadsheet className="h-4 w-4 text-green-600" /></Button>
-                    <Button variant="outline" size="icon" onClick={() => { setEditingOrder(order); setOpen(true); }} className="h-8 w-8"><Edit2 className="h-4 w-4 text-muted-foreground" /></Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" size="sm" onClick={() => handlePrint(order)} className="flex-1">
+                  <Printer className="h-4 w-4 mr-2" /> Print
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => generateInvoice(order)} className="flex-1">
+                  <FileSpreadsheet className="h-4 w-4 mr-2 text-green-600" /> Excel
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => { setEditingOrder(order); setOpen(true); }} className="flex-1">
+                  <Edit2 className="h-4 w-4 mr-2" /> Edit
+                </Button>
+              </div>
+            </div>
+          ))}
+          {paginatedOrders.length === 0 && (
+            <div className="p-8 text-center text-muted-foreground">
+              No orders found.
+            </div>
+          )}
+        </div>
       </div>
       
       <div className="flex flex-col sm:flex-row justify-between items-center py-4 gap-4">
