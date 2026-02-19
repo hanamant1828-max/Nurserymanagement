@@ -1026,7 +1026,7 @@ export default function OrdersPage() {
     setPrintingOrder(order);
     setTimeout(() => {
       window.print();
-    }, 100);
+    }, 150);
   };
 
   const orders = ordersData?.orders || [];
