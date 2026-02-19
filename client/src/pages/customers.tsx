@@ -57,19 +57,19 @@ export default function CustomersPage() {
       return acc;
     }, {} as Record<string, any>);
 
-    return Object.values(aggregated).map(c => ({
+    return Object.values(aggregated).map((c: any) => ({
       ...c,
       varietiesList: Array.from(c.varieties as Set<string>).join(", ")
     }));
   }, [orders]);
 
   const uniqueVillages = useMemo(() => {
-    const villages = new Set(customers.map(c => c.village));
+    const villages = new Set(customers.map((c: any) => c.village));
     return Array.from(villages).sort();
   }, [customers]);
 
   const filteredCustomers = useMemo(() => {
-    return customers.filter(customer => {
+    return customers.filter((customer: any) => {
       const matchesSearch = 
         customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         customer.phone.includes(searchTerm) ||
@@ -84,7 +84,7 @@ export default function CustomersPage() {
   }, [customers, searchTerm, villageFilter, varietyFilter]);
 
   const exportToExcel = () => {
-    const exportData = filteredCustomers.map(c => ({
+    const exportData = filteredCustomers.map((c: any) => ({
       "Customer Name": c.name,
       "Phone": c.phone,
       "Village": c.village,
