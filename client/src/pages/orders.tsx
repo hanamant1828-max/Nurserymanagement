@@ -1525,7 +1525,29 @@ export default function OrdersPage() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Button variant="outline" size="icon" onClick={() => handlePrint(order)} className="h-8 w-8"><Printer className="h-4 w-4 text-primary" /></Button>
+                      <Button variant="outline" size="icon" onClick={() => handlePrint(order)} className="h-8 w-8" title="Print Invoice"><Printer className="h-4 w-4 text-primary" /></Button>
+                      {order.status !== "DELIVERED" && order.status !== "CANCELLED" && (
+                        <Button 
+                          variant="outline" 
+                          size="icon" 
+                          onClick={() => {
+                            setSelectedOrderForDelivery(order);
+                            deliveryForm.reset({
+                              actualDeliveryDate: new Date(),
+                              actualDeliveryTime: format(new Date(), "HH:mm"),
+                              deliveredQty: Number(order.bookedQty),
+                              vehicleDetails: order.vehicleDetails || "",
+                              driverName: order.driverName || "",
+                              driverPhone: order.driverPhone || "",
+                            });
+                            setDeliveryDialogOpen(true);
+                          }} 
+                          className="h-8 w-8 text-green-600 border-green-200 hover:bg-green-50"
+                          title="Mark as Delivered"
+                        >
+                          <Truck className="h-4 w-4" />
+                        </Button>
+                      )}
                       <Button variant="outline" size="icon" onClick={() => generateInvoice(order)} className="h-8 w-8"><FileSpreadsheet className="h-4 w-4 text-green-600" /></Button>
                       <Button variant="outline" size="icon" onClick={() => { setEditingOrder(order); setOpen(true); }} className="h-8 w-8"><Edit2 className="h-4 w-4 text-muted-foreground" /></Button>
                     </div>
@@ -1582,6 +1604,27 @@ export default function OrdersPage() {
                 <Button variant="outline" size="sm" onClick={() => handlePrint(order)} className="flex-1 h-9">
                   <Printer className="h-4 w-4 mr-2 text-primary" /> Print
                 </Button>
+                {order.status !== "DELIVERED" && order.status !== "CANCELLED" && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => {
+                      setSelectedOrderForDelivery(order);
+                      deliveryForm.reset({
+                        actualDeliveryDate: new Date(),
+                        actualDeliveryTime: format(new Date(), "HH:mm"),
+                        deliveredQty: Number(order.bookedQty),
+                        vehicleDetails: order.vehicleDetails || "",
+                        driverName: order.driverName || "",
+                        driverPhone: order.driverPhone || "",
+                      });
+                      setDeliveryDialogOpen(true);
+                    }} 
+                    className="flex-1 h-9 text-green-600 border-green-200"
+                  >
+                    <Truck className="h-4 w-4 mr-2" /> Deliver
+                  </Button>
+                )}
                 <Button variant="outline" size="sm" onClick={() => generateInvoice(order)} className="flex-1 h-9">
                   <FileSpreadsheet className="h-4 w-4 mr-2 text-green-600" /> Excel
                 </Button>
