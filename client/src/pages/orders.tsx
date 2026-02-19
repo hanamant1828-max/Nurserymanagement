@@ -1495,60 +1495,58 @@ export default function OrdersPage() {
             </TableBody>
           </Table>
         </div>
-        <div className="md:hidden divide-y">
+        <div className="md:hidden space-y-4">
           {paginatedOrders.map((order: any) => (
-            <div key={order.id} className="p-4 space-y-4 bg-card active:bg-accent/50 transition-colors">
-              <div className="flex justify-between items-start gap-3">
+            <div key={order.id} className="bg-card border rounded-lg p-4 space-y-3 shadow-sm">
+              <div className="flex justify-between items-start">
                 <div className="min-w-0">
-                  <div className="font-bold text-lg truncate">{order.customerName}</div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mt-0.5">
-                    <MapPin className="h-3 w-3 shrink-0" />
-                    <span className="truncate">{order.village ? `${order.village}, ` : ""}{order.taluk}</span>
-                  </div>
-                  <div className="text-sm font-medium text-green-700 dark:text-green-400 mt-1">{order.phone}</div>
+                  <h3 className="font-bold text-lg truncate">{order.customerName}</h3>
+                  <p className="text-sm font-medium text-green-700 dark:text-green-400">{order.phone}</p>
                 </div>
                 <Badge variant={order.status === "DELIVERED" ? "default" : "outline"} className="shrink-0">
                   {order.status}
                 </Badge>
               </div>
-              
-              <div className="grid grid-cols-2 gap-4 py-2 border-y border-border/50">
-                <div className="space-y-1">
-                  <div className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">Lot Details</div>
+
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">Lot Details</p>
                   {order.lotId ? (
-                    <div className="flex flex-col gap-1">
-                      <Badge variant="outline" className="w-fit bg-green-50/50 dark:bg-green-900/10 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800">
+                    <div className="flex flex-col gap-0.5 mt-1">
+                      <Badge variant="outline" className="w-fit bg-green-50/50 dark:bg-green-900/10 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800 py-0 h-5">
                         {order.lot?.lotNumber}
                       </Badge>
                       <span className="text-xs font-medium truncate">{order.lot?.variety?.name}</span>
                     </div>
                   ) : (
-                    <Badge variant="destructive" className="bg-red-500/10 text-red-600 hover:bg-red-500/20 border-red-200 dark:border-red-900 mt-1">
+                    <Badge variant="destructive" className="bg-red-500/10 text-red-600 border-red-200 dark:border-red-900 py-0 h-5 mt-1">
                       Lot Pending
                     </Badge>
                   )}
                 </div>
-                <div className="space-y-1">
-                  <div className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">Quantity & Date</div>
-                  <div className="font-bold text-base">
-                    {Number(order.bookedQty).toLocaleString()}
-                  </div>
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <CalendarIcon className="h-3 w-3" />
-                    {format(new Date(order.deliveryDate), "MMM d, yyyy")}
-                  </div>
+                <div className="text-right">
+                  <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">Quantity</p>
+                  <p className="font-bold text-lg text-primary">{Number(order.bookedQty).toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">Location</p>
+                  <p className="truncate text-xs">{order.village ? `${order.village}, ` : ""}{order.taluk}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">Delivery Date</p>
+                  <p className="text-xs font-medium">{format(new Date(order.deliveryDate), "MMM d, yyyy")}</p>
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-2 pt-1">
-                <Button variant="outline" size="sm" onClick={() => handlePrint(order)} className="flex-1 h-10 min-w-[80px]">
+              <div className="flex justify-end gap-2 pt-2 border-t">
+                <Button variant="outline" size="sm" onClick={() => handlePrint(order)} className="flex-1 h-9">
                   <Printer className="h-4 w-4 mr-2 text-primary" /> Print
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => generateInvoice(order)} className="flex-1 h-10 min-w-[80px]">
+                <Button variant="outline" size="sm" onClick={() => generateInvoice(order)} className="flex-1 h-9">
                   <FileSpreadsheet className="h-4 w-4 mr-2 text-green-600" /> Excel
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => { setEditingOrder(order); setOpen(true); }} className="flex-1 h-10 min-w-[80px]">
-                  <Edit2 className="h-4 w-4 mr-2 text-muted-foreground" /> Edit
+                <Button variant="outline" size="sm" onClick={() => { setEditingOrder(order); setOpen(true); }} className="h-9 w-9 p-0">
+                  <Edit2 className="h-4 w-4 text-muted-foreground" />
                 </Button>
               </div>
             </div>
