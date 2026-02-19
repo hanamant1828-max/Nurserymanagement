@@ -13,7 +13,7 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({ ord
   const deliveryDate = order.deliveryDate ? format(new Date(order.deliveryDate), "dd/MM/yyyy") : today;
 
   return (
-    <div ref={ref} id="invoice-print" className="p-0 bg-white text-black font-sans print:p-0 print:m-0 print:static" style={{ width: "210mm", minHeight: "297mm", margin: "0 auto", overflow: "visible" }}>
+    <div ref={ref} id="invoice-print" className="p-0 bg-white text-black font-sans print:p-0 print:m-0 print:static" style={{ width: "210mm", minHeight: "297mm", margin: "0 auto", overflow: "visible", color: "black" }}>
       <div className="p-8">
         {/* Header */}
         <div className="border-2 border-black p-4 mb-0 relative">
@@ -82,7 +82,7 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({ ord
               <td className="border-r-2 border-black p-3 text-[14px] font-medium">{order.lot?.variety?.name || "Plant Variety"}</td>
               <td className="border-r-2 border-black p-3 text-center text-[14px] font-medium">{Number(order.bookedQty).toFixed(2)}</td>
               <td className="border-r-2 border-black p-3 text-center text-[14px] font-medium">{Number(order.perUnitPrice).toFixed(2)}</td>
-              <td className="p-3 text-right text-[14px] font-bold">{Number(order.totalAmount).toFixed(2)}</td>
+              <td className="border-r-2 border-black p-3 text-right text-[14px] font-bold">{Number(order.totalAmount).toFixed(2)}</td>
             </tr>
             {/* Fill empty space with structured lines */}
             {[...Array(6)].map((_, i) => (
