@@ -1304,31 +1304,31 @@ export default function OrdersPage() {
     <div className="space-y-6 px-4 md:px-8 py-6">
       {printingOrder && <div id="invoice-print" className="hidden print:block"><InvoicePrint order={printingOrder} /></div>}
       
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Orders ({filteredOrdersList.length})</h1>
-          <p className="text-muted-foreground">Book new orders and manage deliveries (Page 1 of 1).</p>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Orders ({filteredOrdersList.length})</h1>
+          <p className="text-sm text-muted-foreground">Book new orders and manage deliveries.</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <Button variant="outline" size="sm" onClick={() => window.location.reload()} className="flex-1 sm:flex-none">
             <Loader2 className="mr-2 h-4 w-4" />
-            Refresh Data
+            Refresh
           </Button>
-          <Button onClick={() => setOpen(true)} className="bg-green-600 hover:bg-green-700">
+          <Button onClick={() => setOpen(true)} className="bg-green-600 hover:bg-green-700 flex-1 sm:flex-none">
             <Plus className="mr-2 h-4 w-4" /> 
             Book Order
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="space-y-2">
           <label className="text-xs font-medium uppercase text-muted-foreground">From Date</label>
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" className="w-full justify-start text-left font-normal h-10">
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {dateRange.from ? format(dateRange.from, "MMMM do, yyyy") : <span>Pick a date</span>}
+              <Button variant="outline" className="w-full justify-start text-left font-normal h-10 px-3">
+                <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
+                <span className="truncate">{dateRange.from ? format(dateRange.from, "MMM do, yyyy") : "Pick a date"}</span>
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
@@ -1346,9 +1346,9 @@ export default function OrdersPage() {
           <label className="text-xs font-medium uppercase text-muted-foreground">To Date</label>
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" className="w-full justify-start text-left font-normal h-10">
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {dateRange.to ? format(dateRange.to, "MMMM do, yyyy") : <span>Pick a date</span>}
+              <Button variant="outline" className="w-full justify-start text-left font-normal h-10 px-3">
+                <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
+                <span className="truncate">{dateRange.to ? format(dateRange.to, "MMM do, yyyy") : "Pick a date"}</span>
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
@@ -1363,11 +1363,11 @@ export default function OrdersPage() {
         </div>
 
         <div className="space-y-2">
-          <label className="text-xs font-medium uppercase text-muted-foreground">Category Filter</label>
+          <label className="text-xs font-medium uppercase text-muted-foreground">Category</label>
           <Select value={pageCategoryId} onValueChange={setPageCategoryId}>
-            <SelectTrigger className="h-10">
-              <div className="flex items-center gap-2">
-                <Layers className="h-4 w-4 text-green-600" />
+            <SelectTrigger className="h-10 px-3">
+              <div className="flex items-center gap-2 truncate">
+                <Layers className="h-4 w-4 text-green-600 shrink-0" />
                 <SelectValue placeholder="All Categories" />
               </div>
             </SelectTrigger>
@@ -1381,11 +1381,11 @@ export default function OrdersPage() {
         </div>
 
         <div className="space-y-2">
-          <label className="text-xs font-medium uppercase text-muted-foreground">Variety Filter</label>
+          <label className="text-xs font-medium uppercase text-muted-foreground">Variety</label>
           <Select value={pageVarietyId} onValueChange={setPageVarietyId}>
-            <SelectTrigger className="h-10">
-              <div className="flex items-center gap-2">
-                <Layers className="h-4 w-4 text-green-600" />
+            <SelectTrigger className="h-10 px-3">
+              <div className="flex items-center gap-2 truncate">
+                <Layers className="h-4 w-4 text-green-600 shrink-0" />
                 <SelectValue placeholder="All Varieties" />
               </div>
             </SelectTrigger>
@@ -1398,12 +1398,12 @@ export default function OrdersPage() {
           </Select>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-xs font-medium uppercase text-muted-foreground">Lot Filter</label>
+        <div className="space-y-2 sm:col-span-2 lg:col-span-1">
+          <label className="text-xs font-medium uppercase text-muted-foreground">Lot</label>
           <Select value={pageLotId} onValueChange={setPageLotId}>
-            <SelectTrigger className="h-10">
-              <div className="flex items-center gap-2">
-                <Layers className="h-4 w-4 text-green-600" />
+            <SelectTrigger className="h-10 px-3">
+              <div className="flex items-center gap-2 truncate">
+                <Layers className="h-4 w-4 text-green-600 shrink-0" />
                 <SelectValue placeholder="All Lots" />
               </div>
             </SelectTrigger>
@@ -1417,24 +1417,25 @@ export default function OrdersPage() {
         </div>
       </div>
 
-      <div className="flex gap-4">
+      <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input 
-            placeholder="Search customer, phone, village, lot..." 
+            placeholder="Search customer, phone, village..." 
             value={search} 
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-10"
+            className="pl-9 h-10 w-full"
           />
         </div>
         <Select value={sortOption} onValueChange={setSortOption}>
-          <SelectTrigger className="w-[200px] h-10">
+          <SelectTrigger className="w-full sm:w-[220px] h-10">
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="delivery-newest">Delivery Date (Newest)</SelectItem>
+            <SelectItem value="delivery-oldest">Delivery Date (Oldest)</SelectItem>
             <SelectItem value="ready-newest">Ready Date (Newest)</SelectItem>
             <SelectItem value="ready-oldest">Ready Date (Oldest)</SelectItem>
-            <SelectItem value="delivery-newest">Delivery Date (Newest)</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -1496,57 +1497,68 @@ export default function OrdersPage() {
         </div>
         <div className="md:hidden divide-y">
           {paginatedOrders.map((order: any) => (
-            <div key={order.id} className="p-4 space-y-3">
-              <div className="flex justify-between items-start">
-                <div>
-                  <div className="font-bold text-lg">{order.customerName}</div>
-                  <div className="text-sm text-muted-foreground">{order.phone}</div>
+            <div key={order.id} className="p-4 space-y-4 bg-card active:bg-accent/50 transition-colors">
+              <div className="flex justify-between items-start gap-3">
+                <div className="min-w-0">
+                  <div className="font-bold text-lg truncate">{order.customerName}</div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground mt-0.5">
+                    <MapPin className="h-3 w-3 shrink-0" />
+                    <span className="truncate">{order.village ? `${order.village}, ` : ""}{order.taluk}</span>
+                  </div>
+                  <div className="text-sm font-medium text-green-700 dark:text-green-400 mt-1">{order.phone}</div>
                 </div>
-                <Badge variant={order.status === "DELIVERED" ? "default" : "outline"}>{order.status}</Badge>
+                <Badge variant={order.status === "DELIVERED" ? "default" : "outline"} className="shrink-0">
+                  {order.status}
+                </Badge>
               </div>
               
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <div>
-                  <div className="text-muted-foreground text-xs uppercase font-medium">Lot</div>
+              <div className="grid grid-cols-2 gap-4 py-2 border-y border-border/50">
+                <div className="space-y-1">
+                  <div className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">Lot Details</div>
                   {order.lotId ? (
-                    <Badge variant="outline" className="mt-1">
-                      {order.lot?.lotNumber}
-                    </Badge>
+                    <div className="flex flex-col gap-1">
+                      <Badge variant="outline" className="w-fit bg-green-50/50 dark:bg-green-900/10 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800">
+                        {order.lot?.lotNumber}
+                      </Badge>
+                      <span className="text-xs font-medium truncate">{order.lot?.variety?.name}</span>
+                    </div>
                   ) : (
-                    <Badge variant="destructive" className="bg-red-500 hover:bg-red-600 mt-1">
+                    <Badge variant="destructive" className="bg-red-500/10 text-red-600 hover:bg-red-500/20 border-red-200 dark:border-red-900 mt-1">
                       Lot Pending
                     </Badge>
                   )}
                 </div>
-                <div>
-                  <div className="text-muted-foreground text-xs uppercase font-medium">Quantity</div>
-                  <div className="font-medium mt-1">
+                <div className="space-y-1">
+                  <div className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">Quantity & Date</div>
+                  <div className="font-bold text-base">
                     {Number(order.bookedQty).toLocaleString()}
-                    {order.lotStatus !== "PENDING_LOT" && (
-                      <div className="text-xs text-muted-foreground">
-                        Allocated: {Number(order.allocatedQuantity).toLocaleString()}
-                      </div>
-                    )}
+                  </div>
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <CalendarIcon className="h-3 w-3" />
+                    {format(new Date(order.deliveryDate), "MMM d, yyyy")}
                   </div>
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
-                <Button variant="outline" size="sm" onClick={() => handlePrint(order)} className="flex-1">
-                  <Printer className="h-4 w-4 mr-2" /> Print
+              <div className="flex flex-wrap gap-2 pt-1">
+                <Button variant="outline" size="sm" onClick={() => handlePrint(order)} className="flex-1 h-10 min-w-[80px]">
+                  <Printer className="h-4 w-4 mr-2 text-primary" /> Print
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => generateInvoice(order)} className="flex-1">
+                <Button variant="outline" size="sm" onClick={() => generateInvoice(order)} className="flex-1 h-10 min-w-[80px]">
                   <FileSpreadsheet className="h-4 w-4 mr-2 text-green-600" /> Excel
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => { setEditingOrder(order); setOpen(true); }} className="flex-1">
-                  <Edit2 className="h-4 w-4 mr-2" /> Edit
+                <Button variant="outline" size="sm" onClick={() => { setEditingOrder(order); setOpen(true); }} className="flex-1 h-10 min-w-[80px]">
+                  <Edit2 className="h-4 w-4 mr-2 text-muted-foreground" /> Edit
                 </Button>
               </div>
             </div>
           ))}
           {paginatedOrders.length === 0 && (
-            <div className="p-8 text-center text-muted-foreground">
-              No orders found.
+            <div className="p-12 text-center">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-muted mb-4">
+                <Search className="h-6 w-6 text-muted-foreground" />
+              </div>
+              <p className="text-muted-foreground font-medium">No orders found matching your criteria.</p>
             </div>
           )}
         </div>
