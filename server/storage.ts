@@ -198,15 +198,16 @@ export class DatabaseStorage implements IStorage {
       and(
         eq(orders.categoryId, lot.categoryId),
         eq(orders.varietyId, lot.varietyId),
-        sql`${orders.lotStatus} IN ('PENDING_LOT', 'PARTIAL')`
+        sql`${orders.lotStatus} IN ('PENDING_LOT', 'PARTIAL')`,
+        eq(orders.status, 'BOOKED')
       )
     ).orderBy(orders.id);
 
-    // Re-fetch lot to get most up-to-date data if needed, though lotId is fresh
-    // Calculate available stock based on current seeds sown - damaged - already booked
+    // Calculate available stock based on current seeds sown - damaged
+    // We need to account for orders already linked to this lot (though it's a new lot, better be safe)
     const ordersForLot = await db.select().from(orders).where(eq(orders.lotId, lotId));
-    const totalBooked = ordersForLot.reduce((sum, o) => sum + Number(o.bookedQty), 0);
-    let availableStock = Number(lot.seedsSown) - Number(lot.damaged) - totalBooked;
+    const totalBookedOnLot = ordersForLot.reduce((sum, o) => sum + Number(o.bookedQty), 0);
+    let availableStock = Number(lot.seedsSown) - Number(lot.damaged) - totalBookedOnLot;
 
     for (const order of pendingOrders) {
       if (availableStock <= 0) break;
