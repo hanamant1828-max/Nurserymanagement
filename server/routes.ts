@@ -306,6 +306,19 @@ export async function registerRoutes(
     res.json(logs);
   });
 
+  app.get("/api/orders/unallocated-count", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const categoryId = Number(req.query.categoryId);
+    const varietyId = Number(req.query.varietyId);
+    
+    if (isNaN(categoryId) || isNaN(varietyId)) {
+      return res.status(400).json({ message: "Invalid categoryId or varietyId" });
+    }
+
+    const count = await storage.getUnallocatedOrderCount(categoryId, varietyId);
+    res.json({ count });
+  });
+
   return httpServer;
 }
 

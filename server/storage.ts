@@ -63,6 +63,7 @@ export interface IStorage {
   // Audit Logs
   createAuditLog(log: z.infer<typeof insertAuditLogSchema>): Promise<AuditLog>;
   getAuditLogs(): Promise<(AuditLog & { user: User })[]>;
+  getUnallocatedOrderCount(categoryId: number, varietyId: number): Promise<number>;
 
   sessionStore: session.Store;
 }
@@ -322,6 +323,22 @@ export class DatabaseStorage implements IStorage {
       orderBy: (auditLogs, { desc }) => [desc(auditLogs.timestamp)],
       limit: 100,
     });
+  }
+
+  async getUnallocatedOrderCount(categoryId: number, varietyId: number): Promise<number> {
+    const [result] = await db.select({ 
+      count: sql<number>`count(*)` 
+    })
+    .from(orders)
+    .where(
+      and(
+        eq(orders.categoryId, categoryId),
+        eq(orders.varietyId, varietyId),
+        eq(orders.lotStatus, 'PENDING_LOT'),
+        eq(orders.status, 'BOOKED')
+      )
+    );
+    return Number(result?.count || 0);
   }
 
   async getSeedInwards(): Promise<(SeedInward & { category: Category; variety: Variety })[]> {

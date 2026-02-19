@@ -227,6 +227,8 @@ export default function LotsPage() {
 
   const [availableSeedLots, setAvailableSeedLots] = useState<any[]>([]);
   const [loadingSeedLots, setLoadingSeedLots] = useState(false);
+  const [unallocatedCount, setUnallocatedCount] = useState<number | null>(null);
+  const [loadingUnallocated, setLoadingUnallocated] = useState(false);
 
   const selectedCategoryId = form.watch("categoryId");
   const selectedVarietyId = form.watch("varietyId");
@@ -234,6 +236,9 @@ export default function LotsPage() {
   useEffect(() => {
     if (selectedCategoryId && selectedVarietyId) {
       setLoadingSeedLots(true);
+      setLoadingUnallocated(true);
+      
+      // Fetch seed lots
       fetch(`/api/seed-inward/lots?categoryId=${selectedCategoryId}&varietyId=${selectedVarietyId}`)
         .then(res => res.json())
         .then(data => {
@@ -244,8 +249,21 @@ export default function LotsPage() {
           console.error("Error fetching seed lots:", err);
           setLoadingSeedLots(false);
         });
+
+      // Fetch unallocated order count
+      fetch(`/api/orders/unallocated-count?categoryId=${selectedCategoryId}&varietyId=${selectedVarietyId}`)
+        .then(res => res.json())
+        .then(data => {
+          setUnallocatedCount(data.count);
+          setLoadingUnallocated(false);
+        })
+        .catch(err => {
+          console.error("Error fetching unallocated count:", err);
+          setLoadingUnallocated(false);
+        });
     } else {
       setAvailableSeedLots([]);
+      setUnallocatedCount(null);
     }
   }, [selectedCategoryId, selectedVarietyId]);
 
@@ -451,7 +469,14 @@ export default function LotsPage() {
                       name="varietyId"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Variety <span className="text-destructive">*</span></FormLabel>
+                          <FormLabel className="flex justify-between items-center">
+                            <span>Variety <span className="text-destructive">*</span></span>
+                            {unallocatedCount !== null && (
+                              <Badge variant="outline" className="text-orange-600 border-orange-200 bg-orange-50 font-normal">
+                                {loadingUnallocated ? "Checking..." : `${unallocatedCount} Pending Orders`}
+                              </Badge>
+                            )}
+                          </FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!selectedCategoryId}>
                             <FormControl>
                               <SelectTrigger>
