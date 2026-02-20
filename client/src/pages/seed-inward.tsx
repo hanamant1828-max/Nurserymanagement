@@ -66,6 +66,8 @@ export default function SeedInwardPage() {
       lotNo: "",
       expiryDate: "",
       numberOfPackets: 0,
+      totalQuantity: 0,
+      availableQuantity: 0,
       typeOfPackage: "",
       receivedFrom: "",
     },
@@ -73,6 +75,14 @@ export default function SeedInwardPage() {
 
   const selectedCategoryId = form.watch("categoryId");
   const filteredVarieties = varieties?.filter(v => v.categoryId === Number(selectedCategoryId)) || [];
+
+  const numberOfPackets = form.watch("numberOfPackets");
+  useEffect(() => {
+    form.setValue("totalQuantity", numberOfPackets);
+    if (!editingItem) {
+      form.setValue("availableQuantity", numberOfPackets);
+    }
+  }, [numberOfPackets, editingItem, form]);
 
   useEffect(() => {
     const currentVarietyId = form.getValues("varietyId");
@@ -368,7 +378,9 @@ export default function SeedInwardPage() {
                       <TableHead className="w-[120px]">Date</TableHead>
                       <TableHead>Item Details</TableHead>
                       <TableHead>Lot Details</TableHead>
-                      <TableHead>Quantity</TableHead>
+                      <TableHead>Total Qty</TableHead>
+                      <TableHead>Used Qty</TableHead>
+                      <TableHead>Available Qty</TableHead>
                       <TableHead>Source</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
@@ -398,9 +410,15 @@ export default function SeedInwardPage() {
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-col">
-                            <span className="font-bold">{item.numberOfPackets} Packets</span>
+                            <span className="font-bold">{item.totalQuantity}</span>
                             <span className="text-xs text-muted-foreground capitalize">{item.typeOfPackage}</span>
                           </div>
+                        </TableCell>
+                        <TableCell>
+                          <span className="font-medium text-orange-600">{item.usedQuantity}</span>
+                        </TableCell>
+                        <TableCell>
+                          <span className="font-bold text-green-600">{item.availableQuantity}</span>
                         </TableCell>
                         <TableCell className="max-w-[150px] truncate" title={item.receivedFrom}>
                           {item.receivedFrom}
@@ -410,7 +428,10 @@ export default function SeedInwardPage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => setEditingItem(item)}
+                              onClick={() => {
+                                setEditingItem(item);
+                                setIsAdding(false);
+                              }}
                               className="h-9 w-9 text-primary hover:text-primary hover:bg-primary/10"
                             >
                               <Edit2 className="h-4 w-4" />
@@ -487,7 +508,10 @@ export default function SeedInwardPage() {
                       <Button
                         variant="secondary"
                         className="flex-1 h-10 gap-2"
-                        onClick={() => setEditingItem(item)}
+                        onClick={() => {
+                          setEditingItem(item);
+                          setIsAdding(false);
+                        }}
                       >
                         <Edit2 className="h-4 w-4" />
                         Edit
@@ -509,13 +533,11 @@ export default function SeedInwardPage() {
                   </div>
                 </Card>
               ))}
-              {seedInwards?.length === 0 && (
-                <div className="col-span-full py-20 flex flex-col items-center justify-center text-muted-foreground bg-muted/20 rounded-lg border-2 border-dashed">
-                  <Package className="h-12 w-12 mb-3 opacity-20 text-primary" />
-                  <p className="font-medium">No entries yet</p>
-                  <Button variant="link" onClick={() => setIsAdding(true)}>Click here to add first entry</Button>
-                </div>
-              )}
+                  <div className="col-span-full py-20 flex flex-col items-center justify-center text-muted-foreground bg-muted/20 rounded-lg border-2 border-dashed">
+                    <Package className="h-12 w-12 mb-3 opacity-20 text-primary" />
+                    <p className="font-medium">No entries yet</p>
+                    <Button variant="ghost" onClick={() => setIsAdding(true)}>Click here to add first entry</Button>
+                  </div>
             </div>
           </div>
         )}

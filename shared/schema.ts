@@ -39,6 +39,7 @@ export const varieties = pgTable("varieties", {
 export const lots = pgTable("lots", {
   id: serial("id").primaryKey(),
   lotNumber: text("lot_number").notNull().unique(),
+  seedInwardId: integer("seed_inward_id"),
   categoryId: integer("category_id").notNull(),
   varietyId: integer("variety_id").notNull(),
   sowingDate: text("sowing_date").notNull(),
@@ -117,6 +118,9 @@ export const seedInward = pgTable("seed_inward", {
   lotNo: text("lot_no").notNull(),
   expiryDate: text("expiry_date").notNull(),
   numberOfPackets: integer("number_of_packets").notNull(),
+  totalQuantity: integer("total_quantity").notNull(),
+  usedQuantity: integer("used_quantity").default(0).notNull(),
+  availableQuantity: integer("available_quantity").notNull(),
   typeOfPackage: text("type_of_package").notNull(),
   receivedFrom: text("received_from").notNull(),
   timestamp: timestamp("timestamp").defaultNow().notNull(),

@@ -191,7 +191,41 @@ export class DatabaseStorage implements IStorage {
     if (existing) {
       throw new Error(`Lot number ${insertLot.lotNumber} already exists. Please use a unique lot number.`);
     }
-    const [lot] = await db.insert(lots).values(insertLot).returning();
+
+    // Stock deduction logic
+    const inwardLots = await db.select().from(seedInward).where(
+      and(
+        eq(seedInward.lotNo, insertLot.lotNumber),
+        eq(seedInward.categoryId, insertLot.categoryId),
+        eq(seedInward.varietyId, insertLot.varietyId)
+      )
+    );
+
+    if (inwardLots.length === 0) {
+      throw new Error(`Seed Inward record not found for Lot No: ${insertLot.lotNumber}`);
+    }
+
+    const inward = inwardLots[0];
+    const packetsSown = insertLot.packetsSown ?? 0;
+    if (inward.availableQuantity < packetsSown) {
+      throw new Error(`Insufficient packet quantity. Available: ${inward.availableQuantity}, Requested: ${packetsSown}`);
+    }
+
+    const [lot] = await db.transaction(async (tx) => {
+      // Update seed inward stock
+      await tx.update(seedInward)
+        .set({
+          usedQuantity: inward.usedQuantity + packetsSown,
+          availableQuantity: inward.availableQuantity - packetsSown,
+        })
+        .where(eq(seedInward.id, inward.id));
+
+      const [newLot] = await tx.insert(lots).values({
+        ...insertLot,
+        seedInwardId: inward.id
+      }).returning();
+      return [newLot];
+    });
 
     // Selective sync of pending orders with the new lot
     await this.syncPendingOrdersWithNewLot(lot.id, orderIds);
@@ -260,12 +294,68 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateLot(id: number, update: Partial<InsertLot>): Promise<Lot> {
-    const [lot] = await db.update(lots).set(update).where(eq(lots.id, id)).returning();
+    const oldLot = await this.getLot(id);
+    if (!oldLot) throw new Error("Lot not found");
+
+    const [lot] = await db.transaction(async (tx) => {
+      if (update.packetsSown !== undefined && update.packetsSown !== oldLot.packetsSown) {
+        const inwardLots = await tx.select().from(seedInward).where(
+          and(
+            eq(seedInward.lotNo, oldLot.lotNumber),
+            eq(seedInward.categoryId, oldLot.categoryId),
+            eq(seedInward.varietyId, oldLot.varietyId)
+          )
+        );
+
+        if (inwardLots.length > 0) {
+          const inward = inwardLots[0];
+          const diff = update.packetsSown - oldLot.packetsSown;
+
+          if (inward.availableQuantity < diff) {
+            throw new Error(`Insufficient packet quantity for update. Available: ${inward.availableQuantity}, Needed additional: ${diff}`);
+          }
+
+          await tx.update(seedInward)
+            .set({
+              usedQuantity: inward.usedQuantity + diff,
+              availableQuantity: inward.availableQuantity - diff,
+            })
+            .where(eq(seedInward.id, inward.id));
+        }
+      }
+
+      const [updatedLot] = await tx.update(lots).set(update).where(eq(lots.id, id)).returning();
+      return [updatedLot];
+    });
+
     return lot;
   }
 
   async deleteLot(id: number): Promise<void> {
-    await db.delete(lots).where(eq(lots.id, id));
+    const lot = await this.getLot(id);
+    if (!lot) return;
+
+    await db.transaction(async (tx) => {
+      const inwardLots = await tx.select().from(seedInward).where(
+        and(
+          eq(seedInward.lotNo, lot.lotNumber),
+          eq(seedInward.categoryId, lot.categoryId),
+          eq(seedInward.varietyId, lot.varietyId)
+        )
+      );
+
+      if (inwardLots.length > 0) {
+        const inward = inwardLots[0];
+        await tx.update(seedInward)
+          .set({
+            usedQuantity: inward.usedQuantity - lot.packetsSown,
+            availableQuantity: inward.availableQuantity + lot.packetsSown,
+          })
+          .where(eq(seedInward.id, inward.id));
+      }
+
+      await tx.delete(lots).where(eq(lots.id, id));
+    });
   }
 
   async getOrders(page: number = 1, limit: number = 50, sortField: string = "id", sortOrder: "asc" | "desc" = "desc"): Promise<{ orders: (Order & { lot: (Lot & { variety: Variety }) | null; creator?: User })[]; total: number }> {

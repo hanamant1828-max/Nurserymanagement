@@ -61,6 +61,7 @@ const formSchema = z.object({
   lotSuffix: z.string().min(1, "Suffix is required"),
   seedsSown: z.coerce.number().min(1, "Must be greater than 0"),
   packetsSown: z.coerce.number().min(0).default(0),
+  selectedSeedInwardId: z.string().min(1, "Seed Inward Lot is required"),
   damagePercentage: z.coerce.number().min(0).max(100).default(0),
   sowingDate: z.date(),
   expectedReadyDate: z.date().optional(),
@@ -335,6 +336,7 @@ export default function LotsPage() {
     const payload = {
       ...data,
       lotNumber: finalLotNumber,
+      seedInwardId: Number(data.selectedSeedInwardId),
       categoryId: Number(data.categoryId),
       varietyId: Number(data.varietyId),
       seedsSown: Number(data.seedsSown),
@@ -504,63 +506,70 @@ export default function LotsPage() {
                     />
 
                     {/* Lot Number */}
-                    <div className="flex gap-2 items-end">
+                    <div className="flex flex-col gap-4">
                       <FormField
                         control={form.control}
-                        name="lotNumber"
+                        name="selectedSeedInwardId"
                         render={({ field }) => (
-                          <FormItem className="flex-1">
-                            <FormLabel>Lot Number <span className="text-destructive">*</span></FormLabel>
-                            <div className="relative">
-                              <Select 
-                                onValueChange={field.onChange} 
-                                value={field.value} 
-                                disabled={!selectedCategoryId || !selectedVarietyId || loadingSeedLots}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder={loadingSeedLots ? "Loading lots..." : "Select Lot Number"} />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {availableSeedLots.length > 0 ? (
-                                    availableSeedLots.map(lot => (
-                                      <SelectItem key={lot.id} value={lot.lotNumber}>
-                                        {lot.lotNumber} ({lot.availableQuantity} available)
-                                      </SelectItem>
-                                    ))
-                                  ) : (
-                                    editingLot && availableSeedLots.find(l => l.lotNumber === editingLot.lotNumber) ? null : (
-                                      editingLot ? (
-                                        <SelectItem value={editingLot.lotNumber}>{editingLot.lotNumber}</SelectItem>
-                                      ) : (
-                                        <div className="p-2 text-sm text-muted-foreground text-center">
-                                          No lots available for selected category & variety
-                                        </div>
-                                      )
-                                    )
-                                  )}
-                                </SelectContent>
-                              </Select>
-                            </div>
+                          <FormItem>
+                            <FormLabel>Seed Inward Lot <span className="text-destructive">*</span></FormLabel>
+                            <Select 
+                              onValueChange={(val) => {
+                                field.onChange(val);
+                                const selected = availableSeedLots.find(l => l.id.toString() === val);
+                                if (selected) {
+                                  form.setValue("lotNumber", selected.lotNumber);
+                                }
+                              }} 
+                              value={field.value}
+                              disabled={!selectedCategoryId || !selectedVarietyId || loadingSeedLots}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder={loadingSeedLots ? "Loading lots..." : "Select Seed Inward Lot"} />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {availableSeedLots.map(lot => (
+                                  <SelectItem key={lot.id} value={lot.id.toString()}>
+                                    {lot.lotNumber} ({lot.availableQuantity} available)
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                      <div className="pb-2 text-muted-foreground">_</div>
-                      <FormField
-                        control={form.control}
-                        name="lotSuffix"
-                        render={({ field }) => (
-                          <FormItem className="flex-1">
-                            <FormLabel>Suffix <span className="text-destructive">*</span></FormLabel>
-                            <FormControl>
-                              <Input placeholder="e.g. string" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      <div className="flex gap-2 items-end">
+                        <FormField
+                          control={form.control}
+                          name="lotNumber"
+                          render={({ field }) => (
+                            <FormItem className="flex-1">
+                              <FormLabel>Lot Number <span className="text-destructive">*</span></FormLabel>
+                              <FormControl>
+                                <Input {...field} readOnly className="bg-muted" />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <div className="pb-2 text-muted-foreground">_</div>
+                        <FormField
+                          control={form.control}
+                          name="lotSuffix"
+                          render={({ field }) => (
+                            <FormItem className="flex-1">
+                              <FormLabel>Suffix <span className="text-destructive">*</span></FormLabel>
+                              <FormControl>
+                                <Input placeholder="e.g. string" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                     </div>
 
                     {/* Pending Orders Selection */}
