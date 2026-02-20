@@ -476,6 +476,5 @@ export default function VarietiesPage() {
         )}
       </div>
     </div>
-    </div>
   );
 }
