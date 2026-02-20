@@ -255,11 +255,8 @@ export async function registerRoutes(
     const existingLots = await storage.getLots();
     
     const results = inwardLots.map(inward => {
-      const sownInThisLot = existingLots
-        .filter(l => l.lotNumber === inward.lotNo && l.categoryId === inward.categoryId && l.varietyId === inward.varietyId)
-        .reduce((sum, l) => sum + l.seedsSown, 0);
-      
-      const available = inward.numberOfPackets - sownInThisLot;
+      // The inward.availableQuantity is already updated in createLot/updateLot/deleteLot
+      const available = Number(inward.availableQuantity);
       
       return {
         id: inward.id,
