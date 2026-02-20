@@ -116,41 +116,44 @@ export default function CategoriesPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-display font-bold">Categories ({filteredCategories.length})</h1>
-          <p className="text-muted-foreground">Manage crop categories for your nursery.</p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-display font-bold tracking-tight">Categories ({filteredCategories.length})</h1>
+          <p className="text-muted-foreground text-sm">Manage crop categories for your nursery organization.</p>
         </div>
-        <div className="flex flex-col sm:flex-row gap-4">
-          <Input 
-            placeholder="Search categories..." 
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full sm:w-64"
-          />
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <div className="relative flex-1 sm:min-w-[300px]">
+            <Layers className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input 
+              placeholder="Search by name..." 
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 h-11 rounded-xl bg-muted/30 border-muted-foreground/10 focus-visible:ring-primary/20 transition-all"
+            />
+          </div>
           <Dialog open={open} onOpenChange={(val) => { setOpen(val); if(!val) resetForm(); }}>
             <DialogTrigger asChild>
-              <Button size="lg" className="shadow-lg shadow-primary/20">
+              <Button size="lg" className="h-11 px-6 rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all active:scale-95">
                 <Plus className="w-5 h-5 mr-2" /> Add Category
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="sm:max-w-[425px] rounded-2xl">
               <DialogHeader>
-                <DialogTitle>{editingId ? "Edit Category" : "New Category"}</DialogTitle>
+                <DialogTitle className="text-2xl font-bold">{editingId ? "Edit Category" : "New Category"}</DialogTitle>
                 <DialogDescription>
-                  {editingId ? "Modify category name and image." : "Create a new plant category for inventory organization."}
+                  {editingId ? "Update the details for this plant category." : "Define a new category to group your nursery varieties."}
                 </DialogDescription>
               </DialogHeader>
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-4">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 py-4">
                   <FormField
                     control={form.control}
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Category Name <span className="text-destructive">*</span></FormLabel>
+                        <FormLabel className="font-semibold">Category Name</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g. Vegetables, Flowers" {...field} />
+                          <Input placeholder="e.g. Vegetables, Fruit Plants" className="h-11 rounded-lg" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -161,24 +164,28 @@ export default function CategoriesPage() {
                     name="image"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Category Image</FormLabel>
+                        <FormLabel className="font-semibold">Visual Identity</FormLabel>
                         <FormControl>
                           <div className="space-y-4">
-                            <Input 
-                              type="file" 
-                              accept="image/*" 
-                              onChange={handleImageChange}
-                              className="cursor-pointer"
-                            />
-                            {field.value && (
-                              <div className="relative w-24 h-24 rounded-lg overflow-hidden border">
-                                <img 
-                                  src={field.value} 
-                                  alt="Preview" 
-                                  className="w-full h-full object-cover"
+                            <div className="flex items-center gap-4">
+                              <div className="relative flex-shrink-0 w-20 h-20 rounded-2xl overflow-hidden border-2 border-dashed border-muted-foreground/20 bg-muted/30 flex items-center justify-center group hover:border-primary/50 transition-colors">
+                                {field.value ? (
+                                  <img src={field.value} alt="Preview" className="w-full h-full object-cover" />
+                                ) : (
+                                  <Plus className="w-6 h-6 text-muted-foreground/40 group-hover:text-primary transition-colors" />
+                                )}
+                                <Input 
+                                  type="file" 
+                                  accept="image/*" 
+                                  onChange={handleImageChange}
+                                  className="absolute inset-0 opacity-0 cursor-pointer"
                                 />
                               </div>
-                            )}
+                              <div className="flex-1 text-xs text-muted-foreground">
+                                <p className="font-medium text-foreground mb-1">Upload Photo</p>
+                                <p>Square images work best. Max size 2MB.</p>
+                              </div>
+                            </div>
                           </div>
                         </FormControl>
                         <FormMessage />
@@ -189,12 +196,12 @@ export default function CategoriesPage() {
                     control={form.control}
                     name="active"
                     render={({ field }) => (
-                      <FormItem className="flex items-center justify-between rounded-lg border p-4">
+                      <FormItem className="flex items-center justify-between rounded-xl border bg-muted/20 p-4">
                         <div className="space-y-0.5">
-                          <FormLabel className="text-base">Active Status</FormLabel>
-                          <div className="text-sm text-muted-foreground">
-                            Visible in selection menus
-                          </div>
+                          <FormLabel className="text-base font-medium">Availability</FormLabel>
+                          <p className="text-xs text-muted-foreground leading-none">
+                            Enable to show in variety selection
+                          </p>
                         </div>
                         <FormControl>
                           <Switch
@@ -205,9 +212,12 @@ export default function CategoriesPage() {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-full" disabled={creating || updating}>
-                    {editingId ? "Save Changes" : "Create Category"}
-                  </Button>
+                  <div className="flex gap-3 pt-2">
+                    <Button type="button" variant="ghost" onClick={() => setOpen(false)} className="flex-1 h-11 rounded-xl">Cancel</Button>
+                    <Button type="submit" className="flex-[2] h-11 rounded-xl font-bold" disabled={creating || updating}>
+                      {editingId ? "Update Category" : "Save Category"}
+                    </Button>
+                  </div>
                 </form>
               </Form>
             </DialogContent>
@@ -215,88 +225,88 @@ export default function CategoriesPage() {
         </div>
       </div>
 
-      <div className="hidden md:block rounded-xl border bg-card shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
+      {/* Desktop Table */}
+      <div className="hidden lg:block">
+        <div className="rounded-2xl border bg-card shadow-sm overflow-hidden">
           <Table>
-            <TableHeader className="bg-muted/50">
+            <TableHeader className="bg-muted/30">
               <TableRow>
-                <TableHead className="w-[100px]">ID</TableHead>
-                <TableHead>Image</TableHead>
-                <TableHead>Category Name</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="w-[80px] py-4 pl-6 font-bold text-xs uppercase tracking-wider">ID</TableHead>
+                <TableHead className="py-4 font-bold text-xs uppercase tracking-wider">Category</TableHead>
+                <TableHead className="py-4 font-bold text-xs uppercase tracking-wider">Status</TableHead>
+                <TableHead className="py-4 pr-6 text-right font-bold text-xs uppercase tracking-wider">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 [1, 2, 3].map(i => (
                   <TableRow key={i}>
-                    <TableCell><div className="h-4 w-8 bg-muted animate-pulse rounded" /></TableCell>
-                    <TableCell><div className="h-10 w-10 bg-muted animate-pulse rounded-lg" /></TableCell>
-                    <TableCell><div className="h-4 w-32 bg-muted animate-pulse rounded" /></TableCell>
-                    <TableCell><div className="h-4 w-16 bg-muted animate-pulse rounded" /></TableCell>
-                    <TableCell><div className="h-8 w-8 ml-auto bg-muted animate-pulse rounded" /></TableCell>
+                    <TableCell className="pl-6"><div className="h-4 w-8 bg-muted animate-pulse rounded" /></TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="h-12 w-12 bg-muted animate-pulse rounded-xl" />
+                        <div className="h-5 w-40 bg-muted animate-pulse rounded" />
+                      </div>
+                    </TableCell>
+                    <TableCell><div className="h-6 w-16 bg-muted animate-pulse rounded-full" /></TableCell>
+                    <TableCell className="pr-6"><div className="h-9 w-9 ml-auto bg-muted animate-pulse rounded-full" /></TableCell>
                   </TableRow>
                 ))
               ) : filteredCategories.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
-                    <div className="flex flex-col items-center gap-2">
-                      <Layers className="w-8 h-8 opacity-20" />
-                      No categories found.
+                  <TableCell colSpan={4} className="h-48 text-center">
+                    <div className="flex flex-col items-center justify-center gap-3 text-muted-foreground">
+                      <Layers className="w-12 h-12 opacity-10" />
+                      <p className="text-sm font-medium">No categories matching your search</p>
+                      <Button variant="link" onClick={() => setSearch("")} className="text-primary h-auto p-0">Clear filters</Button>
                     </div>
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredCategories.map((category) => (
-                  <TableRow key={category.id} className="group">
-                    <TableCell className="font-mono text-muted-foreground">#{category.id}</TableCell>
-                    <TableCell>
-                      {category.image ? (
-                        <div className="w-10 h-10 rounded-lg overflow-hidden border bg-muted">
-                          <img 
-                            src={category.image} 
-                            alt={category.name} 
-                            className="w-full h-full object-cover"
-                          />
+                  <TableRow key={category.id} className="group hover:bg-muted/10 transition-colors">
+                    <TableCell className="pl-6 py-4 font-mono text-sm text-muted-foreground">#{category.id}</TableCell>
+                    <TableCell className="py-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl overflow-hidden border bg-muted flex-shrink-0 shadow-sm group-hover:shadow-md transition-shadow">
+                          {category.image ? (
+                            <img src={category.image} alt={category.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-muted-foreground/30">
+                              <Layers className="w-6 h-6" />
+                            </div>
+                          )}
                         </div>
-                      ) : (
-                        <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center border">
-                          <Layers className="w-5 h-5 text-muted-foreground/30" />
-                        </div>
-                      )}
+                        <span className="font-bold text-lg tracking-tight">{category.name}</span>
+                      </div>
                     </TableCell>
-                    <TableCell className="font-medium text-lg">{category.name}</TableCell>
-                    <TableCell>
-                      <Badge variant={category.active ? "default" : "secondary"}>
-                        {category.active ? "Active" : "Inactive"}
+                    <TableCell className="py-4">
+                      <Badge variant={category.active ? "default" : "secondary"} className={`rounded-full px-3 py-0.5 font-medium ${category.active ? "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 border-emerald-500/20" : ""}`}>
+                        {category.active ? "Active" : "Disabled"}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary transition-all" onClick={() => handleEdit(category)}>
+                    <TableCell className="py-4 pr-6 text-right">
+                      <div className="flex justify-end gap-1.5">
+                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-primary/10 hover:text-primary" onClick={() => handleEdit(category)}>
                           <Edit2 className="w-4 h-4" />
                         </Button>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive transition-colors" />
+                            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-destructive/10 hover:text-destructive">
+                              <Trash2 className="w-4 h-4" />
                             </Button>
                           </AlertDialogTrigger>
-                          <AlertDialogContent>
+                          <AlertDialogContent className="rounded-2xl">
                             <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Category</AlertDialogTitle>
+                              <AlertDialogTitle className="text-xl">Delete Category?</AlertDialogTitle>
                               <AlertDialogDescription>
-                                Are you sure you want to delete this category? This action cannot be undone.
+                                This will remove <span className="font-bold text-foreground">"{category.name}"</span> and all associated varieties. This cannot be undone.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDelete(category.id)}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              >
-                                Delete
+                            <AlertDialogFooter className="gap-2">
+                              <AlertDialogCancel className="rounded-xl mt-0">Keep Category</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDelete(category.id)} className="bg-destructive hover:bg-destructive/90 rounded-xl">
+                                Yes, Delete
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
@@ -311,66 +321,62 @@ export default function CategoriesPage() {
         </div>
       </div>
 
-      {/* Mobile View */}
-      <div className="md:hidden grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {/* Mobile/Tablet Card View */}
+      <div className="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-4">
         {isLoading ? (
           [1, 2, 3, 4].map(i => (
-            <div key={i} className="h-48 bg-muted animate-pulse rounded-xl" />
+            <div key={i} className="h-44 bg-muted animate-pulse rounded-2xl border" />
           ))
         ) : filteredCategories.length === 0 ? (
-          <p className="text-center py-8 text-muted-foreground col-span-full">No categories found.</p>
+          <div className="col-span-full py-20 text-center border-2 border-dashed rounded-2xl border-muted-foreground/10">
+            <Layers className="w-16 h-16 mx-auto mb-4 opacity-5" />
+            <p className="text-muted-foreground font-medium">No results found for your search</p>
+          </div>
         ) : (
           filteredCategories.map((category) => (
-            <div key={category.id} className="bg-card border rounded-xl overflow-hidden shadow-sm flex flex-col">
-              <div className="aspect-video w-full bg-muted relative">
+            <div key={category.id} className="group relative bg-card border rounded-2xl overflow-hidden shadow-sm hover:shadow-md hover:border-primary/20 transition-all flex flex-col sm:flex-row">
+              <div className="sm:w-32 aspect-[4/3] sm:aspect-square bg-muted relative overflow-hidden flex-shrink-0">
                 {category.image ? (
-                  <img 
-                    src={category.image} 
-                    alt={category.name} 
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={category.image} alt={category.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Layers className="w-12 h-12 text-muted-foreground/20" />
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-muted/50">
+                    <Layers className="w-10 h-10 text-muted-foreground/20" />
                   </div>
                 )}
-                <div className="absolute top-2 right-2">
-                  <Badge variant={category.active ? "default" : "secondary"} className="shadow-sm">
-                    {category.active ? "Active" : "Inactive"}
-                  </Badge>
+                <div className="absolute top-2 left-2">
+                  <span className="text-[10px] font-mono font-bold bg-black/50 backdrop-blur-md text-white px-1.5 py-0.5 rounded shadow-sm">#{category.id}</span>
                 </div>
               </div>
-              <div className="p-4 flex-1 flex flex-col justify-between space-y-4">
-                <div>
-                  <div className="flex justify-between items-start mb-1">
-                    <h3 className="font-bold text-lg leading-tight">{category.name}</h3>
-                    <span className="text-[10px] font-mono text-muted-foreground px-1.5 py-0.5 bg-muted rounded">#{category.id}</span>
-                  </div>
+              
+              <div className="p-4 flex-1 flex flex-col justify-between min-w-0">
+                <div className="flex justify-between items-start gap-2 mb-2">
+                  <h3 className="font-bold text-lg leading-tight truncate pr-2">{category.name}</h3>
+                  <Badge variant={category.active ? "default" : "secondary"} className={`rounded-full text-[10px] uppercase tracking-wider h-5 flex-shrink-0 ${category.active ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" : ""}`}>
+                    {category.active ? "Active" : "Off"}
+                  </Badge>
                 </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="flex-1 h-9 rounded-lg hover:bg-primary/5 hover:text-primary transition-all" onClick={() => handleEdit(category)}>
-                    <Edit2 className="w-3.5 h-3.5 mr-1.5" /> Edit
+                
+                <div className="flex items-center gap-2 mt-auto">
+                  <Button variant="outline" size="sm" className="flex-1 h-10 rounded-xl bg-muted/20 border-transparent hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all shadow-none" onClick={() => handleEdit(category)}>
+                    <Edit2 className="w-3.5 h-3.5 mr-2" /> Edit
                   </Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="outline" size="sm" className="flex-1 h-9 text-destructive border-destructive/20 hover:bg-destructive/5">
-                        <Trash2 className="w-3.5 h-3.5 mr-1.5" /> Delete
+                      <Button variant="outline" size="sm" className="h-10 w-10 min-w-10 rounded-xl bg-destructive/5 border-transparent text-destructive hover:bg-destructive hover:text-destructive-foreground hover:border-destructive transition-all shadow-none">
+                        <Trash2 className="w-4 h-4" />
                       </Button>
                     </AlertDialogTrigger>
-                    <AlertDialogContent className="w-[90vw] max-w-sm rounded-xl">
+                    <AlertDialogContent className="w-[90vw] max-w-[340px] rounded-2xl p-6">
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Category</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to delete this category?
+                        <AlertDialogTitle className="text-lg">Delete this category?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-sm">
+                          This will permanently remove the category and all linked plant data.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
-                      <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-                        <AlertDialogCancel className="rounded-lg">Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => handleDelete(category.id)}
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-lg"
-                        >
-                          Delete
+                      <AlertDialogFooter className="flex flex-col gap-2 mt-4 sm:flex-row">
+                        <AlertDialogCancel className="rounded-xl w-full sm:w-auto order-2 sm:order-1">Keep it</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleDelete(category.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl w-full sm:w-auto order-1 sm:order-2">
+                          Delete Now
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
