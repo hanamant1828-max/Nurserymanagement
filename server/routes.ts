@@ -98,9 +98,13 @@ export async function registerRoutes(
 
   app.post(api.lots.create.path, async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
-    const { orderIds, ...lotData } = req.body;
-    const lot = await storage.createLot(lotData, orderIds);
-    res.status(201).json(lot);
+    try {
+      const { orderIds, ...lotData } = req.body;
+      const lot = await storage.createLot(lotData, orderIds);
+      res.status(201).json(lot);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
   });
 
   app.put(api.lots.update.path, async (req, res) => {
