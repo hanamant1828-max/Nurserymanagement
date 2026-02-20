@@ -772,6 +772,7 @@ export default function TodayDeliveriesPage() {
         </Table>
       </div>
 
+      {/* Mobile view */}
       <div className="md:hidden space-y-4">
         {filteredOrders.length === 0 ? (
           <div className="h-32 flex flex-col items-center justify-center text-muted-foreground bg-muted/20 rounded-xl border border-dashed">

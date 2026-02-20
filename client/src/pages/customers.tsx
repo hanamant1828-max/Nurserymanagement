@@ -12,6 +12,7 @@ import { Users, Phone, MapPin, Search, FileSpreadsheet, Layers } from "lucide-re
 import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -154,58 +155,95 @@ export default function CustomersPage() {
         </Select>
       </div>
 
-      <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader className="bg-muted/50">
+      <div className="hidden md:block rounded-xl border bg-card shadow-sm overflow-x-auto">
+        <Table>
+          <TableHeader className="bg-muted/50">
+            <TableRow>
+              <TableHead>Customer Name</TableHead>
+              <TableHead>Contact</TableHead>
+              <TableHead>Location</TableHead>
+              <TableHead>Varieties</TableHead>
+              <TableHead className="text-center">Total Orders</TableHead>
+              <TableHead className="text-right">Last Active</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <TableRow><TableCell colSpan={6} className="h-24 text-center">Loading customers...</TableCell></TableRow>
+            ) : filteredCustomers.length === 0 ? (
               <TableRow>
-                <TableHead>Customer Name</TableHead>
-                <TableHead>Contact</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Varieties</TableHead>
-                <TableHead className="text-center">Total Orders</TableHead>
-                <TableHead className="text-right">Last Active</TableHead>
+                <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
+                  <div className="flex flex-col items-center gap-2">
+                    <Users className="w-8 h-8 opacity-20" />
+                    No customers found.
+                  </div>
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
-                <TableRow><TableCell colSpan={6} className="h-24 text-center">Loading customers...</TableCell></TableRow>
-              ) : filteredCustomers.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
-                    <div className="flex flex-col items-center gap-2">
-                      <Users className="w-8 h-8 opacity-20" />
-                      No customers found.
+            ) : (
+              filteredCustomers.map((customer, idx) => (
+                <TableRow key={idx}>
+                  <TableCell className="font-medium">{customer.name}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                      <Phone className="w-3 h-3" /> {customer.phone}
                     </div>
                   </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                      <MapPin className="w-3 h-3" /> {customer.village}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-xs text-muted-foreground line-clamp-1" title={customer.varietiesList}>
+                      {customer.varietiesList}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-center font-bold text-primary">{customer.totalOrders}</TableCell>
+                  <TableCell className="text-right text-muted-foreground text-sm">{customer.lastOrderDate}</TableCell>
                 </TableRow>
-              ) : (
-                filteredCustomers.map((customer, idx) => (
-                  <TableRow key={idx}>
-                    <TableCell className="font-medium">{customer.name}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                        <Phone className="w-3 h-3" /> {customer.phone}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                        <MapPin className="w-3 h-3" /> {customer.village}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-xs text-muted-foreground line-clamp-1" title={customer.varietiesList}>
-                        {customer.varietiesList}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-center font-bold text-primary">{customer.totalOrders}</TableCell>
-                    <TableCell className="text-right text-muted-foreground text-sm">{customer.lastOrderDate}</TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      <div className="md:hidden space-y-4">
+        {isLoading ? (
+          <div className="h-24 flex items-center justify-center bg-card rounded-xl border border-dashed text-muted-foreground">
+            Loading customers...
+          </div>
+        ) : filteredCustomers.length === 0 ? (
+          <div className="h-32 flex flex-col items-center justify-center bg-card rounded-xl border border-dashed text-muted-foreground">
+            <Users className="w-8 h-8 opacity-20 mb-2" />
+            No customers found.
+          </div>
+        ) : (
+          filteredCustomers.map((customer, idx) => (
+            <Card key={idx} className="p-4 space-y-3">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="font-bold text-lg">{customer.name}</h3>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Phone className="w-3.5 h-3.5" /> {customer.phone}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-[10px] font-bold uppercase text-muted-foreground">Total Orders</div>
+                  <div className="text-xl font-black text-primary">{customer.totalOrders}</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 text-sm text-muted-foreground border-t pt-2">
+                <MapPin className="w-3.5 h-3.5" /> {customer.village}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                <span className="font-semibold">Varieties:</span> {customer.varietiesList}
+              </div>
+              <div className="text-right text-[10px] text-muted-foreground pt-1 border-t border-dashed">
+                Last Active: {customer.lastOrderDate}
+              </div>
+            </Card>
+          ))
+        )}
       </div>
     </div>
   );

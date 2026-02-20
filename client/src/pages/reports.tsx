@@ -378,7 +378,7 @@ export default function ReportsPage() {
                 </Button>
               </div>
             </CardHeader>
-            <CardContent className="p-0 overflow-x-auto">
+            <CardContent className="p-0 overflow-x-auto hidden md:block">
               <Table>
                 <TableHeader className="bg-muted/30">
                   <TableRow>
@@ -412,6 +412,42 @@ export default function ReportsPage() {
                   )}
                 </TableBody>
               </Table>
+            </CardContent>
+            <CardContent className="md:hidden p-4 space-y-4">
+              {dailySowingData.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground opacity-50">
+                  <Sprout className="w-8 h-8 mx-auto mb-2" />
+                  <p className="text-sm font-medium">No sowing data found.</p>
+                </div>
+              ) : (
+                dailySowingData.map((lot: any) => (
+                  <div key={lot.id} className="p-3 bg-muted/20 rounded-lg border space-y-2">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase">Lot Number</div>
+                        <div className="text-sm font-mono font-bold">{lot.lotNumber}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase">Sown</div>
+                        <div className="text-sm font-bold">{lot.seedsSown}</div>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-end">
+                      <div>
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase">Variety</div>
+                        <div className="text-sm">{(lot as any).variety?.name || "N/A"}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase">Ready</div>
+                        <div className="text-sm text-amber-600 font-bold">{lot.expectedReadyDate}</div>
+                      </div>
+                    </div>
+                    <div className="text-[10px] text-muted-foreground pt-1 border-t border-dashed">
+                      Sown Date: {lot.sowingDate}
+                    </div>
+                  </div>
+                ))
+              )}
             </CardContent>
           </Card>
         </TabsContent>

@@ -481,56 +481,95 @@ export default function DeliveryReportsPage() {
         </div>
 
         <TabsContent value="pending">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Pending Deliveries</CardTitle>
-                <p className="text-sm text-muted-foreground">Booked orders awaiting delivery.</p>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => exportToPDF(pendingDeliveries, "Pending_Deliveries", ["Customer", "Variety", "Lot", "Qty", "Exp. Date", "Village", "Taluk"], ["customerName", "varietyName", "lotNumber", "bookedQty", "deliveryDate", "village", "taluk"])}>
-                  PDF
-                </Button>
-                <Button size="sm" onClick={() => exportToExcel(pendingDeliveries, "Pending_Deliveries")}>
-                  <FileSpreadsheet className="w-4 h-4 mr-2" /> Excel
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
+      <div className="hidden md:block">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Pending Deliveries</CardTitle>
+              <p className="text-sm text-muted-foreground">Booked orders awaiting delivery.</p>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => exportToPDF(pendingDeliveries, "Pending_Deliveries", ["Customer", "Variety", "Lot", "Qty", "Exp. Date", "Village", "Taluk"], ["customerName", "varietyName", "lotNumber", "bookedQty", "deliveryDate", "village", "taluk"])}>
+                PDF
+              </Button>
+              <Button size="sm" onClick={() => exportToExcel(pendingDeliveries, "Pending_Deliveries")}>
+                <FileSpreadsheet className="w-4 h-4 mr-2" /> Excel
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Customer</TableHead>
+                  <TableHead>Variety</TableHead>
+                  <TableHead>Lot</TableHead>
+                  <TableHead className="text-right">Qty</TableHead>
+                  <TableHead>Exp. Date</TableHead>
+                  <TableHead>Village</TableHead>
+                  <TableHead>Taluk</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {pendingDeliveries.length === 0 ? (
                   <TableRow>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Variety</TableHead>
-                    <TableHead>Lot</TableHead>
-                    <TableHead className="text-right">Qty</TableHead>
-                    <TableHead>Exp. Date</TableHead>
-                    <TableHead>Village</TableHead>
-                    <TableHead>Taluk</TableHead>
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No pending deliveries found.</TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {pendingDeliveries.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No pending deliveries found.</TableCell>
+                ) : (
+                  pendingDeliveries.map((order: any) => (
+                    <TableRow key={order.id}>
+                      <TableCell className="font-medium">{order.customerName}</TableCell>
+                      <TableCell>{order.varietyName}</TableCell>
+                      <TableCell>{order.lotNumber}</TableCell>
+                      <TableCell className="text-right">{order.bookedQty}</TableCell>
+                      <TableCell>{order.deliveryDate}</TableCell>
+                      <TableCell className="font-black text-base">{order.village}</TableCell>
+                      <TableCell>{order.taluk || "N/A"}</TableCell>
                     </TableRow>
-                  ) : (
-                    pendingDeliveries.map((order: any) => (
-                      <TableRow key={order.id}>
-                        <TableCell className="font-medium">{order.customerName}</TableCell>
-                        <TableCell>{order.varietyName}</TableCell>
-                        <TableCell>{order.lotNumber}</TableCell>
-                        <TableCell className="text-right">{order.bookedQty}</TableCell>
-                        <TableCell>{order.deliveryDate}</TableCell>
-                        <TableCell className="font-black text-base">{order.village}</TableCell>
-                        <TableCell>{order.taluk || "N/A"}</TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="md:hidden space-y-4">
+        {pendingDeliveries.length === 0 ? (
+          <div className="h-32 flex items-center justify-center bg-card rounded-xl border border-dashed text-muted-foreground text-sm">
+            No pending deliveries found.
+          </div>
+        ) : (
+          pendingDeliveries.map((order: any) => (
+            <Card key={order.id} className="p-4 space-y-3">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="font-bold">{order.customerName}</h3>
+                  <div className="text-xs text-muted-foreground">{order.phone}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-[10px] font-bold uppercase text-muted-foreground">Qty</div>
+                  <div className="text-lg font-black text-primary">{order.bookedQty}</div>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 py-2 border-y border-dashed text-xs">
+                <div>
+                  <div className="text-[10px] font-bold text-muted-foreground">Variety</div>
+                  <div>{order.varietyName}</div>
+                  <div className="font-mono text-[10px]">{order.lotNumber}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-[10px] font-bold text-muted-foreground">Exp. Date</div>
+                  <div>{order.deliveryDate}</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <MapPin className="w-3 h-3" /> {order.village}, {order.taluk || "N/A"}
+              </div>
+            </Card>
+          ))
+        )}
+      </div>
         </TabsContent>
 
         <TabsContent value="delivered">
