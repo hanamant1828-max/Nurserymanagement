@@ -193,36 +193,44 @@ export class DatabaseStorage implements IStorage {
     }
 
     // Stock deduction logic
-    const inwardLots = await db.select().from(seedInward).where(
-      and(
-        eq(seedInward.lotNo, insertLot.lotNumber),
-        eq(seedInward.categoryId, insertLot.categoryId),
-        eq(seedInward.varietyId, insertLot.varietyId)
-      )
-    );
+    let inward: SeedInward | undefined;
+    
+    if (insertLot.seedInwardId) {
+      const [record] = await db.select().from(seedInward).where(eq(seedInward.id, insertLot.seedInwardId));
+      inward = record;
+    } else {
+      const inwardLots = await db.select().from(seedInward).where(
+        and(
+          eq(seedInward.lotNo, insertLot.lotNumber),
+          eq(seedInward.categoryId, insertLot.categoryId),
+          eq(seedInward.varietyId, insertLot.varietyId)
+        )
+      );
+      inward = inwardLots[0];
+    }
 
-    if (inwardLots.length === 0) {
+    if (!inward) {
       throw new Error(`Seed Inward record not found for Lot No: ${insertLot.lotNumber}`);
     }
 
-    const inward = inwardLots[0];
     const packetsSown = insertLot.packetsSown ?? 0;
     if (inward.availableQuantity < packetsSown) {
       throw new Error(`Insufficient packet quantity. Available: ${inward.availableQuantity}, Requested: ${packetsSown}`);
     }
 
+    const currentInward = inward; // for closure
     const [lot] = await db.transaction(async (tx) => {
       // Update seed inward stock
       await tx.update(seedInward)
         .set({
-          usedQuantity: inward.usedQuantity + packetsSown,
-          availableQuantity: inward.availableQuantity - packetsSown,
+          usedQuantity: currentInward.usedQuantity + packetsSown,
+          availableQuantity: currentInward.availableQuantity - packetsSown,
         })
-        .where(eq(seedInward.id, inward.id));
+        .where(eq(seedInward.id, currentInward.id));
 
       const [newLot] = await tx.insert(lots).values({
         ...insertLot,
-        seedInwardId: inward.id
+        seedInwardId: currentInward.id
       }).returning();
       return [newLot];
     });
