@@ -226,14 +226,15 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 md:space-y-8 p-4 md:p-0">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-display font-bold">Reports</h1>
-          <p className="text-muted-foreground">Detailed data analysis and export center.</p>
+          <h1 className="text-2xl md:text-3xl font-display font-bold">Reports</h1>
+          <p className="text-sm text-muted-foreground">Detailed data analysis and export center.</p>
         </div>
-        <div className="flex flex-col sm:flex-row items-center gap-3">
-          <div className="flex items-center gap-2">
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex items-end gap-3 w-full lg:w-auto">
+          <div className="grid grid-cols-2 gap-2 w-full sm:w-auto">
             <div className="flex flex-col gap-1">
               <span className="text-[10px] font-bold uppercase text-muted-foreground ml-1">From</span>
               <Popover>
@@ -241,15 +242,15 @@ export default function ReportsPage() {
                   <Button
                     variant={"outline"}
                     className={cn(
-                      "w-[140px] justify-start text-left font-normal",
+                      "w-full sm:w-[130px] justify-start text-left font-normal h-10",
                       !dateRange.from && "text-muted-foreground"
                     )}
                   >
                     <CalendarIcon className="mr-2 h-3 w-3" />
-                    {dateRange.from ? format(dateRange.from, "MMM dd, y") : <span>Pick date</span>}
+                    <span className="truncate">{dateRange.from ? format(dateRange.from, "MMM dd, y") : "Pick date"}</span>
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-[280px] p-0" align="start">
                   <Calendar
                     mode="single"
                     selected={dateRange.from}
@@ -267,15 +268,15 @@ export default function ReportsPage() {
                   <Button
                     variant={"outline"}
                     className={cn(
-                      "w-[140px] justify-start text-left font-normal",
+                      "w-full sm:w-[130px] justify-start text-left font-normal h-10",
                       !dateRange.to && "text-muted-foreground"
                     )}
                   >
                     <CalendarIcon className="mr-2 h-3 w-3" />
-                    {dateRange.to ? format(dateRange.to, "MMM dd, y") : <span>Pick date</span>}
+                    <span className="truncate">{dateRange.to ? format(dateRange.to, "MMM dd, y") : "Pick date"}</span>
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-[280px] p-0" align="start">
                   <Calendar
                     mode="single"
                     selected={dateRange.to}
@@ -287,120 +288,125 @@ export default function ReportsPage() {
             </div>
           </div>
 
-          <div className="flex flex-col gap-1 w-full sm:w-64">
+          <div className="flex flex-col gap-1 w-full lg:w-64">
             <span className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Search</span>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input 
-                placeholder="Search..." 
-                className="pl-9"
+                placeholder="Search lots, variety..." 
+                className="pl-9 h-10"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
           </div>
         </div>
+      </div>
 
-        <div className="flex flex-wrap items-center gap-4 bg-muted/20 p-4 rounded-lg border border-dashed relative">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="absolute -top-3 right-2 bg-background border h-7 text-[10px] font-bold uppercase hover:bg-destructive hover:text-destructive-foreground transition-colors"
-            onClick={handleClearFilters}
-          >
-            Clear Filters
-          </Button>
-          <div className="flex flex-col gap-1 w-[200px]">
-            <span className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Filter by Category</span>
-            <Select value={selectedCategory} onValueChange={(val) => {
-              setSelectedCategory(val);
-              setSelectedVariety("all");
-            }}>
-              <SelectTrigger className="bg-background">
-                <SelectValue placeholder="All Categories" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {categories?.map((c: any) => (
-                  <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 items-end gap-4 bg-muted/20 p-4 rounded-xl border border-dashed relative">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="absolute -top-3 right-4 bg-background border h-7 text-[10px] font-bold uppercase hover:bg-destructive hover:text-destructive-foreground transition-colors z-10"
+          onClick={handleClearFilters}
+        >
+          Clear Filters
+        </Button>
+        <div className="flex flex-col gap-1">
+          <span className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Filter by Category</span>
+          <Select value={selectedCategory} onValueChange={(val) => {
+            setSelectedCategory(val);
+            setSelectedVariety("all");
+          }}>
+            <SelectTrigger className="bg-background h-10">
+              <SelectValue placeholder="All Categories" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {categories?.map((c: any) => (
+                <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-          <div className="flex flex-col gap-1 w-[200px]">
-            <span className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Filter by Variety</span>
-            <Select value={selectedVariety} onValueChange={setSelectedVariety} disabled={selectedCategory === "all"}>
-              <SelectTrigger className="bg-background">
-                <SelectValue placeholder="All Varieties" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Varieties</SelectItem>
-                {varieties?.filter((v: any) => v.categoryId.toString() === selectedCategory).map((v: any) => (
-                  <SelectItem key={v.id} value={v.id.toString()}>{v.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="flex flex-col gap-1">
+          <span className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Filter by Variety</span>
+          <Select value={selectedVariety} onValueChange={setSelectedVariety} disabled={selectedCategory === "all"}>
+            <SelectTrigger className="bg-background h-10">
+              <SelectValue placeholder="All Varieties" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Varieties</SelectItem>
+              {varieties?.filter((v: any) => v.categoryId.toString() === selectedCategory).map((v: any) => (
+                <SelectItem key={v.id} value={v.id.toString()}>{v.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
       <Tabs defaultValue="sowing" value={activeTab} className="w-full" onValueChange={setActiveTab}>
-        <TabsList className="flex w-full mb-6 overflow-x-auto pb-2 scrollbar-hide">
-          <TabsTrigger value="sowing" className="flex items-center gap-2 flex-1 min-w-[140px]">
-            <Sprout className="w-4 h-4" /> <span>Sowing</span>
+        <TabsList className="grid grid-cols-2 sm:grid-cols-4 w-full h-auto p-1 bg-muted/50 rounded-xl mb-6">
+          <TabsTrigger value="sowing" className="flex items-center gap-2 py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <Sprout className="w-4 h-4" /> <span className="text-xs sm:text-sm">Sowing</span>
           </TabsTrigger>
-          <TabsTrigger value="stock" className="flex items-center gap-2 flex-1 min-w-[140px]">
-            <ShoppingBag className="w-4 h-4" /> <span>Stock</span>
+          <TabsTrigger value="stock" className="flex items-center gap-2 py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <ShoppingBag className="w-4 h-4" /> <span className="text-xs sm:text-sm">Stock</span>
           </TabsTrigger>
-          <TabsTrigger value="variety" className="flex items-center gap-2 flex-1 min-w-[140px]">
-            <BarChart3 className="w-4 h-4" /> <span>Varieties</span>
+          <TabsTrigger value="variety" className="flex items-center gap-2 py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <BarChart3 className="w-4 h-4" /> <span className="text-xs sm:text-sm">Varieties</span>
           </TabsTrigger>
-          <TabsTrigger value="payments" className="flex items-center gap-2 flex-1 min-w-[140px]">
-            <Search className="w-4 h-4" /> <span>Payments</span>
+          <TabsTrigger value="payments" className="flex items-center gap-2 py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <Search className="w-4 h-4" /> <span className="text-xs sm:text-sm">Payments</span>
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="sowing">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
+        <TabsContent value="sowing" className="mt-0">
+          <Card className="border-none shadow-sm overflow-hidden">
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-muted/10 pb-4">
               <div>
-                <CardTitle>Sowing Report</CardTitle>
-                <p className="text-sm text-muted-foreground">Detailed sowing data.</p>
+                <CardTitle className="text-lg">Sowing Report</CardTitle>
+                <p className="text-xs text-muted-foreground">Detailed sowing data for the selected period.</p>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => exportToPDF(dailySowingData, "Sowing_Report", ["Date", "Lot Number", "Variety", "Seeds Sown", "Ready Date"], ["sowingDate", "lotNumber", "variety.name", "seedsSown", "expectedReadyDate"])}>
-                  Download PDF
+                <Button variant="outline" size="sm" className="h-9 text-xs flex-1 sm:flex-none" onClick={() => exportToPDF(dailySowingData, "Sowing_Report", ["Date", "Lot Number", "Variety", "Seeds Sown", "Ready Date"], ["sowingDate", "lotNumber", "variety.name", "seedsSown", "expectedReadyDate"])}>
+                  PDF
                 </Button>
-                <Button size="sm" onClick={() => exportToExcel(dailySowingData, "Sowing_Report")}>
-                  <FileSpreadsheet className="w-4 h-4 mr-2" /> Export Excel
+                <Button size="sm" className="h-9 text-xs flex-1 sm:flex-none shadow-sm" onClick={() => exportToExcel(dailySowingData, "Sowing_Report")}>
+                  <FileSpreadsheet className="w-4 h-4 mr-2" /> Excel
                 </Button>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0 overflow-x-auto">
               <Table>
-                <TableHeader>
+                <TableHeader className="bg-muted/30">
                   <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Lot Number</TableHead>
-                    <TableHead>Variety</TableHead>
-                    <TableHead>Seeds Sown</TableHead>
-                    <TableHead>Ready Date</TableHead>
+                    <TableHead className="text-xs font-bold uppercase tracking-wider">Date</TableHead>
+                    <TableHead className="text-xs font-bold uppercase tracking-wider">Lot Number</TableHead>
+                    <TableHead className="text-xs font-bold uppercase tracking-wider">Variety</TableHead>
+                    <TableHead className="text-xs font-bold uppercase tracking-wider text-right">Sown</TableHead>
+                    <TableHead className="text-xs font-bold uppercase tracking-wider text-right">Ready</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {dailySowingData.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No sowing data found.</TableCell>
+                      <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
+                        <div className="flex flex-col items-center gap-2 opacity-50">
+                          <Sprout className="w-8 h-8" />
+                          <p className="text-sm font-medium">No sowing data found.</p>
+                        </div>
+                      </TableCell>
                     </TableRow>
                   ) : (
                     dailySowingData.map((lot: any) => (
-                      <TableRow key={lot.id}>
-                        <TableCell>{lot.sowingDate}</TableCell>
-                        <TableCell className="font-medium">{lot.lotNumber}</TableCell>
-                        <TableCell>{(lot as any).variety?.name || "N/A"}</TableCell>
-                        <TableCell>{lot.seedsSown}</TableCell>
-                        <TableCell>{lot.expectedReadyDate}</TableCell>
+                      <TableRow key={lot.id} className="hover:bg-muted/20">
+                        <TableCell className="text-sm py-3">{lot.sowingDate}</TableCell>
+                        <TableCell className="text-sm py-3 font-mono font-bold">{lot.lotNumber}</TableCell>
+                        <TableCell className="text-sm py-3">{(lot as any).variety?.name || "N/A"}</TableCell>
+                        <TableCell className="text-sm py-3 text-right font-medium">{lot.seedsSown}</TableCell>
+                        <TableCell className="text-sm py-3 text-right text-amber-600 font-bold">{lot.expectedReadyDate}</TableCell>
                       </TableRow>
                     ))
                   )}
@@ -410,37 +416,39 @@ export default function ReportsPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="stock">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Stock Report</CardTitle>
+        <TabsContent value="stock" className="mt-0">
+          <Card className="border-none shadow-sm overflow-hidden">
+            <CardHeader className="bg-muted/10 pb-4">
+              <CardTitle className="text-lg">Stock Report</CardTitle>
+              <p className="text-xs text-muted-foreground">Current available stock across all sowing lots.</p>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0 overflow-x-auto">
               <Table>
-                <TableHeader>
+                <TableHeader className="bg-muted/30">
                   <TableRow>
-                    <TableHead>Lot</TableHead>
-                    <TableHead>Variety</TableHead>
-                    <TableHead className="text-right">Sowing Date</TableHead>
-                    <TableHead className="text-right">Ready Date</TableHead>
-                    <TableHead className="text-right">Sown</TableHead>
-                    <TableHead className="text-right">Available</TableHead>
+                    <TableHead className="text-xs font-bold uppercase tracking-wider">Lot</TableHead>
+                    <TableHead className="text-xs font-bold uppercase tracking-wider">Variety</TableHead>
+                    <TableHead className="text-xs font-bold uppercase tracking-wider text-right">Sown</TableHead>
+                    <TableHead className="text-xs font-bold uppercase tracking-wider text-right">Available</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {lotStockData.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No stock data available.</TableCell>
+                      <TableCell colSpan={4} className="text-center py-12 text-muted-foreground">
+                        <div className="flex flex-col items-center gap-2 opacity-50">
+                          <ShoppingBag className="w-8 h-8" />
+                          <p className="text-sm font-medium">No stock data available.</p>
+                        </div>
+                      </TableCell>
                     </TableRow>
                   ) : (
                     lotStockData.map((lot: any) => (
-                      <TableRow key={lot.id}>
-                        <TableCell>{lot.lotNumber}</TableCell>
-                        <TableCell>{(lot as any).variety?.name || "N/A"}</TableCell>
-                        <TableCell className="text-right">{lot.sowingDate}</TableCell>
-                        <TableCell className="text-right">{lot.expectedReadyDate}</TableCell>
-                        <TableCell className="text-right">{lot.seedsSown}</TableCell>
-                        <TableCell className="text-right font-bold">{lot.available}</TableCell>
+                      <TableRow key={lot.id} className="hover:bg-muted/20">
+                        <TableCell className="text-sm py-3 font-mono font-bold">{lot.lotNumber}</TableCell>
+                        <TableCell className="text-sm py-3">{(lot as any).variety?.name || "N/A"}</TableCell>
+                        <TableCell className="text-right text-sm py-3">{lot.seedsSown}</TableCell>
+                        <TableCell className="text-right text-sm py-3 font-black text-primary">{lot.available}</TableCell>
                       </TableRow>
                     ))
                   )}
@@ -450,31 +458,39 @@ export default function ReportsPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="variety">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Variety Performance</CardTitle>
+        <TabsContent value="variety" className="mt-0">
+          <Card className="border-none shadow-sm overflow-hidden">
+            <CardHeader className="bg-muted/10 pb-4">
+              <CardTitle className="text-lg">Variety Performance</CardTitle>
+              <p className="text-xs text-muted-foreground">Aggregated performance metrics by plant variety.</p>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0 overflow-x-auto">
               <Table>
-                <TableHeader>
+                <TableHeader className="bg-muted/30">
                   <TableRow>
-                    <TableHead>Variety</TableHead>
-                    <TableHead className="text-right">Total Sown</TableHead>
-                    <TableHead className="text-right">Total Available</TableHead>
+                    <TableHead className="text-xs font-bold uppercase tracking-wider">Variety</TableHead>
+                    <TableHead className="text-xs font-bold uppercase tracking-wider text-right">Total Sown</TableHead>
+                    <TableHead className="text-xs font-bold uppercase tracking-wider text-right text-destructive">Damaged</TableHead>
+                    <TableHead className="text-xs font-bold uppercase tracking-wider text-right text-primary">Available</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {varietyPerformance.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">No variety performance data.</TableCell>
+                      <TableCell colSpan={4} className="text-center py-12 text-muted-foreground">
+                        <div className="flex flex-col items-center gap-2 opacity-50">
+                          <BarChart3 className="w-8 h-8" />
+                          <p className="text-sm font-medium">No variety performance data.</p>
+                        </div>
+                      </TableCell>
                     </TableRow>
                   ) : (
                     varietyPerformance.map((v: any, idx) => (
-                      <TableRow key={idx}>
-                        <TableCell>{v.name}</TableCell>
-                        <TableCell className="text-right">{v.sown}</TableCell>
-                        <TableCell className="text-right">{v.available}</TableCell>
+                      <TableRow key={idx} className="hover:bg-muted/20">
+                        <TableCell className="text-sm py-3 font-bold">{v.name}</TableCell>
+                        <TableCell className="text-right text-sm py-3">{v.sown}</TableCell>
+                        <TableCell className="text-right text-sm py-3 text-destructive font-medium">{v.damaged}</TableCell>
+                        <TableCell className="text-right text-sm py-3 font-black text-primary">{v.available}</TableCell>
                       </TableRow>
                     ))
                   )}
@@ -484,31 +500,37 @@ export default function ReportsPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="payments">
-          <Card>
-            <CardHeader>
-              <CardTitle>Payment Summary</CardTitle>
+        <TabsContent value="payments" className="mt-0">
+          <Card className="border-none shadow-sm overflow-hidden">
+            <CardHeader className="bg-muted/10 pb-4">
+              <CardTitle className="text-lg">Payment Summary</CardTitle>
+              <p className="text-xs text-muted-foreground">Breakdown of advance payments by payment mode.</p>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0 overflow-x-auto">
               <Table>
-                <TableHeader>
+                <TableHeader className="bg-muted/30">
                   <TableRow>
-                    <TableHead>Mode</TableHead>
-                    <TableHead className="text-right">Orders</TableHead>
-                    <TableHead className="text-right">Total Advance</TableHead>
+                    <TableHead className="text-xs font-bold uppercase tracking-wider">Mode</TableHead>
+                    <TableHead className="text-xs font-bold uppercase tracking-wider text-right">Orders</TableHead>
+                    <TableHead className="text-xs font-bold uppercase tracking-wider text-right">Total Advance</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {paymentSummary.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">No payment data for the selected period.</TableCell>
+                      <TableCell colSpan={3} className="text-center py-12 text-muted-foreground">
+                        <div className="flex flex-col items-center gap-2 opacity-50">
+                          <Search className="w-8 h-8" />
+                          <p className="text-sm font-medium">No payment data for this period.</p>
+                        </div>
+                      </TableCell>
                     </TableRow>
                   ) : (
                     paymentSummary.map((p: any, idx) => (
-                      <TableRow key={idx}>
-                        <TableCell className="capitalize">{p.mode}</TableCell>
-                        <TableCell className="text-right">{p.count}</TableCell>
-                        <TableCell className="text-right">₹{p.totalAdvance.toLocaleString()}</TableCell>
+                      <TableRow key={idx} className="hover:bg-muted/20">
+                        <TableCell className="capitalize text-sm py-3 font-bold">{p.mode}</TableCell>
+                        <TableCell className="text-right text-sm py-3 font-medium">{p.count}</TableCell>
+                        <TableCell className="text-right text-sm py-3 font-black text-primary">₹{p.totalAdvance.toLocaleString()}</TableCell>
                       </TableRow>
                     ))
                   )}

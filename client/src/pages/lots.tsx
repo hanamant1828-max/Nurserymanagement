@@ -439,15 +439,15 @@ export default function LotsPage() {
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>{editingLot ? "Edit Sowing Lot" : "New Sowing Lot Entry"}</DialogTitle>
-                <DialogDescription>
-                  {editingLot ? "Update details for this sowing batch." : "Record a new batch of seeds sown in the nursery."}
-                </DialogDescription>
-              </DialogHeader>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <DialogHeader className="px-1">
+                    <DialogTitle>{editingLot ? "Edit Sowing Lot" : "New Sowing Lot Entry"}</DialogTitle>
+                    <DialogDescription>
+                      {editingLot ? "Update details for this sowing batch." : "Record a new batch of seeds sown in the nursery."}
+                    </DialogDescription>
+                  </DialogHeader>
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 mt-4 pb-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     {/* Category Selection */}
                     <FormField
                       control={form.control}
@@ -777,7 +777,7 @@ export default function LotsPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 p-4 bg-muted/30 rounded-xl border border-border/50 relative">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 p-4 bg-muted/30 rounded-xl border border-border/50 relative">
         <Button 
           variant="ghost" 
           size="sm" 
@@ -792,13 +792,13 @@ export default function LotsPage() {
             setSelectedCategory(val);
             setSelectedVariety("all");
           }}>
-            <SelectTrigger className="bg-background h-12">
+            <SelectTrigger className="bg-background h-10 sm:h-12">
               <SelectValue placeholder="All Categories" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">
                 <div className="flex items-center gap-2 py-1">
-                  <CheckCircle className="w-6 h-6 text-muted-foreground/40" />
+                  <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground/40" />
                   <span className="font-medium">All Categories</span>
                 </div>
               </SelectItem>
@@ -806,13 +806,13 @@ export default function LotsPage() {
                 <SelectItem key={c.id} value={c.id.toString()}>
                   <div className="flex items-center gap-2 py-1">
                     {c.image ? (
-                      <img src={c.image} className="w-8 h-8 rounded-md object-cover border" alt="" />
+                      <img src={c.image} className="w-7 h-7 sm:w-8 sm:h-8 rounded-md object-cover border" alt="" />
                     ) : (
-                      <div className="w-8 h-8 rounded-md bg-muted flex items-center justify-center border">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-md bg-muted flex items-center justify-center border">
                         <Layers className="w-4 h-4 text-muted-foreground/30" />
                       </div>
                     )}
-                    <span className="font-medium">{c.name}</span>
+                    <span className="font-medium text-sm sm:text-base">{c.name}</span>
                   </div>
                 </SelectItem>
               ))}
@@ -822,7 +822,7 @@ export default function LotsPage() {
         <div className="space-y-2">
           <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Variety Filter</label>
           <Select value={selectedVariety} onValueChange={setSelectedVariety} disabled={selectedCategory === "all"}>
-            <SelectTrigger className="bg-background h-12">
+            <SelectTrigger className="bg-background h-10 sm:h-12">
               <SelectValue placeholder="All Varieties" />
             </SelectTrigger>
             <SelectContent className="z-[100]">
@@ -836,7 +836,7 @@ export default function LotsPage() {
         <div className="space-y-2">
           <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Lot Filter</label>
           <Select value={search} onValueChange={setSearch}>
-            <SelectTrigger className="bg-background h-12">
+            <SelectTrigger className="bg-background h-10 sm:h-12">
               <SelectValue placeholder="All Lots" />
             </SelectTrigger>
             <SelectContent>
@@ -857,13 +857,13 @@ export default function LotsPage() {
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                className={`w-full h-12 justify-start text-left font-normal bg-background ${!dateRange?.from && "text-muted-foreground"}`}
+                className={`w-full h-10 sm:h-12 justify-start text-left font-normal bg-background ${!dateRange?.from && "text-muted-foreground"}`}
               >
                 <CalendarDays className="mr-2 h-4 w-4 opacity-50" />
                 {dateRange?.from ? format(dateRange.from, "LLL dd, y") : <span>From Date</span>}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
+            <PopoverContent className="w-[280px] p-0" align="start">
               <Calendar
                 mode="single"
                 selected={dateRange?.from}
@@ -879,13 +879,13 @@ export default function LotsPage() {
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                className={`w-full h-12 justify-start text-left font-normal bg-background ${!dateRange?.to && "text-muted-foreground"}`}
+                className={`w-full h-10 sm:h-12 justify-start text-left font-normal bg-background ${!dateRange?.to && "text-muted-foreground"}`}
               >
                 <CalendarDays className="mr-2 h-4 w-4 opacity-50" />
                 {dateRange?.to ? format(dateRange.to, "LLL dd, y") : <span>To Date</span>}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
+            <PopoverContent className="w-[280px] p-0" align="start">
               <Calendar
                 mode="single"
                 selected={dateRange?.to}
@@ -895,10 +895,10 @@ export default function LotsPage() {
             </PopoverContent>
           </Popover>
         </div>
-        <div className="space-y-2">
+        <div className="space-y-2 sm:col-span-1">
           <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Sort By</label>
           <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="bg-background h-12">
+            <SelectTrigger className="bg-background h-10 sm:h-12">
               <SelectValue placeholder="Sort order" />
             </SelectTrigger>
             <SelectContent>
@@ -988,6 +988,134 @@ export default function LotsPage() {
           </Form>
         </DialogContent>
       </Dialog>
+
+      <div className="md:hidden space-y-4">
+        {isLoading ? (
+          <div className="space-y-4 animate-pulse">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-48 bg-muted rounded-2xl border" />
+            ))}
+          </div>
+        ) : filteredLotsList.length === 0 ? (
+          <div className="py-20 text-center border-2 border-dashed rounded-2xl border-muted-foreground/10 bg-muted/5">
+            <Sprout className="w-10 h-10 mx-auto text-muted-foreground/20 mb-3" />
+            <p className="text-muted-foreground font-medium">No lots found matching your filters.</p>
+          </div>
+        ) : (
+          paginatedLots.map((lot) => {
+            const isLowStock = lot.available < (lot.seedsSown * 0.1);
+            return (
+              <div key={lot.id} className="bg-card border rounded-2xl p-4 shadow-sm hover:shadow-md transition-all">
+                <div className="flex items-start justify-between gap-4 mb-4">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-12 h-12 rounded-xl overflow-hidden border bg-muted flex-shrink-0 shadow-sm flex items-center justify-center">
+                      <Sprout className="w-6 h-6 text-primary/40" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-black font-mono text-lg leading-tight truncate">{lot.lotNumber}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-xs font-bold text-muted-foreground truncate">{lot.variety?.name}</span>
+                        <Badge variant="outline" className="text-[10px] h-4 py-0 px-1 font-bold bg-muted/50 border-muted-foreground/20">
+                          {lot.category?.name}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <div className="text-xl font-black text-primary leading-tight">{lot.available}</div>
+                    <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Available</div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 mb-4 p-3 bg-muted/30 rounded-xl border border-border/50">
+                  <div>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Sowing Date</p>
+                    <p className="text-sm font-bold">{lot.sowingDate}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Ready Date</p>
+                    <p className="text-sm font-bold text-amber-600">{lot.expectedReadyDate || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Sown Qty</p>
+                    <p className="text-sm font-bold">{lot.seedsSown}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Damaged</p>
+                    <p className="text-sm font-bold text-destructive">{lot.damaged || "-"}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                  <div>
+                    {lot.available === 0 ? (
+                      <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-wider border-muted-foreground text-muted-foreground">Empty</Badge>
+                    ) : isLowStock ? (
+                      <Badge variant="destructive" className="text-[10px] font-bold uppercase tracking-wider">Low Stock</Badge>
+                    ) : (
+                      <Badge variant="secondary" className="text-[10px] font-bold uppercase tracking-wider bg-green-100 text-green-700">Available</Badge>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-9 w-9 rounded-xl hover:bg-primary/10 transition-colors"
+                      onClick={() => handleEdit(lot)}
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-9 w-9 rounded-xl text-amber-600 hover:bg-amber-50 transition-colors"
+                      onClick={() => openDamageDialog(lot.id)}
+                    >
+                      <AlertTriangle className="w-4 h-4" />
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-muted-foreground hover:text-destructive transition-colors">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="w-[calc(100%-2rem)] max-w-lg rounded-2xl">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Lot</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete lot {lot.lotNumber}? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                          <AlertDialogCancel className="rounded-xl mt-0">Cancel</AlertDialogCancel>
+                          <AlertDialogAction 
+                            onClick={() => handleDelete(lot.id)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        )}
+        
+        {totalPages > 1 && (
+          <div className="mt-4 flex justify-center bg-card border rounded-2xl p-4 shadow-sm">
+            <Pagination 
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+              totalRecords={filteredLotsList.length}
+              pageSize={PAGE_SIZE}
+            />
+          </div>
+        )}
+      </div>
 
       <div className="hidden md:block rounded-xl border bg-card shadow-sm overflow-hidden">
         <Table>
