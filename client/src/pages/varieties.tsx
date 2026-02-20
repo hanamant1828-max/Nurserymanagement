@@ -139,20 +139,20 @@ export default function VarietiesPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-display font-bold">Varieties ({filteredVarietiesList.length})</h1>
-          <p className="text-muted-foreground">Manage specific plant varieties under categories.</p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-display font-bold tracking-tight">Varieties ({filteredVarietiesList.length})</h1>
+          <p className="text-muted-foreground text-sm">Manage plant varieties for your nursery categories.</p>
         </div>
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3">
           <Select value={selectedCategory} onValueChange={(val) => {
             setSelectedCategory(val);
             setCurrentPage(1);
           }}>
-            <SelectTrigger className="w-full sm:w-64 bg-background h-11">
+            <SelectTrigger className="w-full lg:w-48 h-11 rounded-xl bg-muted/30 border-muted-foreground/10 focus:ring-primary/20">
               <SelectValue placeholder="All Categories" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="rounded-xl">
               <SelectItem value="all" className="py-2.5">All Categories</SelectItem>
               {categories?.filter(c => c.active).map(c => (
                 <SelectItem key={c.id} value={c.id.toString()} className="py-2.5">
@@ -161,11 +161,11 @@ export default function VarietiesPage() {
                       <img 
                         src={c.image} 
                         alt={c.name} 
-                        className="w-8 h-8 rounded-md object-cover border shadow-sm"
+                        className="w-6 h-6 rounded-md object-cover border shadow-sm"
                       />
                     ) : (
-                      <div className="w-8 h-8 rounded-md bg-muted flex items-center justify-center border shadow-sm">
-                        <Layers className="w-4 h-4 text-muted-foreground/30" />
+                      <div className="w-6 h-6 rounded-md bg-muted flex items-center justify-center border shadow-sm">
+                        <Layers className="w-3 h-3 text-muted-foreground/30" />
                       </div>
                     )}
                     <span className="font-medium">{c.name}</span>
@@ -174,83 +174,89 @@ export default function VarietiesPage() {
               ))}
             </SelectContent>
           </Select>
-          <Input 
-            placeholder="Search varieties..." 
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="w-full sm:w-64 h-11"
-          />
+          <div className="relative flex-1 sm:min-w-[250px]">
+            <Flower2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input 
+              placeholder="Search varieties..." 
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="pl-9 h-11 rounded-xl bg-muted/30 border-muted-foreground/10 focus-visible:ring-primary/20 transition-all"
+            />
+          </div>
           <Dialog open={open} onOpenChange={(val) => { setOpen(val); if(!val) resetForm(); }}>
             <DialogTrigger asChild>
-              <Button size="lg" className="shadow-lg shadow-primary/20">
+              <Button size="lg" className="h-11 px-6 rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all active:scale-95">
                 <Plus className="w-5 h-5 mr-2" /> Add Variety
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="sm:max-w-[425px] rounded-2xl">
               <DialogHeader>
-                <DialogTitle>{editingId ? "Edit Variety" : "New Variety"}</DialogTitle>
+                <DialogTitle className="text-2xl font-bold">{editingId ? "Edit Variety" : "New Variety"}</DialogTitle>
                 <DialogDescription>
-                  {editingId ? "Update variety information and active status." : "Add a new plant variety to your nursery inventory."}
+                  {editingId ? "Update the details for this plant variety." : "Add a new plant variety to your nursery catalog."}
                 </DialogDescription>
               </DialogHeader>
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-4">
-                    <FormField
-                      control={form.control}
-                      name="categoryId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Category <span className="text-destructive">*</span></FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select a category" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {categories?.filter(c => c.active).map(category => (
-                                <SelectItem key={category.id} value={category.id.toString()}>
-                                  <div className="flex items-center gap-2">
-                                    {category.image && (
-                                      <img 
-                                        src={category.image} 
-                                        alt={category.name} 
-                                        className="w-6 h-6 rounded-full object-cover border"
-                                      />
-                                    )}
-                                    {category.name}
-                                  </div>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Variety Name <span className="text-destructive">*</span></FormLabel>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 py-4">
+                  <FormField
+                    control={form.control}
+                    name="categoryId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="font-semibold">Category</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
-                            <Input placeholder="e.g. Cherry Tomato, Hybrid Rose" {...field} />
+                            <SelectTrigger className="h-11 rounded-lg">
+                              <SelectValue placeholder="Select a category" />
+                            </SelectTrigger>
                           </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                          <SelectContent className="rounded-xl">
+                            {categories?.filter(c => c.active).map(category => (
+                              <SelectItem key={category.id} value={category.id.toString()}>
+                                <div className="flex items-center gap-2 py-1">
+                                  {category.image && (
+                                    <img 
+                                      src={category.image} 
+                                      alt={category.name} 
+                                      className="w-6 h-6 rounded-lg object-cover border"
+                                    />
+                                  )}
+                                  <span className="font-medium">{category.name}</span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="font-semibold">Variety Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g. Hybrid Rose, Cherry Tomato" className="h-11 rounded-lg" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   <FormField
                     control={form.control}
                     name="active"
                     render={({ field }) => (
-                      <FormItem className="flex items-center justify-between rounded-lg border p-4">
+                      <FormItem className="flex items-center justify-between rounded-xl border bg-muted/20 p-4">
                         <div className="space-y-0.5">
-                          <FormLabel className="text-base">Active Status</FormLabel>
+                          <FormLabel className="text-base font-medium">Availability</FormLabel>
+                          <p className="text-xs text-muted-foreground leading-none">
+                            Enable for new lot entries
+                          </p>
                         </div>
                         <FormControl>
                           <Switch
@@ -261,9 +267,12 @@ export default function VarietiesPage() {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-full" disabled={creating || updating}>
-                    {editingId ? "Save Changes" : "Create Variety"}
-                  </Button>
+                  <div className="flex gap-3 pt-2">
+                    <Button type="button" variant="ghost" onClick={() => setOpen(false)} className="flex-1 h-11 rounded-xl">Cancel</Button>
+                    <Button type="submit" className="flex-[2] h-11 rounded-xl font-bold" disabled={creating || updating}>
+                      {editingId ? "Update Variety" : "Save Variety"}
+                    </Button>
+                  </div>
                 </form>
               </Form>
             </DialogContent>
@@ -271,183 +280,108 @@ export default function VarietiesPage() {
         </div>
       </div>
 
-      <div className="hidden md:block rounded-xl border bg-card shadow-sm overflow-hidden">
-        <Table>
-          <TableHeader className="bg-muted/50">
-            <TableRow>
-              <TableHead>Category</TableHead>
-              <TableHead>Variety Name</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loadingVarieties ? (
-              [1, 2, 3].map(i => (
-                <TableRow key={i}>
-                  <TableCell><div className="h-4 w-24 bg-muted animate-pulse rounded" /></TableCell>
-                  <TableCell><div className="h-4 w-32 bg-muted animate-pulse rounded" /></TableCell>
-                  <TableCell><div className="h-4 w-16 bg-muted animate-pulse rounded" /></TableCell>
-                  <TableCell><div className="h-8 w-8 ml-auto bg-muted animate-pulse rounded" /></TableCell>
-                </TableRow>
-              ))
-            ) : filteredVarietiesList.length === 0 ? (
+      {/* Desktop Table View */}
+      <div className="hidden lg:block">
+        <div className="rounded-2xl border bg-card shadow-sm overflow-hidden">
+          <Table>
+            <TableHeader className="bg-muted/30">
               <TableRow>
-                <TableCell colSpan={4} className="h-32 text-center text-muted-foreground">
-                  <div className="flex flex-col items-center gap-2">
-                    <Flower2 className="w-8 h-8 opacity-20" />
-                    No varieties found.
-                  </div>
-                </TableCell>
+                <TableHead className="py-4 pl-6 font-bold text-xs uppercase tracking-wider">Category</TableHead>
+                <TableHead className="py-4 font-bold text-xs uppercase tracking-wider">Variety Name</TableHead>
+                <TableHead className="py-4 font-bold text-xs uppercase tracking-wider">Status</TableHead>
+                <TableHead className="py-4 pr-6 text-right font-bold text-xs uppercase tracking-wider">Actions</TableHead>
               </TableRow>
-            ) : (
-              paginatedVarieties.map((variety) => {
-                const category = getCategory(variety.categoryId);
-                return (
-                  <TableRow key={variety.id} className="group">
-                    <TableCell className="text-muted-foreground font-medium">
+            </TableHeader>
+            <TableBody>
+              {loadingVarieties ? (
+                [1, 2, 3, 4, 5].map(i => (
+                  <TableRow key={i}>
+                    <TableCell className="pl-6">
                       <div className="flex items-center gap-3">
-                        {category?.image && (
-                          <img 
-                            src={category.image} 
-                            alt={category.name} 
-                            className="w-10 h-10 rounded-full object-cover border"
-                          />
-                        )}
-                        {category?.name || "Unknown"}
+                        <div className="h-10 w-10 bg-muted animate-pulse rounded-full" />
+                        <div className="h-4 w-24 bg-muted animate-pulse rounded" />
                       </div>
                     </TableCell>
-                    <TableCell className="font-semibold text-lg">{variety.name}</TableCell>
-                    <TableCell>
-                      <Badge variant={variety.active ? "default" : "secondary"}>
-                        {variety.active ? "Active" : "Inactive"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary transition-all" onClick={() => handleEdit(variety)}>
-                          <Edit2 className="w-4 h-4" />
-                        </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive transition-colors" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Variety</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Are you sure you want to delete this variety? This action cannot be undone.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDelete(variety.id)}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </TableCell>
+                    <TableCell><div className="h-5 w-48 bg-muted animate-pulse rounded" /></TableCell>
+                    <TableCell><div className="h-6 w-16 bg-muted animate-pulse rounded-full" /></TableCell>
+                    <TableCell className="pr-6"><div className="h-9 w-9 ml-auto bg-muted animate-pulse rounded-full" /></TableCell>
                   </TableRow>
-                );
-              })
-            )}
-          </TableBody>
-        </Table>
-
-        <Pagination 
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-          totalRecords={filteredVarietiesList.length}
-          pageSize={PAGE_SIZE}
-        />
-      </div>
-
-      {/* Mobile View */}
-      <div className="md:hidden grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {loadingVarieties ? (
-          [1, 2, 3, 4].map(i => (
-            <div key={i} className="h-48 bg-muted animate-pulse rounded-xl" />
-          ))
-        ) : filteredVarietiesList.length === 0 ? (
-          <p className="text-center py-8 text-muted-foreground col-span-full">No varieties found.</p>
-        ) : (
-          paginatedVarieties.map((variety) => {
-            const category = getCategory(variety.categoryId);
-            return (
-              <div key={variety.id} className="bg-card border rounded-xl overflow-hidden shadow-sm flex flex-col">
-                <div className="aspect-video w-full bg-muted relative">
-                  {category?.image ? (
-                    <img 
-                      src={category.image} 
-                      alt={category.name} 
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <Flower2 className="w-12 h-12 text-muted-foreground/20" />
+                ))
+              ) : filteredVarietiesList.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="h-48 text-center">
+                    <div className="flex flex-col items-center justify-center gap-3 text-muted-foreground">
+                      <Flower2 className="w-12 h-12 opacity-10" />
+                      <p className="text-sm font-medium">No varieties matching your search</p>
+                      <Button variant="ghost" onClick={() => { setSearch(""); setSelectedCategory("all"); }} className="text-primary h-auto p-0">Clear filters</Button>
                     </div>
-                  )}
-                  <div className="absolute top-2 right-2">
-                    <Badge variant={variety.active ? "default" : "secondary"} className="shadow-sm">
-                      {variety.active ? "Active" : "Inactive"}
-                    </Badge>
-                  </div>
-                </div>
-                <div className="p-4 flex-1 flex flex-col justify-between space-y-4">
-                  <div>
-                    <div className="flex justify-between items-start mb-1">
-                      <h3 className="font-bold text-lg leading-tight">{variety.name}</h3>
-                      <span className="text-[10px] font-mono text-muted-foreground px-1.5 py-0.5 bg-muted rounded">#{variety.id}</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground font-medium flex items-center gap-1.5">
-                      <Layers className="w-3.5 h-3.5" />
-                      {category?.name || "Unknown Category"}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="flex-1 h-9 rounded-lg hover:bg-primary/5 hover:text-primary transition-all" onClick={() => handleEdit(variety)}>
-                      <Edit2 className="w-3.5 h-3.5 mr-1.5" /> Edit
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="outline" size="sm" className="flex-1 h-9 text-destructive border-destructive/20 hover:bg-destructive/5">
-                          <Trash2 className="w-3.5 h-3.5 mr-1.5" /> Delete
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent className="w-[90vw] max-w-sm rounded-xl">
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Variety</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to delete this variety?
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-                          <AlertDialogCancel className="rounded-lg">Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleDelete(variety.id)}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-lg"
-                          >
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
-                </div>
-              </div>
-            );
-          })
-        )}
-
-        {filteredVarietiesList.length > 0 && (
+                  </TableCell>
+                </TableRow>
+              ) : (
+                paginatedVarieties.map((variety) => {
+                  const category = getCategory(variety.categoryId);
+                  return (
+                    <TableRow key={variety.id} className="group hover:bg-muted/10 transition-colors">
+                      <TableCell className="pl-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full overflow-hidden border bg-muted flex-shrink-0">
+                            {category?.image ? (
+                              <img src={category.image} alt={category.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-muted-foreground/30">
+                                <Layers className="w-5 h-5" />
+                              </div>
+                            )}
+                          </div>
+                          <span className="font-medium text-muted-foreground">{category?.name || "Unknown"}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-4">
+                        <span className="font-bold text-lg tracking-tight">{variety.name}</span>
+                        <span className="ml-2 text-[10px] font-mono text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">#{variety.id}</span>
+                      </TableCell>
+                      <TableCell className="py-4">
+                        <Badge variant={variety.active ? "default" : "secondary"} className={`rounded-full px-3 py-0.5 font-medium ${variety.active ? "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 border-emerald-500/20" : ""}`}>
+                          {variety.active ? "Active" : "Disabled"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="py-4 pr-6 text-right">
+                        <div className="flex justify-end gap-1.5">
+                          <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-primary/10 hover:text-primary" onClick={() => handleEdit(variety)}>
+                            <Edit2 className="w-4 h-4" />
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-destructive/10 hover:text-destructive">
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="rounded-2xl">
+                              <AlertDialogHeader>
+                                <AlertDialogTitle className="text-xl">Delete Variety?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This will remove <span className="font-bold text-foreground">"{variety.name}"</span> from the catalog. This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter className="gap-2">
+                                <AlertDialogCancel className="rounded-xl mt-0">Keep it</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDelete(variety.id)} className="bg-destructive hover:bg-destructive/90 rounded-xl">
+                                  Delete Variety
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
+        </div>
+        
+        <div className="mt-6 flex justify-between items-center bg-card border rounded-2xl px-6 py-4 shadow-sm">
           <Pagination 
             currentPage={currentPage}
             totalPages={totalPages}
@@ -455,8 +389,93 @@ export default function VarietiesPage() {
             totalRecords={filteredVarietiesList.length}
             pageSize={PAGE_SIZE}
           />
+        </div>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="lg:hidden flex flex-col gap-4">
+        {loadingVarieties ? (
+          [1, 2, 3, 4].map(i => (
+            <div key={i} className="h-32 bg-muted animate-pulse rounded-2xl border" />
+          ))
+        ) : filteredVarietiesList.length === 0 ? (
+          <div className="py-20 text-center border-2 border-dashed rounded-2xl border-muted-foreground/10 bg-muted/5">
+            <Flower2 className="w-16 h-16 mx-auto mb-4 opacity-5" />
+            <p className="text-muted-foreground font-medium">No varieties found</p>
+          </div>
+        ) : (
+          paginatedVarieties.map((variety) => {
+            const category = getCategory(variety.categoryId);
+            return (
+              <div key={variety.id} className="bg-card border rounded-2xl p-4 shadow-sm hover:shadow-md hover:border-primary/20 transition-all">
+                <div className="flex items-start justify-between gap-4 mb-4">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-12 h-12 rounded-xl overflow-hidden border bg-muted flex-shrink-0 shadow-sm">
+                      {category?.image ? (
+                        <img src={category.image} alt={category.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-muted-foreground/20">
+                          <Layers className="w-6 h-6" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="font-bold text-lg leading-tight truncate">{variety.name}</h3>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[10px] font-mono text-muted-foreground px-1.5 py-0.5 bg-muted rounded">#{variety.id}</span>
+                        <span className="text-xs text-muted-foreground truncate">{category?.name}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <Badge variant={variety.active ? "default" : "secondary"} className={`rounded-full text-[10px] uppercase h-5 px-2 flex-shrink-0 ${variety.active ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" : ""}`}>
+                    {variety.active ? "Active" : "Off"}
+                  </Badge>
+                </div>
+                
+                <div className="flex items-center gap-2 border-t pt-4">
+                  <Button variant="outline" size="sm" className="flex-1 h-10 rounded-xl bg-muted/20 border-transparent hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all shadow-none font-semibold" onClick={() => handleEdit(variety)}>
+                    <Edit2 className="w-3.5 h-3.5 mr-2" /> Edit
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="h-10 w-10 min-w-10 rounded-xl bg-destructive/5 border-transparent text-destructive hover:bg-destructive hover:text-destructive-foreground hover:border-destructive transition-all shadow-none">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="w-[90vw] max-w-[340px] rounded-2xl p-6">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="text-lg font-bold">Delete this variety?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-sm">
+                          This will permanently remove the variety from your nursery records.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter className="flex flex-col gap-2 mt-4 sm:flex-row">
+                        <AlertDialogCancel className="rounded-xl w-full sm:w-auto order-2 sm:order-1">Keep Variety</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleDelete(variety.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl w-full sm:w-auto order-1 sm:order-2 font-bold">
+                          Yes, Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </div>
+            );
+          })
+        )}
+        
+        {filteredVarietiesList.length > PAGE_SIZE && (
+          <div className="mt-4 flex justify-center bg-card border rounded-2xl p-4 shadow-sm">
+            <Pagination 
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+              totalRecords={filteredVarietiesList.length}
+              pageSize={PAGE_SIZE}
+            />
+          </div>
         )}
       </div>
+    </div>
     </div>
   );
 }

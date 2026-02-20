@@ -258,7 +258,7 @@ export default function CategoriesPage() {
                     <div className="flex flex-col items-center justify-center gap-3 text-muted-foreground">
                       <Layers className="w-12 h-12 opacity-10" />
                       <p className="text-sm font-medium">No categories matching your search</p>
-                      <Button variant="link" onClick={() => setSearch("")} className="text-primary h-auto p-0">Clear filters</Button>
+                      <Button variant="ghost" onClick={() => setSearch("")} className="text-primary h-auto p-0">Clear filters</Button>
                     </div>
                   </TableCell>
                 </TableRow>
