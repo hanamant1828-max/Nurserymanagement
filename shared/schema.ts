@@ -1,133 +1,138 @@
 import { pgTable, text, integer, numeric, timestamp, index, serial, boolean } from "drizzle-orm/pg-core";
+import { sqliteTable, text as sqliteText, integer as sqliteInteger, real as sqliteReal, index as sqliteIndex } from "drizzle-orm/sqlite-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations, sql } from "drizzle-orm";
 
+// We'll use a conditional approach or just switch to SQLite for now as requested.
+// Since the user said "Still developing time use sql lite database later while publishing we can use post gry",
+// I will switch the table definitions to SQLite.
+
 // 1. Users (Login View)
-export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
-  role: text("role").default("staff").notNull(),
-  firstName: text("first_name"),
-  lastName: text("last_name"),
-  phoneNumber: text("phone_number"),
+export const users = sqliteTable("users", {
+  id: sqliteInteger("id").primaryKey({ autoIncrement: true }),
+  username: sqliteText("username").notNull().unique(),
+  password: sqliteText("password").notNull(),
+  role: sqliteText("role").default("staff").notNull(),
+  firstName: sqliteText("first_name"),
+  lastName: sqliteText("last_name"),
+  phoneNumber: sqliteText("phone_number"),
 });
 
 // 3. Categories
-export const categories = pgTable("categories", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull(),
-  image: text("image"), // Base64 string
-  pricePerUnit: numeric("price_per_unit", { precision: 10, scale: 2 }).default("1.00").notNull(),
-  active: boolean("active").default(true).notNull(),
+export const categories = sqliteTable("categories", {
+  id: sqliteInteger("id").primaryKey({ autoIncrement: true }),
+  name: sqliteText("name").notNull(),
+  image: sqliteText("image"), // Base64 string
+  pricePerUnit: sqliteText("price_per_unit").default("1.00").notNull(),
+  active: sqliteInteger("active", { mode: "boolean" }).default(true).notNull(),
 });
 
 // 4. Varieties
-export const varieties = pgTable("varieties", {
-  id: serial("id").primaryKey(),
-  categoryId: integer("category_id").notNull(),
-  name: text("name").notNull(),
-  active: boolean("active").default(true).notNull(),
+export const varieties = sqliteTable("varieties", {
+  id: sqliteInteger("id").primaryKey({ autoIncrement: true }),
+  categoryId: sqliteInteger("category_id").notNull(),
+  name: sqliteText("name").notNull(),
+  active: sqliteInteger("active", { mode: "boolean" }).default(true).notNull(),
 }, (table) => {
   return {
-    categoryIdIdx: index("idx_varieties_category_id").on(table.categoryId),
+    categoryIdIdx: sqliteIndex("idx_varieties_category_id").on(table.categoryId),
   };
 });
 
 // 5. Lots (Sowing Lot Entry)
-export const lots = pgTable("lots", {
-  id: serial("id").primaryKey(),
-  lotNumber: text("lot_number").notNull().unique(),
-  seedInwardId: integer("seed_inward_id"),
-  categoryId: integer("category_id").notNull(),
-  varietyId: integer("variety_id").notNull(),
-  sowingDate: text("sowing_date").notNull(),
-  seedsSown: integer("seeds_sown").notNull(),
-  packetsSown: integer("packets_sown").default(0).notNull(),
-  damaged: integer("damaged").default(0).notNull(),
-  damagePercentage: numeric("damage_percentage", { precision: 5, scale: 2 }).default("0.00"),
-  expectedReadyDate: text("expected_ready_date"),
-  remarks: text("remarks"),
+export const lots = sqliteTable("lots", {
+  id: sqliteInteger("id").primaryKey({ autoIncrement: true }),
+  lotNumber: sqliteText("lot_number").notNull().unique(),
+  seedInwardId: sqliteInteger("seed_inward_id"),
+  categoryId: sqliteInteger("category_id").notNull(),
+  varietyId: sqliteInteger("variety_id").notNull(),
+  sowingDate: sqliteText("sowing_date").notNull(),
+  seedsSown: sqliteInteger("seeds_sown").notNull(),
+  packetsSown: sqliteInteger("packets_sown").default(0).notNull(),
+  damaged: sqliteInteger("damaged").default(0).notNull(),
+  damagePercentage: sqliteText("damage_percentage").default("0.00"),
+  expectedReadyDate: sqliteText("expected_ready_date"),
+  remarks: sqliteText("remarks"),
 }, (table) => {
   return {
-    varietyIdIdx: index("idx_lots_variety_id").on(table.varietyId),
-    categoryIdIdx: index("idx_lots_category_id").on(table.categoryId),
+    varietyIdIdx: sqliteIndex("idx_lots_variety_id").on(table.varietyId),
+    categoryIdIdx: sqliteIndex("idx_lots_category_id").on(table.categoryId),
   };
 });
 
 // Orders (Order Booking)
-export const orders = pgTable("orders", {
-  id: serial("id").primaryKey(),
-  invoiceNumber: text("invoice_number").unique(),
-  lotId: integer("lot_id"), // Nullable for pending lots
-  categoryId: integer("category_id").notNull(),
-  varietyId: integer("variety_id").notNull(),
-  customerName: text("customer_name").notNull(),
-  phone: text("phone").notNull(),
-  village: text("village"),
-  state: text("state"),
-  district: text("district"),
-  taluk: text("taluk"),
-  perUnitPrice: numeric("per_unit_price", { precision: 10, scale: 2 }).default("0.00").notNull(),
-  bookedQty: numeric("booked_qty", { precision: 10, scale: 2 }).notNull(),
-  allocatedQuantity: numeric("allocated_quantity", { precision: 10, scale: 2 }).default("0.00").notNull(),
-  pendingQuantity: numeric("pending_quantity", { precision: 10, scale: 2 }).notNull(),
-  lotStatus: text("lot_status").default("PENDING_LOT").notNull(), // PENDING_LOT, ALLOCATED, PARTIAL
-  discount: numeric("discount", { precision: 10, scale: 2 }).default("0.00").notNull(),
-  totalAmount: numeric("total_amount", { precision: 10, scale: 2 }).notNull(),
-  advanceAmount: numeric("advance_amount", { precision: 10, scale: 2 }).notNull(),
-  remainingBalance: numeric("remaining_balance", { precision: 10, scale: 2 }).notNull(),
-  paymentMode: text("payment_mode").notNull(), // Cash, PhonePe, UPI, GPay
-  deliveryDate: text("delivery_date").notNull(),
-  status: text("status").default("BOOKED").notNull(), // BOOKED, DELIVERED, CANCELLED
-  paymentStatus: text("payment_status").notNull(), // Pending, Partially Paid, Paid
-  actualDeliveryDate: text("actual_delivery_date"),
-  actualDeliveryTime: text("actual_delivery_time"),
-  deliveredQty: numeric("delivered_qty", { precision: 10, scale: 2 }).default("0.00"),
-  vehicleDetails: text("vehicle_details"),
-  driverName: text("driver_name"),
-  driverPhone: text("driver_phone"),
-  createdBy: integer("created_by"),
+export const orders = sqliteTable("orders", {
+  id: sqliteInteger("id").primaryKey({ autoIncrement: true }),
+  invoiceNumber: sqliteText("invoice_number").unique(),
+  lotId: sqliteInteger("lot_id"), // Nullable for pending lots
+  categoryId: sqliteInteger("category_id").notNull(),
+  varietyId: sqliteInteger("variety_id").notNull(),
+  customerName: sqliteText("customer_name").notNull(),
+  phone: sqliteText("phone").notNull(),
+  village: sqliteText("village"),
+  state: sqliteText("state"),
+  district: sqliteText("district"),
+  taluk: sqliteText("taluk"),
+  perUnitPrice: sqliteText("per_unit_price").default("0.00").notNull(),
+  bookedQty: sqliteText("booked_qty").notNull(),
+  allocatedQuantity: sqliteText("allocated_quantity").default("0.00").notNull(),
+  pendingQuantity: sqliteText("pending_quantity").notNull(),
+  lotStatus: sqliteText("lot_status").default("PENDING_LOT").notNull(), // PENDING_LOT, ALLOCATED, PARTIAL
+  discount: sqliteText("discount").default("0.00").notNull(),
+  totalAmount: sqliteText("total_amount").notNull(),
+  advanceAmount: sqliteText("advance_amount").notNull(),
+  remainingBalance: sqliteText("remaining_balance").notNull(),
+  paymentMode: sqliteText("payment_mode").notNull(), // Cash, PhonePe, UPI, GPay
+  deliveryDate: sqliteText("delivery_date").notNull(),
+  status: sqliteText("status").default("BOOKED").notNull(), // BOOKED, DELIVERED, CANCELLED
+  paymentStatus: sqliteText("payment_status").notNull(), // Pending, Partially Paid, Paid
+  actualDeliveryDate: sqliteText("actual_delivery_date"),
+  actualDeliveryTime: sqliteText("actual_delivery_time"),
+  deliveredQty: sqliteText("delivered_qty").default("0.00"),
+  vehicleDetails: sqliteText("vehicle_details"),
+  driverName: sqliteText("driver_name"),
+  driverPhone: sqliteText("driver_phone"),
+  createdBy: sqliteInteger("created_by"),
 }, (table) => {
   return {
-    lotIdIdx: index("idx_orders_lot_id").on(table.lotId),
-    phoneIdx: index("idx_orders_phone").on(table.phone),
-    invoiceNumberIdx: index("idx_orders_invoice_number").on(table.invoiceNumber),
-    categoryIdIdx: index("idx_orders_category_id").on(table.categoryId),
-    varietyIdIdx: index("idx_orders_variety_id").on(table.varietyId),
+    lotIdIdx: sqliteIndex("idx_orders_lot_id").on(table.lotId),
+    phoneIdx: sqliteIndex("idx_orders_phone").on(table.phone),
+    invoiceNumberIdx: sqliteIndex("idx_orders_invoice_number").on(table.invoiceNumber),
+    categoryIdIdx: sqliteIndex("idx_orders_category_id").on(table.categoryId),
+    varietyIdIdx: sqliteIndex("idx_orders_variety_id").on(table.varietyId),
   };
 });
 
 // 9. Audit Logs
-export const auditLogs = pgTable("audit_logs", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
-  action: text("action").notNull(), // CREATE, UPDATE, DELETE
-  entityType: text("entity_type").notNull(), // category, variety, lot, order
-  entityId: integer("entity_id").notNull(),
-  details: text("details"),
-  timestamp: timestamp("timestamp").defaultNow().notNull(),
+export const auditLogs = sqliteTable("audit_logs", {
+  id: sqliteInteger("id").primaryKey({ autoIncrement: true }),
+  userId: sqliteInteger("user_id").notNull(),
+  action: sqliteText("action").notNull(), // CREATE, UPDATE, DELETE
+  entityType: sqliteText("entity_type").notNull(), // category, variety, lot, order
+  entityId: sqliteInteger("entity_id").notNull(),
+  details: sqliteText("details"),
+  timestamp: sqliteInteger("timestamp", { mode: "timestamp" }).default(sql`(strftime('%s', 'now'))`).notNull(),
 });
 
 // Seed Inward
-export const seedInward = pgTable("seed_inward", {
-  id: serial("id").primaryKey(),
-  categoryId: integer("category_id").notNull(),
-  varietyId: integer("variety_id").notNull(),
-  lotNo: text("lot_no").notNull(),
-  expiryDate: text("expiry_date").notNull(),
-  numberOfPackets: integer("number_of_packets").notNull(),
-  totalQuantity: integer("total_quantity").notNull(),
-  usedQuantity: integer("used_quantity").default(0).notNull(),
-  availableQuantity: integer("available_quantity").notNull(),
-  typeOfPackage: text("type_of_package").notNull(),
-  receivedFrom: text("received_from").notNull(),
-  timestamp: timestamp("timestamp").defaultNow().notNull(),
+export const seedInward = sqliteTable("seed_inward", {
+  id: sqliteInteger("id").primaryKey({ autoIncrement: true }),
+  categoryId: sqliteInteger("category_id").notNull(),
+  varietyId: sqliteInteger("variety_id").notNull(),
+  lotNo: sqliteText("lot_no").notNull(),
+  expiryDate: sqliteText("expiry_date").notNull(),
+  numberOfPackets: sqliteInteger("number_of_packets").notNull(),
+  totalQuantity: sqliteInteger("total_quantity").notNull(),
+  usedQuantity: sqliteInteger("used_quantity").default(0).notNull(),
+  availableQuantity: sqliteInteger("available_quantity").notNull(),
+  typeOfPackage: sqliteText("type_of_package").notNull(),
+  receivedFrom: sqliteText("received_from").notNull(),
+  timestamp: sqliteInteger("timestamp", { mode: "timestamp" }).default(sql`(strftime('%s', 'now'))`).notNull(),
 }, (table) => {
   return {
-    categoryIdIdx: index("idx_seed_inward_category_id").on(table.categoryId),
-    varietyIdIdx: index("idx_seed_inward_variety_id").on(table.varietyId),
+    categoryIdIdx: sqliteIndex("idx_seed_inward_category_id").on(table.categoryId),
+    varietyIdIdx: sqliteIndex("idx_seed_inward_variety_id").on(table.varietyId),
   };
 });
 

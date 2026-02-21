@@ -2,14 +2,14 @@ import {
   users, categories, varieties, lots, orders, auditLogs, seedInward,
   type User, type Category, type Variety, type Lot, type Order, type AuditLog, type SeedInward,
 } from "@shared/schema";
-import { db, pool } from "./db";
+import { db } from "./db";
 import { eq, sql, and, desc } from "drizzle-orm";
 import session from "express-session";
-import connectPg from "connect-pg-simple";
+import createMemoryStore from "memorystore";
 import { insertUserSchema, insertCategorySchema, insertVarietySchema, insertLotSchema, insertOrderSchema, insertAuditLogSchema, insertSeedInwardSchema } from "@shared/schema";
 import { z } from "zod";
 
-const PostgresSessionStore = connectPg(session);
+const MemoryStore = createMemoryStore(session);
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertCategory = z.infer<typeof insertCategorySchema>;
@@ -81,9 +81,8 @@ export class DatabaseStorage implements IStorage {
   sessionStore: session.Store;
 
   constructor() {
-    this.sessionStore = new PostgresSessionStore({
-      pool,
-      createTableIfMissing: true,
+    this.sessionStore = new MemoryStore({
+      checkPeriod: 86400000, // prune expired entries every 24h
     });
   }
 
@@ -219,7 +218,7 @@ export class DatabaseStorage implements IStorage {
     }
 
     const currentInward = inward; // for closure
-    const [lot] = await db.transaction(async (tx) => {
+    const lot = await db.transaction(async (tx) => {
       // Update seed inward stock
       await tx.update(seedInward)
         .set({
@@ -232,7 +231,7 @@ export class DatabaseStorage implements IStorage {
         ...insertLot,
         seedInwardId: currentInward.id
       }).returning();
-      return [newLot];
+      return newLot;
     });
 
     // Selective sync of pending orders with the new lot
@@ -305,7 +304,7 @@ export class DatabaseStorage implements IStorage {
     const oldLot = await this.getLot(id);
     if (!oldLot) throw new Error("Lot not found");
 
-    const [lot] = await db.transaction(async (tx) => {
+    const lot = await db.transaction(async (tx) => {
       if (update.packetsSown !== undefined && update.packetsSown !== oldLot.packetsSown) {
         const inwardLots = await tx.select().from(seedInward).where(
           and(
@@ -333,7 +332,7 @@ export class DatabaseStorage implements IStorage {
       }
 
       const [updatedLot] = await tx.update(lots).set(update).where(eq(lots.id, id)).returning();
-      return [updatedLot];
+      return updatedLot;
     });
 
     return lot;
