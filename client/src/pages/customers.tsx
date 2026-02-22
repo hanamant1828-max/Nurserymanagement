@@ -1,5 +1,6 @@
 import { useOrders } from "@/hooks/use-orders";
 import { useVarieties } from "@/hooks/use-varieties";
+import { useCategories } from "@/hooks/use-categories";
 import {
   Table,
   TableBody,
@@ -8,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Users, Phone, MapPin, Search, FileSpreadsheet, Layers } from "lucide-react";
+import { Users, Phone, MapPin, Search, FileSpreadsheet, Layers, Tag } from "lucide-react";
 import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -24,14 +25,12 @@ import * as XLSX from "xlsx";
 
 export default function CustomersPage() {
   const { data, isLoading } = useOrders(1, 10000); // Fetch more orders for comprehensive customer list
-  const varieties = data?.orders ? Array.from(new Set(data.orders.map((o: any) => {
-    const varietyName = o.lot?.variety?.name;
-    const categoryName = o.lot?.category?.name;
-    return categoryName ? `${categoryName} - ${varietyName}` : varietyName;
-  }).filter(Boolean))) : [];
+  const { data: categoriesData } = useCategories();
+  const { data: varietiesData } = useVarieties();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [villageFilter, setVillageFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [varietyFilter, setVarietyFilter] = useState("all");
 
   const orders = data?.orders || [];
@@ -49,16 +48,22 @@ export default function CustomersPage() {
           village: order.village || "N/A",
           totalOrders: 0,
           lastOrderDate: order.deliveryDate,
-          varieties: new Set<string>()
+          varieties: new Set<number>(),
+          categories: new Set<number>()
         };
       }
       acc[key].totalOrders += 1;
-      if (order.lot?.variety?.name) {
-        const varietyName = order.lot.variety.name;
-        const categoryName = order.lot.category?.name || "";
-        const displayName = categoryName ? `${categoryName} - ${varietyName}` : varietyName;
-        acc[key].varieties.add(displayName);
+      
+      const categoryId = order.categoryId || order.lot?.categoryId;
+      const varietyId = order.varietyId || order.lot?.varietyId;
+
+      if (categoryId) {
+        acc[key].categories.add(Number(categoryId));
       }
+      if (varietyId) {
+        acc[key].varieties.add(Number(varietyId));
+      }
+
       // Update last order date if newer
       if (new Date(order.deliveryDate) > new Date(acc[key].lastOrderDate)) {
         acc[key].lastOrderDate = order.deliveryDate;
@@ -66,11 +71,16 @@ export default function CustomersPage() {
       return acc;
     }, {} as Record<string, any>);
 
-    return Object.values(aggregated).map((c: any) => ({
-      ...c,
-      varietiesList: Array.from(c.varieties as Set<string>).join(", ")
-    }));
-  }, [orders]);
+    return Object.values(aggregated).map((c: any) => {
+      const customerVarieties = varietiesData?.filter(v => c.varieties.has(v.id)) || [];
+      const varietiesList = customerVarieties.map(v => v.name).join(", ");
+      
+      return {
+        ...c,
+        varietiesList
+      };
+    });
+  }, [orders, varietiesData]);
 
   const uniqueVillages = useMemo(() => {
     const villages = new Set(customers.map((c: any) => c.village));
@@ -86,11 +96,13 @@ export default function CustomersPage() {
       
       const matchesVillage = villageFilter === "all" || customer.village === villageFilter;
       
-      const matchesVariety = varietyFilter === "all" || customer.varietiesList.includes(varietyFilter);
+      const matchesCategory = categoryFilter === "all" || customer.categories.has(Number(categoryFilter));
+      
+      const matchesVariety = varietyFilter === "all" || customer.varieties.has(Number(varietyFilter));
 
-      return matchesSearch && matchesVillage && matchesVariety;
+      return matchesSearch && matchesVillage && matchesCategory && matchesVariety;
     });
-  }, [customers, searchTerm, villageFilter, varietyFilter]);
+  }, [customers, searchTerm, villageFilter, categoryFilter, varietyFilter]);
 
   const exportToExcel = () => {
     const exportData = filteredCustomers.map((c: any) => ({
@@ -121,7 +133,7 @@ export default function CustomersPage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-card p-4 rounded-lg border shadow-sm">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-card p-4 rounded-lg border shadow-sm">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -147,6 +159,21 @@ export default function CustomersPage() {
           </SelectContent>
         </Select>
 
+        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+          <SelectTrigger>
+            <div className="flex items-center gap-2">
+              <Tag className="h-4 w-4 text-muted-foreground" />
+              <SelectValue placeholder="Filter by Category" />
+            </div>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Categories</SelectItem>
+            {categoriesData?.map(c => (
+              <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
         <Select value={varietyFilter} onValueChange={setVarietyFilter}>
           <SelectTrigger>
             <div className="flex items-center gap-2">
@@ -156,8 +183,8 @@ export default function CustomersPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Varieties</SelectItem>
-            {varieties.map(v => (
-              <SelectItem key={v as string} value={v as string}>{v as string}</SelectItem>
+            {varietiesData?.filter(v => categoryFilter === "all" || v.categoryId === Number(categoryFilter)).map(v => (
+              <SelectItem key={v.id} value={v.id.toString()}>{v.name}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -170,6 +197,7 @@ export default function CustomersPage() {
               <TableHead>Customer Name</TableHead>
               <TableHead>Contact</TableHead>
               <TableHead>Location</TableHead>
+              <TableHead>Categories</TableHead>
               <TableHead>Varieties</TableHead>
               <TableHead className="text-center">Total Orders</TableHead>
               <TableHead className="text-right">Last Active</TableHead>
@@ -177,10 +205,10 @@ export default function CustomersPage() {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow><TableCell colSpan={6} className="h-24 text-center">Loading customers...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} className="h-24 text-center">Loading customers...</TableCell></TableRow>
             ) : filteredCustomers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
+                <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
                   <div className="flex flex-col items-center gap-2">
                     <Users className="w-8 h-8 opacity-20" />
                     No customers found.
@@ -188,28 +216,36 @@ export default function CustomersPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredCustomers.map((customer, idx) => (
-                <TableRow key={idx}>
-                  <TableCell className="font-medium">{customer.name}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                      <Phone className="w-3 h-3" /> {customer.phone}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                      <MapPin className="w-3 h-3" /> {customer.village}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-xs text-muted-foreground line-clamp-1" title={customer.varietiesList}>
-                      {customer.varietiesList}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-center font-bold text-primary">{customer.totalOrders}</TableCell>
-                  <TableCell className="text-right text-muted-foreground text-sm">{customer.lastOrderDate}</TableCell>
-                </TableRow>
-              ))
+              filteredCustomers.map((customer, idx) => {
+                const customerCategories = categoriesData?.filter(cat => customer.categories.has(cat.id)).map(cat => cat.name).join(", ") || "N/A";
+                return (
+                  <TableRow key={idx}>
+                    <TableCell className="font-medium">{customer.name}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                        <Phone className="w-3 h-3" /> {customer.phone}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                        <MapPin className="w-3 h-3" /> {customer.village}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-xs text-muted-foreground line-clamp-1" title={customerCategories}>
+                        {customerCategories}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-xs text-muted-foreground line-clamp-1" title={customer.varietiesList}>
+                        {customer.varietiesList}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-center font-bold text-primary">{customer.totalOrders}</TableCell>
+                    <TableCell className="text-right text-muted-foreground text-sm">{customer.lastOrderDate}</TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>
@@ -226,31 +262,37 @@ export default function CustomersPage() {
             No customers found.
           </div>
         ) : (
-          filteredCustomers.map((customer, idx) => (
-            <Card key={idx} className="p-4 space-y-3">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-bold text-lg">{customer.name}</h3>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Phone className="w-3.5 h-3.5" /> {customer.phone}
+          filteredCustomers.map((customer, idx) => {
+            const customerCategories = categoriesData?.filter(cat => customer.categories.has(cat.id)).map(cat => cat.name).join(", ") || "N/A";
+            return (
+              <Card key={idx} className="p-4 space-y-3">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-bold text-lg">{customer.name}</h3>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Phone className="w-3.5 h-3.5" /> {customer.phone}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-[10px] font-bold uppercase text-muted-foreground">Total Orders</div>
+                    <div className="text-xl font-black text-primary">{customer.totalOrders}</div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-[10px] font-bold uppercase text-muted-foreground">Total Orders</div>
-                  <div className="text-xl font-black text-primary">{customer.totalOrders}</div>
+                <div className="flex items-center gap-1 text-sm text-muted-foreground border-t pt-2">
+                  <MapPin className="w-3.5 h-3.5" /> {customer.village}
                 </div>
-              </div>
-              <div className="flex items-center gap-1 text-sm text-muted-foreground border-t pt-2">
-                <MapPin className="w-3.5 h-3.5" /> {customer.village}
-              </div>
-              <div className="text-xs text-muted-foreground">
-                <span className="font-semibold">Varieties:</span> {customer.varietiesList}
-              </div>
-              <div className="text-right text-[10px] text-muted-foreground pt-1 border-t border-dashed">
-                Last Active: {customer.lastOrderDate}
-              </div>
-            </Card>
-          ))
+                <div className="text-xs text-muted-foreground">
+                  <span className="font-semibold">Categories:</span> {customerCategories}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  <span className="font-semibold">Varieties:</span> {customer.varietiesList}
+                </div>
+                <div className="text-right text-[10px] text-muted-foreground pt-1 border-t border-dashed">
+                  Last Active: {customer.lastOrderDate}
+                </div>
+              </Card>
+            );
+          })
         )}
       </div>
     </div>
