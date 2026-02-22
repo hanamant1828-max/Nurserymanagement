@@ -993,10 +993,10 @@ const DISTRICTS_DATA: Record<string, any[]> = {
   Karnataka: KARNATAKA_DISTRICTS,
 };
 
-export default function OrdersPage() {
+export default function Orders() {
   const { toast } = useToast();
   const [page, setPage] = useState(1);
-  const [sortField, setSortField] = useState<string>("deliveryDate");
+  const [sortField, setSortField] = useState("deliveryDate");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [limit, setLimit] = useState(25);
   const { data: ordersData, isLoading } = useOrders(page, limit, sortField, sortOrder);
@@ -1240,23 +1240,11 @@ export default function OrdersPage() {
     }
   };
 
-  const markDelivered = (id: number) => {
-    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-    const now = new Date();
-    update({
-      id,
-      status: "DELIVERED",
-      deliveredQty: "0",
-      actualDeliveryDate: format(now, "yyyy-MM-dd"),
-      actualDeliveryTime: format(now, "HH:mm:ss"),
-    });
-  };
-
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     const payload: any = {
       categoryId: selectedCategoryId ? parseInt(selectedCategoryId) : (data.categoryId ? parseInt(data.categoryId) : null),
       varietyId: selectedVarietyId ? parseInt(selectedVarietyId) : (data.varietyId ? parseInt(data.varietyId) : null),
-      lotId: data.lotId ? parseInt(data.lotId) : (selectedLotId ? parseInt(selectedLotId) : null),
+      lotId: data.lotId && data.lotId !== "none" ? parseInt(data.lotId) : null,
       customerName: data.customerName,
       phone: data.phone,
       village: data.village || null,
@@ -1282,13 +1270,9 @@ export default function OrdersPage() {
       driverPhone: data.driverPhone || null,
     };
 
-    console.log("Submitting order payload:", payload);
-
     if (editingOrder) {
-      console.log("Calling update mutation for order:", editingOrder.id);
       update({ id: editingOrder.id, ...payload }, {
         onSuccess: () => {
-          console.log("Order updated successfully");
           setOpen(false);
           setEditingOrder(null);
           form.reset();
@@ -1301,7 +1285,6 @@ export default function OrdersPage() {
           });
         },
         onError: (error: any) => {
-          console.error("Update error:", error);
           toast({
             title: "Error",
             description: error.message || "Failed to update order",
@@ -1310,10 +1293,8 @@ export default function OrdersPage() {
         }
       });
     } else {
-      console.log("Calling create mutation");
       create(payload, {
         onSuccess: (newOrder) => {
-          console.log("Order created successfully:", newOrder);
           setOpen(false);
           form.reset();
           setStep(1);
@@ -1325,7 +1306,6 @@ export default function OrdersPage() {
           });
         },
         onError: (error: any) => {
-          console.error("Create error:", error);
           toast({
             title: "Error",
             description: error.message || "Failed to book order",
@@ -1556,9 +1536,9 @@ export default function OrdersPage() {
                       <Button variant="outline" size="icon" onClick={() => { 
                         const bookingData = {
                           ...order,
-                          categoryId: order.categoryId?.toString() || order.lot?.categoryId?.toString(),
-                          varietyId: order.varietyId?.toString() || order.lot?.varietyId?.toString(),
-                          lotId: order.lotId?.toString() || "",
+                          categoryId: (order.categoryId || order.lot?.categoryId)?.toString() || "",
+                          varietyId: (order.varietyId || order.lot?.varietyId)?.toString() || "",
+                          lotId: order.lotId?.toString() || "none",
                           deliveryDate: new Date(order.deliveryDate),
                           bookedQty: Number(order.bookedQty),
                           perUnitPrice: Number(order.perUnitPrice),
@@ -1570,7 +1550,7 @@ export default function OrdersPage() {
                         setSelectedCategoryId(bookingData.categoryId);
                         setSelectedVarietyId(bookingData.varietyId);
                         form.reset(bookingData);
-                        setStep(4); // Go directly to details step
+                        setStep(4);
                         setOpen(true); 
                       }} className="h-8 w-8">
                         <Edit2 className="h-4 w-4 text-muted-foreground" />
@@ -1659,9 +1639,9 @@ export default function OrdersPage() {
                 <Button variant="outline" size="sm" onClick={() => { 
                   const bookingData = {
                     ...order,
-                    categoryId: order.categoryId?.toString() || order.lot?.categoryId?.toString(),
-                    varietyId: order.varietyId?.toString() || order.lot?.varietyId?.toString(),
-                    lotId: order.lotId?.toString() || "",
+                    categoryId: (order.categoryId || order.lot?.categoryId)?.toString() || "",
+                    varietyId: (order.varietyId || order.lot?.varietyId)?.toString() || "",
+                    lotId: order.lotId?.toString() || "none",
                     deliveryDate: new Date(order.deliveryDate),
                     bookedQty: Number(order.bookedQty),
                     perUnitPrice: Number(order.perUnitPrice),
@@ -1673,7 +1653,7 @@ export default function OrdersPage() {
                   setSelectedCategoryId(bookingData.categoryId);
                   setSelectedVarietyId(bookingData.varietyId);
                   form.reset(bookingData);
-                  setStep(4); // Go directly to details step
+                  setStep(4);
                   setOpen(true);
                 }} className="h-9 w-9 p-0">
                   <Edit2 className="h-4 w-4 text-muted-foreground" />
@@ -1681,14 +1661,6 @@ export default function OrdersPage() {
               </div>
             </div>
           ))}
-          {paginatedOrders.length === 0 && (
-            <div className="p-12 text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-muted mb-4">
-                <Search className="h-6 w-6 text-muted-foreground" />
-              </div>
-              <p className="text-muted-foreground font-medium">No orders found matching your criteria.</p>
-            </div>
-          )}
         </div>
       </div>
       
@@ -1722,7 +1694,6 @@ export default function OrdersPage() {
         </div>
       </div>
 
-      {/* The booking dialog would go here - simplified for space */}
       <Dialog open={open} onOpenChange={(val) => {
         setOpen(val);
         if (!val) {
@@ -1730,6 +1701,7 @@ export default function OrdersPage() {
           setSelectedCategoryId(null);
           setSelectedVarietyId(null);
           form.reset();
+          setEditingOrder(null);
         }
       }}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -1820,10 +1792,10 @@ export default function OrdersPage() {
                 <Card 
                   className={cn(
                     "cursor-pointer hover-elevate transition-all border-2 flex items-center justify-center min-h-[100px]",
-                    !form.watch("lotId") ? "border-red-500 bg-red-50/50" : "border-transparent"
+                    !form.watch("lotId") || form.watch("lotId") === "none" ? "border-red-500 bg-red-50/50" : "border-transparent"
                   )}
                   onClick={() => {
-                    form.setValue("lotId", "");
+                    form.setValue("lotId", "none");
                     setStep(4);
                   }}
                 >
@@ -1871,20 +1843,118 @@ export default function OrdersPage() {
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="icon" type="button" onClick={prevStep}>
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
+                  {!editingOrder && (
+                    <Button variant="ghost" size="icon" type="button" onClick={prevStep}>
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                  )}
                   <h3 className="text-lg font-medium">Order Details</h3>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Customer Info Section */}
                   <div className="space-y-4">
+                    <div className="p-4 bg-muted/50 rounded-lg space-y-4">
+                      <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                        <ShoppingCart className="h-4 w-4" /> Order Selection
+                      </h4>
+                      <FormField
+                        control={form.control}
+                        name="categoryId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Category</FormLabel>
+                            <Select 
+                              onValueChange={(val) => {
+                                field.onChange(val);
+                                setSelectedCategoryId(val);
+                                setSelectedVarietyId(null);
+                                form.setValue("varietyId", "");
+                                form.setValue("lotId", "none");
+                              }} 
+                              value={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select category" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {categories?.map((cat: any) => (
+                                  <SelectItem key={cat.id} value={cat.id.toString()}>{cat.name}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="varietyId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Variety</FormLabel>
+                            <Select 
+                              onValueChange={(val) => {
+                                field.onChange(val);
+                                setSelectedVarietyId(val);
+                                form.setValue("lotId", "none");
+                              }} 
+                              value={field.value}
+                              disabled={!selectedCategoryId}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select variety" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {varieties
+                                  ?.filter((v: any) => v.categoryId.toString() === selectedCategoryId)
+                                  .map((v: any) => (
+                                    <SelectItem key={v.id} value={v.id.toString()}>{v.name}</SelectItem>
+                                  ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="lotId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Lot Number</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value} disabled={!selectedVarietyId}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select lot" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="none">Book without Lot</SelectItem>
+                                {lots
+                                  ?.filter((l: any) => l.varietyId.toString() === selectedVarietyId)
+                                  .map((l: any) => (
+                                    <SelectItem key={l.id} value={l.id.toString()}>
+                                      Lot {l.lotNumber} (Stock: {l.seedsSown - l.damaged})
+                                    </SelectItem>
+                                  ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
                     <div className="p-4 bg-muted/50 rounded-lg space-y-4">
                       <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                         <MapPin className="h-4 w-4" /> Customer Information
                       </h4>
-                      
                       <FormField
                         control={form.control}
                         name="phone"
@@ -1893,38 +1963,25 @@ export default function OrdersPage() {
                             <FormLabel>Phone Number</FormLabel>
                             <FormControl>
                               <div className="relative">
-                                <Input 
-                                  placeholder="10-digit mobile number" 
-                                  {...field} 
-                                  onChange={(e) => {
-                                    field.onChange(e);
-                                    checkPhone(e.target.value);
-                                  }}
-                                />
-                                {isSearchingPhone && (
-                                  <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
-                                )}
+                                <Input placeholder="10-digit mobile number" {...field} onChange={(e) => { field.onChange(e); checkPhone(e.target.value); }} />
+                                {isSearchingPhone && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />}
                               </div>
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-
                       <FormField
                         control={form.control}
                         name="customerName"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Full Name</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Enter customer name" {...field} />
-                            </FormControl>
+                            <FormControl><Input placeholder="Enter customer name" {...field} /></FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-
                       <div className="grid grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
@@ -1933,41 +1990,23 @@ export default function OrdersPage() {
                             <FormItem>
                               <FormLabel>State</FormLabel>
                               <Select onValueChange={field.onChange} value={field.value}>
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select state" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="Maharashtra">Maharashtra</SelectItem>
-                                  <SelectItem value="Karnataka">Karnataka</SelectItem>
-                                </SelectContent>
+                                <FormControl><SelectTrigger><SelectValue placeholder="Select state" /></SelectTrigger></FormControl>
+                                <SelectContent><SelectItem value="Maharashtra">Maharashtra</SelectItem><SelectItem value="Karnataka">Karnataka</SelectItem></SelectContent>
                               </Select>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
-
                         <FormField
                           control={form.control}
                           name="district"
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>District</FormLabel>
-                              <Select 
-                                onValueChange={field.onChange} 
-                                value={field.value}
-                                disabled={!form.watch("state")}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select district" />
-                                  </SelectTrigger>
-                                </FormControl>
+                              <Select onValueChange={field.onChange} value={field.value} disabled={!form.watch("state")}>
+                                <FormControl><SelectTrigger><SelectValue placeholder="Select district" /></SelectTrigger></FormControl>
                                 <SelectContent>
-                                  {form.watch("state") && DISTRICTS_DATA[form.watch("state")!]?.map((d: any) => (
-                                    <SelectItem key={d.name} value={d.name}>{d.name}</SelectItem>
-                                  ))}
+                                  {form.watch("state") && DISTRICTS_DATA[form.watch("state")!]?.map((d: any) => (<SelectItem key={d.name} value={d.name}>{d.name}</SelectItem>))}
                                 </SelectContent>
                               </Select>
                               <FormMessage />
@@ -1975,7 +2014,6 @@ export default function OrdersPage() {
                           )}
                         />
                       </div>
-
                       <div className="grid grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
@@ -1983,293 +2021,75 @@ export default function OrdersPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Taluk</FormLabel>
-                              <Select 
-                                onValueChange={field.onChange} 
-                                value={field.value}
-                                disabled={!form.watch("district")}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select taluk" />
-                                  </SelectTrigger>
-                                </FormControl>
+                              <Select onValueChange={field.onChange} value={field.value} disabled={!form.watch("district")}>
+                                <FormControl><SelectTrigger><SelectValue placeholder="Select taluk" /></SelectTrigger></FormControl>
                                 <SelectContent>
-                                  {form.watch("district") && DISTRICTS_DATA[form.watch("state")!]
-                                    ?.find((d: any) => d.name === form.watch("district"))
-                                    ?.taluks.map((t: string) => (
-                                      <SelectItem key={t} value={t}>{t}</SelectItem>
-                                    ))}
+                                  {form.watch("district") && form.watch("state") && DISTRICTS_DATA[form.watch("state")!]?.find((d: any) => d.name === form.watch("district"))?.taluks.map((t: string) => (<SelectItem key={t} value={t}>{t}</SelectItem>))}
                                 </SelectContent>
                               </Select>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
-
                         <FormField
                           control={form.control}
                           name="village"
                           render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Village</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Enter village" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
+                            <FormItem><FormLabel>Village</FormLabel><FormControl><Input placeholder="Enter village" {...field} /></FormControl><FormMessage /></FormItem>
                           )}
                         />
                       </div>
                     </div>
                   </div>
 
-                  {/* Order Info Section */}
                   <div className="space-y-4">
                     <div className="p-4 border rounded-lg bg-green-50/30 space-y-4">
                       <h4 className="font-semibold text-sm uppercase tracking-wider text-green-700 flex items-center gap-2">
                         <ShoppingCart className="h-4 w-4" /> Pricing & Delivery
                       </h4>
-
                       <div className="grid grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="bookedQty"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Quantity</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  type="number" 
-                                  {...field} 
-                                  onChange={(e) => {
-                                    const qty = parseFloat(e.target.value) || 0;
-                                    field.onChange(qty);
-                                    const price = form.getValues("perUnitPrice") || 0;
-                                    form.setValue("totalAmount", qty * price);
-                                  }}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="perUnitPrice"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Unit Price (₹)</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  type="number" 
-                                  {...field} 
-                                  onChange={(e) => {
-                                    const price = parseFloat(e.target.value) || 0;
-                                    field.onChange(price);
-                                    const qty = form.getValues("bookedQty") || 0;
-                                    form.setValue("totalAmount", qty * price);
-                                  }}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        <FormField control={form.control} name="bookedQty" render={({ field }) => (
+                          <FormItem><FormLabel>Quantity</FormLabel><FormControl><Input type="number" {...field} onChange={(e) => { const qty = parseFloat(e.target.value) || 0; field.onChange(qty); form.setValue("totalAmount", qty * (form.getValues("perUnitPrice") || 0)); }} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="perUnitPrice" render={({ field }) => (
+                          <FormItem><FormLabel>Unit Price (₹)</FormLabel><FormControl><Input type="number" {...field} onChange={(e) => { const price = parseFloat(e.target.value) || 0; field.onChange(price); form.setValue("totalAmount", (form.getValues("bookedQty") || 0) * price); }} /></FormControl><FormMessage /></FormItem>
+                        )} />
                       </div>
-
                       <div className="grid grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="totalAmount"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Total Amount (₹)</FormLabel>
-                              <FormControl>
-                                <Input type="number" {...field} readOnly className="bg-muted" />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="advanceAmount"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Advance Paid (₹)</FormLabel>
-                              <FormControl>
-                                <Input type="number" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        <FormField control={form.control} name="totalAmount" render={({ field }) => (
+                          <FormItem><FormLabel>Total Amount (₹)</FormLabel><FormControl><Input type="number" {...field} readOnly className="bg-muted" /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="advanceAmount" render={({ field }) => (
+                          <FormItem><FormLabel>Advance Paid (₹)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
                       </div>
-
                       <div className="flex justify-between items-center p-3 bg-white rounded border border-green-100">
-                        <div className="text-sm">
-                          <span className="text-muted-foreground">Balance:</span>
-                          <span className="ml-2 font-bold text-red-600">₹{remainingBalance}</span>
-                        </div>
-                        <Badge variant={paymentStatus === "Paid" ? "default" : "outline"}>
-                          {paymentStatus}
-                        </Badge>
+                        <div className="text-sm"><span className="text-muted-foreground">Balance:</span><span className="ml-2 font-bold text-red-600">₹{remainingBalance}</span></div>
+                        <Badge variant={paymentStatus === "Paid" ? "default" : "outline"}>{paymentStatus}</Badge>
                       </div>
-
                       <div className="grid grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="paymentMode"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Payment Mode</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value}>
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Mode" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {["Cash", "PhonePe", "UPI", "GPay"].map(mode => (
-                                    <SelectItem key={mode} value={mode}>{mode}</SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="deliveryDate"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-col">
-                              <FormLabel className="mb-2">Delivery Date</FormLabel>
-                              <Popover>
-                                <PopoverTrigger asChild>
-                                  <FormControl>
-                                    <Button
-                                      variant={"outline"}
-                                      className={cn(
-                                        "w-full pl-3 text-left font-normal h-10",
-                                        !field.value && "text-muted-foreground"
-                                      )}
-                                    >
-                                      {field.value ? (
-                                        format(field.value, "PPP")
-                                      ) : (
-                                        <span>Pick a date</span>
-                                      )}
-                                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                    </Button>
-                                  </FormControl>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
-                                  <Calendar
-                                    mode="single"
-                                    selected={field.value}
-                                    onSelect={field.onChange}
-                                    disabled={(date) => date < new Date(new Date().setHours(0,0,0,0))}
-                                    initialFocus
-                                  />
-                                </PopoverContent>
-                              </Popover>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                          <FormField
-                            control={form.control}
-                            name="sowingDate"
-                            render={({ field }) => (
-                              <FormItem className="flex flex-col">
-                                <FormLabel className="text-sm font-semibold text-primary">Sowing Date (Required for New Sowing)</FormLabel>
-                                <Popover>
-                                  <PopoverTrigger asChild>
-                                    <FormControl>
-                                      <Button
-                                        variant={"outline"}
-                                        className={cn(
-                                          "w-full h-10 pl-3 text-left font-normal text-sm border-primary/50 bg-primary/5",
-                                          !field.value && "text-muted-foreground"
-                                        )}
-                                      >
-                                        {field.value ? (
-                                          format(field.value, "PPP")
-                                        ) : (
-                                          <span>Pick sowing date</span>
-                                        )}
-                                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                      </Button>
-                                    </FormControl>
-                                  </PopoverTrigger>
-                                  <PopoverContent className="w-auto p-0 z-[110]" align="start">
-                                    <Calendar
-                                      mode="single"
-                                      selected={field.value}
-                                      onSelect={field.onChange}
-                                      disabled={(date) => date < new Date(new Date().setHours(0,0,0,0))}
-                                      initialFocus
-                                    />
-                                  </PopoverContent>
-                                </Popover>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
+                        <FormField control={form.control} name="paymentMode" render={({ field }) => (
+                          <FormItem><FormLabel>Payment Mode</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Mode" /></SelectTrigger></FormControl><SelectContent>{["Cash", "PhonePe", "UPI", "GPay"].map(mode => (<SelectItem key={mode} value={mode}>{mode}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="deliveryDate" render={({ field }) => (
+                          <FormItem className="flex flex-col"><FormLabel className="mb-2">Delivery Date</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal h-10", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date < new Date(new Date().setHours(0,0,0,0))} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem>
+                        )} />
                       </div>
-
+                      <FormField control={form.control} name="sowingDate" render={({ field }) => (
+                        <FormItem className="flex flex-col"><FormLabel className="text-sm font-semibold text-primary">Sowing Date (Optional)</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full h-10 pl-3 text-left font-normal text-sm border-primary/50 bg-primary/5", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick sowing date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0 z-[110]" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem>
+                      )} />
                       <div className="p-4 border rounded-lg bg-blue-50/30 space-y-4">
-                        <h4 className="font-semibold text-sm uppercase tracking-wider text-blue-700 flex items-center gap-2">
-                          <MapPin className="h-4 w-4" /> Vehicle & Driver Details
-                        </h4>
-                        
-                        <FormField
-                          control={form.control}
-                          name="vehicleDetails"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Vehicle Number / Details</FormLabel>
-                              <FormControl>
-                                <Input placeholder="e.g. MH 12 AB 1234" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
+                        <h4 className="font-semibold text-sm uppercase tracking-wider text-blue-700 flex items-center gap-2"><MapPin className="h-4 w-4" /> Logistics</h4>
+                        <FormField control={form.control} name="vehicleDetails" render={({ field }) => (
+                          <FormItem><FormLabel>Vehicle Number</FormLabel><FormControl><Input placeholder="e.g. MH 12 AB 1234" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
                         <div className="grid grid-cols-2 gap-4">
-                          <FormField
-                            control={form.control}
-                            name="driverName"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Driver Name</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="Name" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name="driverPhone"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Driver Phone</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="Phone" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
+                          <FormField control={form.control} name="driverName" render={({ field }) => (
+                            <FormItem><FormLabel>Driver Name</FormLabel><FormControl><Input placeholder="Name" {...field} /></FormControl><FormMessage /></FormItem>
+                          )} />
+                          <FormField control={form.control} name="driverPhone" render={({ field }) => (
+                            <FormItem><FormLabel>Driver Phone</FormLabel><FormControl><Input placeholder="Phone" {...field} /></FormControl><FormMessage /></FormItem>
+                          )} />
                         </div>
                       </div>
                     </div>
@@ -2277,15 +2097,9 @@ export default function OrdersPage() {
                 </div>
 
                 <div className="flex gap-4">
-                  <Button variant="outline" type="button" className="flex-1 h-11" onClick={() => setOpen(false)}>
-                    Cancel
-                  </Button>
+                  <Button variant="outline" type="button" className="flex-1 h-11" onClick={() => setOpen(false)}>Cancel</Button>
                   <Button type="submit" disabled={createLoading || updateLoading} className="flex-1 h-11 bg-green-600 hover:bg-green-700">
-                    {(createLoading || updateLoading) ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <CheckCircle className="mr-2 h-4 w-4" />
-                    )}
+                    {(createLoading || updateLoading) ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-2 h-4 w-4" />}
                     {editingOrder ? "Update Order" : "Confirm Booking"}
                   </Button>
                 </div>
@@ -2294,136 +2108,25 @@ export default function OrdersPage() {
           )}
         </DialogContent>
       </Dialog>
-      {/* Delivery Dialog */}
+
       <Dialog open={deliveryDialogOpen} onOpenChange={setDeliveryDialogOpen}>
         <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Mark as Delivered</DialogTitle>
-            <DialogDescription>
-              Enter delivery details for {selectedOrderForDelivery?.customerName}
-            </DialogDescription>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>Mark as Delivered</DialogTitle><DialogDescription>Enter delivery details for {selectedOrderForDelivery?.customerName}</DialogDescription></DialogHeader>
           <Form {...deliveryForm}>
             <form onSubmit={deliveryForm.handleSubmit(onDeliverSubmit)} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={deliveryForm.control}
-                  name="actualDeliveryDate"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Delivery Date</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, "PPP")
-                              ) : (
-                                <span>Pick a date</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={deliveryForm.control}
-                  name="actualDeliveryTime"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Delivery Time</FormLabel>
-                      <FormControl>
-                        <Input type="time" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <FormField control={deliveryForm.control} name="actualDeliveryDate" render={({ field }) => (
+                  <FormItem className="flex flex-col"><FormLabel>Delivery Date</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem>
+                )} />
+                <FormField control={deliveryForm.control} name="actualDeliveryTime" render={({ field }) => (<FormItem><FormLabel>Delivery Time</FormLabel><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)} />
               </div>
-
-              <FormField
-                control={deliveryForm.control}
-                name="deliveredQty"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Delivered Quantity</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={deliveryForm.control}
-                name="vehicleDetails"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Vehicle Number</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g. MH 12 AB 1234" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
+              <FormField control={deliveryForm.control} name="deliveredQty" render={({ field }) => (<FormItem><FormLabel>Delivered Quantity</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={deliveryForm.control} name="vehicleDetails" render={({ field }) => (<FormItem><FormLabel>Vehicle Number</FormLabel><FormControl><Input placeholder="e.g. MH 12 AB 1234" {...field} /></FormControl><FormMessage /></FormItem>)} />
               <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={deliveryForm.control}
-                  name="driverName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Driver Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={deliveryForm.control}
-                  name="driverPhone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Driver Phone</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Phone" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <FormField control={deliveryForm.control} name="driverName" render={({ field }) => (<FormItem><FormLabel>Driver Name</FormLabel><FormControl><Input placeholder="Name" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={deliveryForm.control} name="driverPhone" render={({ field }) => (<FormItem><FormLabel>Driver Phone</FormLabel><FormControl><Input placeholder="Phone" {...field} /></FormControl><FormMessage /></FormItem>)} />
               </div>
-
-              <div className="flex gap-4 pt-4">
-                <Button variant="outline" type="button" className="flex-1" onClick={() => setDeliveryDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit" className="flex-1 bg-green-600 hover:bg-green-700">
-                  Confirm Delivery
-                </Button>
-              </div>
+              <Button type="submit" className="w-full h-11 bg-green-600 hover:bg-green-700">Confirm Delivery</Button>
             </form>
           </Form>
         </DialogContent>
