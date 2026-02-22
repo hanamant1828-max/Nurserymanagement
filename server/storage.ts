@@ -218,19 +218,20 @@ export class DatabaseStorage implements IStorage {
     }
 
     const currentInward = inward; // for closure
-    const lot = await db.transaction(async (tx) => {
+    const lot = db.transaction((tx) => {
       // Update seed inward stock
-      await tx.update(seedInward)
+      tx.update(seedInward)
         .set({
           usedQuantity: currentInward.usedQuantity + packetsSown,
           availableQuantity: currentInward.availableQuantity - packetsSown,
         })
-        .where(eq(seedInward.id, currentInward.id));
+        .where(eq(seedInward.id, currentInward.id))
+        .run();
 
-      const [newLot] = await tx.insert(lots).values({
+      const [newLot] = tx.insert(lots).values({
         ...insertLot,
         seedInwardId: currentInward.id
-      }).returning();
+      }).returning().all();
       return newLot;
     });
 
@@ -304,15 +305,15 @@ export class DatabaseStorage implements IStorage {
     const oldLot = await this.getLot(id);
     if (!oldLot) throw new Error("Lot not found");
 
-    const lot = await db.transaction(async (tx) => {
+    const lot = db.transaction((tx) => {
       if (update.packetsSown !== undefined && update.packetsSown !== oldLot.packetsSown) {
-        const inwardLots = await tx.select().from(seedInward).where(
+        const inwardLots = tx.select().from(seedInward).where(
           and(
             eq(seedInward.lotNo, oldLot.lotNumber),
             eq(seedInward.categoryId, oldLot.categoryId),
             eq(seedInward.varietyId, oldLot.varietyId)
           )
-        );
+        ).all();
 
         if (inwardLots.length > 0) {
           const inward = inwardLots[0];
@@ -322,16 +323,17 @@ export class DatabaseStorage implements IStorage {
             throw new Error(`Insufficient packet quantity for update. Available: ${inward.availableQuantity}, Needed additional: ${diff}`);
           }
 
-          await tx.update(seedInward)
+          tx.update(seedInward)
             .set({
               usedQuantity: inward.usedQuantity + diff,
               availableQuantity: inward.availableQuantity - diff,
             })
-            .where(eq(seedInward.id, inward.id));
+            .where(eq(seedInward.id, inward.id))
+            .run();
         }
       }
 
-      const [updatedLot] = await tx.update(lots).set(update).where(eq(lots.id, id)).returning();
+      const [updatedLot] = tx.update(lots).set(update).where(eq(lots.id, id)).returning().all();
       return updatedLot;
     });
 
@@ -342,26 +344,27 @@ export class DatabaseStorage implements IStorage {
     const lot = await this.getLot(id);
     if (!lot) return;
 
-    await db.transaction(async (tx) => {
-      const inwardLots = await tx.select().from(seedInward).where(
+    db.transaction((tx) => {
+      const inwardLots = tx.select().from(seedInward).where(
         and(
           eq(seedInward.lotNo, lot.lotNumber),
           eq(seedInward.categoryId, lot.categoryId),
           eq(seedInward.varietyId, lot.varietyId)
         )
-      );
+      ).all();
 
       if (inwardLots.length > 0) {
         const inward = inwardLots[0];
-        await tx.update(seedInward)
+        tx.update(seedInward)
           .set({
             usedQuantity: inward.usedQuantity - lot.packetsSown,
             availableQuantity: inward.availableQuantity + lot.packetsSown,
           })
-          .where(eq(seedInward.id, inward.id));
+          .where(eq(seedInward.id, inward.id))
+          .run();
       }
 
-      await tx.delete(lots).where(eq(lots.id, id));
+      tx.delete(lots).where(eq(lots.id, id)).run();
     });
   }
 
