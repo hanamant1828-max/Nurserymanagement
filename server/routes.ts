@@ -245,8 +245,8 @@ export async function registerRoutes(
     
     const userData = { ...req.body };
     if (userData.password) {
-      const { hashPassword } = await import("./auth");
-      userData.password = await hashPassword(userData.password);
+      const auth = await import("./auth");
+      userData.password = await (auth as any).hashPassword(userData.password);
     }
     
     const user = await storage.updateUser(id, userData);
