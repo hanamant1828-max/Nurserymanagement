@@ -1556,9 +1556,9 @@ export default function OrdersPage() {
                       <Button variant="outline" size="icon" onClick={() => { 
                         const bookingData = {
                           ...order,
-                          categoryId: order.lot?.categoryId?.toString() || order.categoryId?.toString(),
-                          varietyId: order.lot?.varietyId?.toString() || order.varietyId?.toString(),
-                          lotId: order.lotId?.toString(),
+                          categoryId: order.categoryId?.toString() || order.lot?.categoryId?.toString(),
+                          varietyId: order.varietyId?.toString() || order.lot?.varietyId?.toString(),
+                          lotId: order.lotId?.toString() || "",
                           deliveryDate: new Date(order.deliveryDate),
                           bookedQty: Number(order.bookedQty),
                           perUnitPrice: Number(order.perUnitPrice),
@@ -1570,7 +1570,7 @@ export default function OrdersPage() {
                         setSelectedCategoryId(bookingData.categoryId);
                         setSelectedVarietyId(bookingData.varietyId);
                         form.reset(bookingData);
-                        setStep(3); // Go directly to lot/details step
+                        setStep(4); // Go directly to details step
                         setOpen(true); 
                       }} className="h-8 w-8">
                         <Edit2 className="h-4 w-4 text-muted-foreground" />
@@ -1659,9 +1659,9 @@ export default function OrdersPage() {
                 <Button variant="outline" size="sm" onClick={() => { 
                   const bookingData = {
                     ...order,
-                    categoryId: order.lot?.categoryId?.toString() || order.categoryId?.toString(),
-                    varietyId: order.lot?.varietyId?.toString() || order.varietyId?.toString(),
-                    lotId: order.lotId?.toString(),
+                    categoryId: order.categoryId?.toString() || order.lot?.categoryId?.toString(),
+                    varietyId: order.varietyId?.toString() || order.lot?.varietyId?.toString(),
+                    lotId: order.lotId?.toString() || "",
                     deliveryDate: new Date(order.deliveryDate),
                     bookedQty: Number(order.bookedQty),
                     perUnitPrice: Number(order.perUnitPrice),
@@ -1673,7 +1673,7 @@ export default function OrdersPage() {
                   setSelectedCategoryId(bookingData.categoryId);
                   setSelectedVarietyId(bookingData.varietyId);
                   form.reset(bookingData);
-                  setStep(3); // Go directly to lot/details step
+                  setStep(4); // Go directly to details step
                   setOpen(true);
                 }} className="h-9 w-9 p-0">
                   <Edit2 className="h-4 w-4 text-muted-foreground" />
