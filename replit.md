@@ -28,9 +28,9 @@ Preferred communication style: Simple, everyday language.
 - **Password Hashing**: Node.js crypto module with scrypt
 
 ### Data Storage
-- **Database**: PostgreSQL
+- **Database**: SQLite (via better-sqlite3, file: sqlite.db)
 - **ORM**: Drizzle ORM with drizzle-zod for schema validation
-- **Session Store**: connect-pg-simple for PostgreSQL session storage
+- **Session Store**: In-memory (memorystore)
 - **Schema Location**: `shared/schema.ts` contains all table definitions
 
 ### Project Structure
@@ -67,11 +67,11 @@ shared/           # Shared code between client/server
 ## External Dependencies
 
 ### Database
-- PostgreSQL database (connection via `DATABASE_URL` environment variable)
+- SQLite database (file-based, `sqlite.db` in project root)
 - Drizzle Kit for schema migrations (`npm run db:push`)
 
 ### Session Management
-- `SESSION_SECRET` environment variable for session encryption
+- In-memory session store (memorystore)
 
 ### Third-Party Services
 - No external APIs currently integrated
