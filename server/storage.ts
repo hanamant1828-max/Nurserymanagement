@@ -29,7 +29,7 @@ export interface IStorage {
 
   // Role Permissions
   getRolePermissions(role: string): Promise<RolePermission[]>;
-  updateRolePermission(role: string, pagePath: string, canView: boolean): Promise<void>;
+  updateRolePermission(role: string, pagePath: string, permissions: Partial<Omit<RolePermission, "id" | "role" | "pagePath">>): Promise<void>;
 
   // Categories
   getCategories(): Promise<Category[]>;
@@ -123,17 +123,24 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(rolePermissions).where(eq(rolePermissions.role, role));
   }
 
-  async updateRolePermission(role: string, pagePath: string, canView: boolean): Promise<void> {
+  async updateRolePermission(role: string, pagePath: string, permissions: Partial<Omit<RolePermission, "id" | "role" | "pagePath">>): Promise<void> {
     const [existing] = await db.select().from(rolePermissions).where(
       and(eq(rolePermissions.role, role), eq(rolePermissions.pagePath, pagePath))
     );
 
     if (existing) {
       await db.update(rolePermissions)
-        .set({ canView })
+        .set(permissions)
         .where(eq(rolePermissions.id, existing.id));
     } else {
-      await db.insert(rolePermissions).values({ role, pagePath, canView });
+      await db.insert(rolePermissions).values({ 
+        role, 
+        pagePath, 
+        canView: permissions.canView ?? true,
+        canCreate: permissions.canCreate ?? false,
+        canUpdate: permissions.canUpdate ?? false,
+        canDelete: permissions.canDelete ?? false,
+      });
     }
   }
 

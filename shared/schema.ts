@@ -20,6 +20,9 @@ export const rolePermissions = sqliteTable("role_permissions", {
   role: sqliteText("role").notNull(), // admin, staff, manager, etc.
   pagePath: sqliteText("page_path").notNull(), // e.g., "/orders", "/users"
   canView: sqliteInteger("can_view", { mode: "boolean" }).default(true).notNull(),
+  canCreate: sqliteInteger("can_create", { mode: "boolean" }).default(false).notNull(),
+  canUpdate: sqliteInteger("can_update", { mode: "boolean" }).default(false).notNull(),
+  canDelete: sqliteInteger("can_delete", { mode: "boolean" }).default(false).notNull(),
 }, (table) => {
   return {
     roleIdx: sqliteIndex("idx_role_permissions_role").on(table.role),

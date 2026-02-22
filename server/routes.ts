@@ -248,8 +248,8 @@ export async function registerRoutes(
 
   app.post("/api/roles/:role/permissions", async (req, res) => {
     if (!req.isAuthenticated() || (req.user as any).role !== "admin") return res.sendStatus(403);
-    const { pagePath, canView } = req.body;
-    await storage.updateRolePermission(req.params.role, pagePath, canView);
+    const { pagePath, ...permissions } = req.body;
+    await storage.updateRolePermission(req.params.role, pagePath, permissions);
     res.sendStatus(200);
   });
 

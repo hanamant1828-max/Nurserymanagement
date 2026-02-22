@@ -79,8 +79,8 @@ export default function UserManagementPage() {
   });
 
   const updatePermissionMutation = useMutation({
-    mutationFn: async ({ pagePath, canView }: { pagePath: string; canView: boolean }) => {
-      await apiRequest("POST", `/api/roles/${selectedRole}/permissions`, { pagePath, canView });
+    mutationFn: async ({ pagePath, ...permissions }: { pagePath: string; canView?: boolean; canCreate?: boolean; canUpdate?: boolean; canDelete?: boolean }) => {
+      await apiRequest("POST", `/api/roles/${selectedRole}/permissions`, { pagePath, ...permissions });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/roles/${selectedRole}/permissions`] });
@@ -275,13 +275,19 @@ export default function UserManagementPage() {
                     <TableHeader>
                       <TableRow>
                         <TableHead>View/Page</TableHead>
-                        <TableHead className="w-[100px]">Access</TableHead>
+                        <TableHead className="w-[100px]">View</TableHead>
+                        <TableHead className="w-[100px]">Create</TableHead>
+                        <TableHead className="w-[100px]">Update</TableHead>
+                        <TableHead className="w-[100px]">Delete</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {PAGES.map((page) => {
                         const permission = permissions?.find((p) => p.pagePath === page.path);
                         const canView = permission ? permission.canView : (selectedRole === "admin");
+                        const canCreate = permission ? permission.canCreate : (selectedRole === "admin");
+                        const canUpdate = permission ? permission.canUpdate : (selectedRole === "admin");
+                        const canDelete = permission ? permission.canDelete : (selectedRole === "admin");
 
                         return (
                           <TableRow key={page.path}>
@@ -294,6 +300,42 @@ export default function UserManagementPage() {
                                   updatePermissionMutation.mutate({
                                     pagePath: page.path,
                                     canView: !!checked,
+                                  });
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Checkbox
+                                checked={canCreate}
+                                disabled={selectedRole === "admin" || updatePermissionMutation.isPending}
+                                onCheckedChange={(checked) => {
+                                  updatePermissionMutation.mutate({
+                                    pagePath: page.path,
+                                    canCreate: !!checked,
+                                  });
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Checkbox
+                                checked={canUpdate}
+                                disabled={selectedRole === "admin" || updatePermissionMutation.isPending}
+                                onCheckedChange={(checked) => {
+                                  updatePermissionMutation.mutate({
+                                    pagePath: page.path,
+                                    canUpdate: !!checked,
+                                  });
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Checkbox
+                                checked={canDelete}
+                                disabled={selectedRole === "admin" || updatePermissionMutation.isPending}
+                                onCheckedChange={(checked) => {
+                                  updatePermissionMutation.mutate({
+                                    pagePath: page.path,
+                                    canDelete: !!checked,
                                   });
                                 }}
                               />
