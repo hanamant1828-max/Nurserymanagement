@@ -197,14 +197,14 @@ export default function DeliveryReportsPage() {
     if (selectedCategory !== "all") {
       filtered = filtered.filter((item: any) => {
         const lot = lots?.find((l: any) => l.id === item.lotId);
-        return lot?.categoryId.toString() === selectedCategory;
+        return lot?.categoryId?.toString() === selectedCategory;
       });
     }
 
     if (selectedVariety !== "all") {
       filtered = filtered.filter((item: any) => {
         const lot = lots?.find((l: any) => l.id === item.lotId);
-        return lot?.varietyId.toString() === selectedVariety;
+        return lot?.varietyId?.toString() === selectedVariety;
       });
     }
 

@@ -1113,7 +1113,8 @@ export default function OrdersPage() {
         o.customerName?.toLowerCase().includes(search.toLowerCase()) || 
         o.phone?.toLowerCase().includes(search.toLowerCase()) ||
         o.village?.toLowerCase().includes(search.toLowerCase()) ||
-        o.lotId?.toString().includes(search);
+        o.lotId?.toString().includes(search) ||
+        o.lot?.lotNumber?.toLowerCase().includes(search.toLowerCase());
       
       return matchesSearch;
     });
@@ -1450,7 +1451,7 @@ export default function OrdersPage() {
             <SelectContent>
               <SelectItem value="all">All Lots</SelectItem>
               {lots?.filter(l => (pageCategoryId === "all" || l.categoryId?.toString() === pageCategoryId) && (pageVarietyId === "all" || l.varietyId?.toString() === pageVarietyId)).map((l: any) => (
-                <SelectItem key={l.id} value={l.id.toString()}>Lot {l.id} - {l.variety?.name}</SelectItem>
+                <SelectItem key={l.id} value={l.id.toString()}>Lot {l.lotNumber} - {l.variety?.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -1808,7 +1809,7 @@ export default function OrdersPage() {
                     >
                       <CardContent className="p-4 space-y-1">
                         <div className="flex justify-between items-start">
-                          <span className="font-bold text-lg">Lot #{l.lotNumber}</span>
+                          <span className="font-bold text-lg">Lot {l.lotNumber}</span>
                           <Badge variant="outline">Stock: {l.seedsSown - l.damaged}</Badge>
                         </div>
                         <div className="text-sm text-muted-foreground">

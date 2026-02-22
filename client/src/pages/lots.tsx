@@ -541,7 +541,7 @@ export default function LotsPage() {
                               <SelectContent>
                                 {availableSeedLots.map(lot => (
                                   <SelectItem key={lot.id} value={lot.id.toString()}>
-                                    {lot.lotNumber} ({lot.availableQuantity} available)
+                                    Lot {lot.lotNumber} ({lot.availableQuantity} available)
                                   </SelectItem>
                                 ))}
                               </SelectContent>
