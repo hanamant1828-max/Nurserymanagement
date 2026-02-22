@@ -239,6 +239,27 @@ export async function registerRoutes(
     res.sendStatus(200);
   });
 
+  app.put("/api/users/:id", async (req, res) => {
+    if (!req.isAuthenticated() || (req.user as any).role !== "admin") return res.sendStatus(403);
+    const id = Number(req.params.id);
+    
+    const userData = { ...req.body };
+    if (userData.password) {
+      const { hashPassword } = await import("./auth");
+      userData.password = await hashPassword(userData.password);
+    }
+    
+    const user = await storage.updateUser(id, userData);
+    await storage.createAuditLog({
+      userId: (req.user as any).id,
+      action: "UPDATE",
+      entityType: "user",
+      entityId: user.id,
+      details: `Updated user details for: ${user.username}${userData.password ? " (including password reset)" : ""}`,
+    });
+    res.json(user);
+  });
+
   // Seed Inward
   app.get("/api/seed-inward/lots", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);

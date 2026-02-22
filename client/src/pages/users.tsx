@@ -7,11 +7,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, UserPlus, Trash2, History } from "lucide-react";
+import { Loader2, UserPlus, Trash2, History, Edit2 } from "lucide-react";
 import { format } from "date-fns";
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 export default function UserManagementPage() {
   const { toast } = useToast();
+  const [editingUser, setEditingUser] = useState<User | null>(null);
   const { data: users, isLoading: usersLoading } = useQuery<User[]>({ queryKey: ["/api/users"] });
   const { data: logs, isLoading: logsLoading } = useQuery<(AuditLog & { user: User })[]>({ queryKey: ["/api/audit-logs"] });
 
@@ -22,6 +31,17 @@ export default function UserManagementPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/users"] });
       toast({ title: "Success", description: "User created successfully" });
+    },
+  });
+
+  const updateUserMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+      await apiRequest("PUT", `/api/users/${id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      setEditingUser(null);
+      toast({ title: "Success", description: "User updated successfully" });
     },
   });
 
@@ -85,7 +105,7 @@ export default function UserManagementPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
-                <Input id="password" name="password" type="password" required />
+                <Input id="password" name="password" type="password" required autoComplete="new-password" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="role">Role</Label>
@@ -140,12 +160,23 @@ export default function UserManagementPage() {
                           {user.role}
                         </span>
                       </td>
-                      <td className="p-4 text-right">
+                      <td className="p-4 text-right space-x-2">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => setEditingUser(user)}
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
                         {user.username !== "admin" && (
                           <Button 
                             variant="ghost" 
                             size="icon" 
-                            onClick={() => deleteUserMutation.mutate(user.id)}
+                            onClick={() => {
+                              if (confirm("Are you sure you want to delete this user?")) {
+                                deleteUserMutation.mutate(user.id);
+                              }
+                            }}
                             className="text-destructive hover:text-destructive hover:bg-destructive/10"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -160,6 +191,61 @@ export default function UserManagementPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Dialog open={!!editingUser} onOpenChange={(open) => !open && setEditingUser(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit User: {editingUser?.username}</DialogTitle>
+          </DialogHeader>
+          {editingUser && (
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              const data = Object.fromEntries(formData);
+              if (!data.password) delete data.password;
+              updateUserMutation.mutate({ id: editingUser.id, data });
+            }} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-firstName">First Name</Label>
+                  <Input id="edit-firstName" name="firstName" defaultValue={editingUser.firstName || ''} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-lastName">Last Name</Label>
+                  <Input id="edit-lastName" name="lastName" defaultValue={editingUser.lastName || ''} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-phoneNumber">Phone Number</Label>
+                <Input id="edit-phoneNumber" name="phoneNumber" defaultValue={editingUser.phoneNumber || ''} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-password">New Password (leave blank to keep current)</Label>
+                <Input id="edit-password" name="password" type="password" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-role">Role</Label>
+                <Select name="role" defaultValue={editingUser.role}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="staff">Staff</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setEditingUser(null)}>Cancel</Button>
+                <Button type="submit" disabled={updateUserMutation.isPending}>
+                  {updateUserMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Save Changes
+                </Button>
+              </DialogFooter>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <Card>
         <CardHeader>
