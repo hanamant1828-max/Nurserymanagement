@@ -49,7 +49,10 @@ export default function CustomersPage() {
       }
       acc[key].totalOrders += 1;
       if (order.lot?.variety?.name) {
-        acc[key].varieties.add(order.lot.variety.name);
+        const varietyName = order.lot.variety.name;
+        const categoryName = order.lot.category?.name || "";
+        const displayName = categoryName ? `${categoryName} - ${varietyName}` : varietyName;
+        acc[key].varieties.add(displayName);
       }
       // Update last order date if newer
       if (new Date(order.deliveryDate) > new Date(acc[key].lastOrderDate)) {

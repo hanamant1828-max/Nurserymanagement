@@ -137,8 +137,13 @@ export class DatabaseStorage implements IStorage {
     await db.delete(categories).where(eq(categories.id, id));
   }
 
-  async getVarieties(): Promise<Variety[]> {
-    return await db.select().from(varieties).orderBy(varieties.name);
+  async getVarieties(): Promise<(Variety & { category: Category })[]> {
+    return await db.query.varieties.findMany({
+      with: {
+        category: true,
+      },
+      orderBy: (varieties, { asc }) => [asc(varieties.name)],
+    }) as any;
   }
 
   async getVariety(id: number): Promise<Variety | undefined> {
