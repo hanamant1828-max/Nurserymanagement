@@ -319,7 +319,7 @@ export default function VarietiesPage() {
                 </TableRow>
               ) : (
                 paginatedVarieties.map((variety) => {
-                  const category = getCategory(variety.categoryId);
+                  const category = (variety as any).category;
                   return (
                     <TableRow key={variety.id} className="group hover:bg-muted/10 transition-colors">
                       <TableCell className="pl-6 py-4">
@@ -405,7 +405,7 @@ export default function VarietiesPage() {
           </div>
         ) : (
           paginatedVarieties.map((variety) => {
-            const category = getCategory(variety.categoryId);
+            const category = (variety as any).category;
             return (
               <div key={variety.id} className="bg-card border rounded-2xl p-4 shadow-sm hover:shadow-md hover:border-primary/20 transition-all">
                 <div className="flex items-start justify-between gap-4 mb-4">

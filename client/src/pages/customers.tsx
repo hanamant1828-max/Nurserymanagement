@@ -24,7 +24,12 @@ import * as XLSX from "xlsx";
 
 export default function CustomersPage() {
   const { data, isLoading } = useOrders(1, 10000); // Fetch more orders for comprehensive customer list
-  const { data: varieties } = useVarieties();
+  const varieties = data?.orders ? Array.from(new Set(data.orders.map((o: any) => {
+    const varietyName = o.lot?.variety?.name;
+    const categoryName = o.lot?.category?.name;
+    return categoryName ? `${categoryName} - ${varietyName}` : varietyName;
+  }).filter(Boolean))) : [];
+
   const [searchTerm, setSearchTerm] = useState("");
   const [villageFilter, setVillageFilter] = useState("all");
   const [varietyFilter, setVarietyFilter] = useState("all");
@@ -151,8 +156,8 @@ export default function CustomersPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Varieties</SelectItem>
-            {varieties?.map(v => (
-              <SelectItem key={v.id} value={v.name}>{v.name}</SelectItem>
+            {varieties.map(v => (
+              <SelectItem key={v as string} value={v as string}>{v as string}</SelectItem>
             ))}
           </SelectContent>
         </Select>
