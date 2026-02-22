@@ -1550,6 +1550,10 @@ export default function Orders() {
                         setSelectedCategoryId(bookingData.categoryId);
                         setSelectedVarietyId(bookingData.varietyId);
                         form.reset(bookingData);
+                        // Ensure lotId is set after reset to trigger dependencies if needed
+                        setTimeout(() => {
+                          form.setValue("lotId", bookingData.lotId);
+                        }, 0);
                         setStep(4);
                         setOpen(true); 
                       }} className="h-8 w-8">
@@ -1653,6 +1657,10 @@ export default function Orders() {
                   setSelectedCategoryId(bookingData.categoryId);
                   setSelectedVarietyId(bookingData.varietyId);
                   form.reset(bookingData);
+                  // Ensure lotId is set after reset to trigger dependencies if needed
+                  setTimeout(() => {
+                    form.setValue("lotId", bookingData.lotId);
+                  }, 0);
                   setStep(4);
                   setOpen(true);
                 }} className="h-9 w-9 p-0">
