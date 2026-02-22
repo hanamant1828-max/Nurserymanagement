@@ -330,6 +330,15 @@ export default function LotsPage() {
   const filteredVarieties = varieties?.filter(v => v.categoryId.toString() === selectedCategoryId && v.active);
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
+    const selectedInward = availableSeedLots.find(l => l.id.toString() === data.selectedSeedInwardId);
+    if (selectedInward && data.packetsSown > selectedInward.availableQuantity) {
+      form.setError("packetsSown", {
+        type: "manual",
+        message: `Cannot exceed available packets (${selectedInward.availableQuantity})`
+      });
+      return;
+    }
+
     const damageQty = Math.floor((data.seedsSown * (data.damagePercentage || 0)) / 100);
     const finalLotNumber = data.lotSuffix ? `${data.lotNumber}_${data.lotSuffix}` : data.lotNumber;
     

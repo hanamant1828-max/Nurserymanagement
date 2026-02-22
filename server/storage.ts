@@ -305,35 +305,33 @@ export class DatabaseStorage implements IStorage {
     const oldLot = await this.getLot(id);
     if (!oldLot) throw new Error("Lot not found");
 
-    const lot = db.transaction((tx) => {
+    const lot = await db.transaction(async (tx) => {
       if (update.packetsSown !== undefined && update.packetsSown !== oldLot.packetsSown) {
-        const inwardLots = tx.select().from(seedInward).where(
+        const [inward] = await tx.select().from(seedInward).where(
           and(
             eq(seedInward.lotNo, oldLot.lotNumber),
             eq(seedInward.categoryId, oldLot.categoryId),
             eq(seedInward.varietyId, oldLot.varietyId)
           )
-        ).all();
+        );
 
-        if (inwardLots.length > 0) {
-          const inward = inwardLots[0];
+        if (inward) {
           const diff = update.packetsSown - oldLot.packetsSown;
 
           if (inward.availableQuantity < diff) {
             throw new Error(`Insufficient packet quantity for update. Available: ${inward.availableQuantity}, Needed additional: ${diff}`);
           }
 
-          tx.update(seedInward)
+          await tx.update(seedInward)
             .set({
               usedQuantity: inward.usedQuantity + diff,
               availableQuantity: inward.availableQuantity - diff,
             })
-            .where(eq(seedInward.id, inward.id))
-            .run();
+            .where(eq(seedInward.id, inward.id));
         }
       }
 
-      const [updatedLot] = tx.update(lots).set(update).where(eq(lots.id, id)).returning().all();
+      const [updatedLot] = await tx.update(lots).set(update).where(eq(lots.id, id)).returning();
       return updatedLot;
     });
 
@@ -344,27 +342,25 @@ export class DatabaseStorage implements IStorage {
     const lot = await this.getLot(id);
     if (!lot) return;
 
-    db.transaction((tx) => {
-      const inwardLots = tx.select().from(seedInward).where(
+    await db.transaction(async (tx) => {
+      const [inward] = await tx.select().from(seedInward).where(
         and(
           eq(seedInward.lotNo, lot.lotNumber),
           eq(seedInward.categoryId, lot.categoryId),
           eq(seedInward.varietyId, lot.varietyId)
         )
-      ).all();
+      );
 
-      if (inwardLots.length > 0) {
-        const inward = inwardLots[0];
-        tx.update(seedInward)
+      if (inward) {
+        await tx.update(seedInward)
           .set({
             usedQuantity: inward.usedQuantity - lot.packetsSown,
             availableQuantity: inward.availableQuantity + lot.packetsSown,
           })
-          .where(eq(seedInward.id, inward.id))
-          .run();
+          .where(eq(seedInward.id, inward.id));
       }
 
-      tx.delete(lots).where(eq(lots.id, id)).run();
+      await tx.delete(lots).where(eq(lots.id, id));
     });
   }
 
