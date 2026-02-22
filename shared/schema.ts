@@ -1,12 +1,7 @@
-import { pgTable, text, integer, numeric, timestamp, index, serial, boolean } from "drizzle-orm/pg-core";
-import { sqliteTable, text as sqliteText, integer as sqliteInteger, real as sqliteReal, index as sqliteIndex } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text as sqliteText, integer as sqliteInteger, index as sqliteIndex } from "drizzle-orm/sqlite-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations, sql } from "drizzle-orm";
-
-// We'll use a conditional approach or just switch to SQLite for now as requested.
-// Since the user said "Still developing time use sql lite database later while publishing we can use post gry",
-// I will switch the table definitions to SQLite.
 
 // 1. Users (Login View)
 export const users = sqliteTable("users", {
@@ -17,6 +12,18 @@ export const users = sqliteTable("users", {
   firstName: sqliteText("first_name"),
   lastName: sqliteText("last_name"),
   phoneNumber: sqliteText("phone_number"),
+});
+
+// Role Permissions Table
+export const rolePermissions = sqliteTable("role_permissions", {
+  id: sqliteInteger("id").primaryKey({ autoIncrement: true }),
+  role: sqliteText("role").notNull(), // admin, staff, manager, etc.
+  pagePath: sqliteText("page_path").notNull(), // e.g., "/orders", "/users"
+  canView: sqliteInteger("can_view", { mode: "boolean" }).default(true).notNull(),
+}, (table) => {
+  return {
+    roleIdx: sqliteIndex("idx_role_permissions_role").on(table.role),
+  };
 });
 
 // 3. Categories
@@ -171,6 +178,7 @@ export const auditLogsRelations = relations(auditLogs, ({ one }) => ({
 
 // Schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true });
+export const insertRolePermissionSchema = createInsertSchema(rolePermissions).omit({ id: true });
 export const insertCategorySchema = createInsertSchema(categories).omit({ id: true });
 export const insertVarietySchema = createInsertSchema(varieties).omit({ id: true });
 export const insertLotSchema = createInsertSchema(lots).omit({ id: true });
@@ -180,6 +188,7 @@ export const insertSeedInwardSchema = createInsertSchema(seedInward).omit({ id: 
 
 // Types
 export type User = typeof users.$inferSelect;
+export type RolePermission = typeof rolePermissions.$inferSelect;
 export type Category = typeof categories.$inferSelect;
 export type Variety = typeof varieties.$inferSelect;
 export type Lot = typeof lots.$inferSelect;

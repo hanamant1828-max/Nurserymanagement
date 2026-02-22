@@ -239,25 +239,24 @@ export async function registerRoutes(
     res.sendStatus(200);
   });
 
-  app.put("/api/users/:id", async (req, res) => {
+  // Role Management
+  app.get("/api/roles/:role/permissions", async (req, res) => {
     if (!req.isAuthenticated() || (req.user as any).role !== "admin") return res.sendStatus(403);
-    const id = Number(req.params.id);
-    
-    const userData = { ...req.body };
-    if (userData.password) {
-      const auth = await import("./auth");
-      userData.password = await (auth as any).hashPassword(userData.password);
-    }
-    
-    const user = await storage.updateUser(id, userData);
-    await storage.createAuditLog({
-      userId: (req.user as any).id,
-      action: "UPDATE",
-      entityType: "user",
-      entityId: user.id,
-      details: `Updated user details for: ${user.username}${userData.password ? " (including password reset)" : ""}`,
-    });
-    res.json(user);
+    const permissions = await storage.getRolePermissions(req.params.role);
+    res.json(permissions);
+  });
+
+  app.post("/api/roles/:role/permissions", async (req, res) => {
+    if (!req.isAuthenticated() || (req.user as any).role !== "admin") return res.sendStatus(403);
+    const { pagePath, canView } = req.body;
+    await storage.updateRolePermission(req.params.role, pagePath, canView);
+    res.sendStatus(200);
+  });
+
+  app.get("/api/my-permissions", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const permissions = await storage.getRolePermissions((req.user as any).role);
+    res.json(permissions);
   });
 
   // Seed Inward

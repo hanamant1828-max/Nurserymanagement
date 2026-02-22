@@ -1,17 +1,18 @@
 import {
-  users, categories, varieties, lots, orders, auditLogs, seedInward,
-  type User, type Category, type Variety, type Lot, type Order, type AuditLog, type SeedInward,
+  users, rolePermissions, categories, varieties, lots, orders, auditLogs, seedInward,
+  type User, type RolePermission, type Category, type Variety, type Lot, type Order, type AuditLog, type SeedInward,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, sql, and, desc } from "drizzle-orm";
 import session from "express-session";
 import createMemoryStore from "memorystore";
-import { insertUserSchema, insertCategorySchema, insertVarietySchema, insertLotSchema, insertOrderSchema, insertAuditLogSchema, insertSeedInwardSchema } from "@shared/schema";
+import { insertUserSchema, insertRolePermissionSchema, insertCategorySchema, insertVarietySchema, insertLotSchema, insertOrderSchema, insertAuditLogSchema, insertSeedInwardSchema } from "@shared/schema";
 import { z } from "zod";
 
 const MemoryStore = createMemoryStore(session);
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type InsertRolePermission = z.infer<typeof insertRolePermissionSchema>;
 export type InsertCategory = z.infer<typeof insertCategorySchema>;
 export type InsertVariety = z.infer<typeof insertVarietySchema>;
 export type InsertLot = z.infer<typeof insertLotSchema>;
@@ -25,6 +26,10 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, user: Partial<InsertUser>): Promise<User>;
   deleteUser(id: number): Promise<void>;
+
+  // Role Permissions
+  getRolePermissions(role: string): Promise<RolePermission[]>;
+  updateRolePermission(role: string, pagePath: string, canView: boolean): Promise<void>;
 
   // Categories
   getCategories(): Promise<Category[]>;
@@ -112,6 +117,24 @@ export class DatabaseStorage implements IStorage {
 
   async deleteUser(id: number): Promise<void> {
     await db.delete(users).where(eq(users.id, id));
+  }
+
+  async getRolePermissions(role: string): Promise<RolePermission[]> {
+    return await db.select().from(rolePermissions).where(eq(rolePermissions.role, role));
+  }
+
+  async updateRolePermission(role: string, pagePath: string, canView: boolean): Promise<void> {
+    const [existing] = await db.select().from(rolePermissions).where(
+      and(eq(rolePermissions.role, role), eq(rolePermissions.pagePath, pagePath))
+    );
+
+    if (existing) {
+      await db.update(rolePermissions)
+        .set({ canView })
+        .where(eq(rolePermissions.id, existing.id));
+    } else {
+      await db.insert(rolePermissions).values({ role, pagePath, canView });
+    }
   }
 
   async getCategories(): Promise<Category[]> {
