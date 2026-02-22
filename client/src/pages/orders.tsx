@@ -1735,7 +1735,7 @@ export default function OrdersPage() {
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {editingOrder ? "Edit Order" : "Book New Order"} - Step {step} of 4
+              {editingOrder ? "Edit Order" : `Book New Order - Step ${step} of 4`}
             </DialogTitle>
             <DialogDescription>
               {editingOrder ? "Update existing order details and delivery status." : "Complete the 4-step process to book a new plant order."}
