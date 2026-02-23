@@ -37,6 +37,7 @@ const PAGES = [
 
 export default function UserManagementPage() {
   const { toast } = useToast();
+  const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [selectedRole, setSelectedRole] = useState<string>("staff");
   
@@ -78,6 +79,7 @@ export default function UserManagementPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      setIsUserModalOpen(false);
       toast({ title: "Success", description: "User created successfully" });
     },
   });
@@ -140,128 +142,137 @@ export default function UserManagementPage() {
         </TabsList>
 
         <TabsContent value="users" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <Card className="lg:col-span-1">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <UserPlus className="h-5 w-5" />
-                  Add New User
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={(e) => {
-                  e.preventDefault();
-                  const formData = new FormData(e.currentTarget);
-                  createUserMutation.mutate(Object.fromEntries(formData));
-                  e.currentTarget.reset();
-                }} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="firstName">First Name</Label>
-                      <Input id="firstName" name="firstName" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="lastName">Last Name</Label>
-                      <Input id="lastName" name="lastName" />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phoneNumber">Phone Number</Label>
-                    <Input id="phoneNumber" name="phoneNumber" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="username">Username</Label>
-                    <Input id="username" name="username" required />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
-                    <Input id="password" name="password" type="password" required autoComplete="new-password" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="role">Role</Label>
-                    <Select name="role" defaultValue="staff">
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {allRoles.map(r => (
-                          <SelectItem key={r} value={r} className="capitalize">{r}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <Button type="submit" className="w-full" disabled={createUserMutation.isPending}>
-                    {createUserMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Create User
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
+          <div className="flex justify-end">
+            <Button onClick={() => setIsUserModalOpen(true)} className="gap-2">
+              <UserPlus className="h-4 w-4" />
+              Add New User
+            </Button>
+          </div>
 
-            <Card className="lg:col-span-2">
-              <CardHeader>
-                <CardTitle className="text-lg">Current Users</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="rounded-md border overflow-hidden">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b bg-muted/50">
-                        <th className="h-10 px-4 text-left font-medium">Name</th>
-                        <th className="h-10 px-4 text-left font-medium">Username</th>
-                        <th className="h-10 px-4 text-left font-medium">Phone</th>
-                        <th className="h-10 px-4 text-left font-medium">Role</th>
-                        <th className="h-10 px-4 text-right font-medium">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {users?.map((user) => (
-                        <tr key={user.id} className="border-b hover:bg-muted/30">
-                          <td className="p-4 font-medium">
-                            {user.firstName || user.lastName 
-                              ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
-                              : "-"}
-                          </td>
-                          <td className="p-4">{user.username}</td>
-                          <td className="p-4 text-muted-foreground">{user.phoneNumber || "-"}</td>
-                          <td className="p-4">
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                              user.role === 'admin' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
-                            }`}>
-                              {user.role}
-                            </span>
-                          </td>
-                          <td className="p-4 text-right space-x-2">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Current Users</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="rounded-md border overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b bg-muted/50">
+                      <th className="h-10 px-4 text-left font-medium">Name</th>
+                      <th className="h-10 px-4 text-left font-medium">Username</th>
+                      <th className="h-10 px-4 text-left font-medium">Phone</th>
+                      <th className="h-10 px-4 text-left font-medium">Role</th>
+                      <th className="h-10 px-4 text-right font-medium">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users?.map((user) => (
+                      <tr key={user.id} className="border-b hover:bg-muted/30">
+                        <td className="p-4 font-medium">
+                          {user.firstName || user.lastName 
+                            ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
+                            : "-"}
+                        </td>
+                        <td className="p-4">{user.username}</td>
+                        <td className="p-4 text-muted-foreground">{user.phoneNumber || "-"}</td>
+                        <td className="p-4">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                            user.role === 'admin' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+                          }`}>
+                            {user.role}
+                          </span>
+                        </td>
+                        <td className="p-4 text-right space-x-2">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => setEditingUser(user)}
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
+                          {user.username !== "admin" && (
                             <Button 
                               variant="ghost" 
                               size="icon" 
-                              onClick={() => setEditingUser(user)}
+                              onClick={() => {
+                                if (confirm("Are you sure you want to delete this user?")) {
+                                  deleteUserMutation.mutate(user.id);
+                                }
+                              }}
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
                             >
-                              <Edit2 className="h-4 w-4" />
+                              <Trash2 className="h-4 w-4" />
                             </Button>
-                            {user.username !== "admin" && (
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                onClick={() => {
-                                  if (confirm("Are you sure you want to delete this user?")) {
-                                    deleteUserMutation.mutate(user.id);
-                                  }
-                                }}
-                                className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Dialog open={isUserModalOpen} onOpenChange={setIsUserModalOpen}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <UserPlus className="h-5 w-5" />
+                  Add New User
+                </DialogTitle>
+              </DialogHeader>
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                createUserMutation.mutate(Object.fromEntries(formData));
+              }} className="space-y-4 pt-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">First Name</Label>
+                    <Input id="firstName" name="firstName" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Last Name</Label>
+                    <Input id="lastName" name="lastName" />
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phoneNumber">Phone Number</Label>
+                  <Input id="phoneNumber" name="phoneNumber" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="username">Username</Label>
+                  <Input id="username" name="username" required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input id="password" name="password" type="password" required autoComplete="new-password" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="role">Role</Label>
+                  <Select name="role" defaultValue="staff">
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {allRoles.map(r => (
+                        <SelectItem key={r} value={r} className="capitalize">{r}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => setIsUserModalOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={createUserMutation.isPending}>
+                    {createUserMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Create User
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         </TabsContent>
 
         <TabsContent value="roles" className="space-y-6">
