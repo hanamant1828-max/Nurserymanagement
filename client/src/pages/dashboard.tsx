@@ -75,28 +75,32 @@ export default function Dashboard() {
       value: sowingToday, 
       icon: Sprout, 
       color: "text-green-600",
-      bg: "bg-green-100"
+      bg: "bg-green-100",
+      href: "/lots"
     },
     { 
       label: "Today's Deliveries", 
       value: deliveriesToday, 
       icon: Truck, 
       color: "text-blue-600",
-      bg: "bg-blue-100"
+      bg: "bg-blue-100",
+      href: "/today-deliveries"
     },
     { 
       label: "Unassigned Orders", 
       value: unassignedOrders, 
       icon: AlertCircle, 
       color: "text-red-600",
-      bg: "bg-red-100"
+      bg: "bg-red-100",
+      href: "/orders"
     },
     { 
       label: "Pending Orders", 
       value: pendingOrders, 
       icon: ShoppingCart, 
       color: "text-orange-600",
-      bg: "bg-orange-100"
+      bg: "bg-orange-100",
+      href: "/orders"
     },
   ];
 
@@ -133,18 +137,20 @@ export default function Dashboard() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: idx * 0.05 }}
           >
-            <Card className="border-none shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden relative group">
-              <div className={cn("absolute inset-0 opacity-5 transition-opacity group-hover:opacity-10", stat.bg)} />
-              <CardContent className="p-5 flex items-center justify-between relative z-10">
-                <div className="space-y-1">
-                  <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">{stat.label}</p>
-                  <h3 className="text-2xl font-black font-display tracking-tight text-foreground">{stat.value}</h3>
-                </div>
-                <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm group-hover:rotate-12 transition-all duration-300", stat.bg, stat.color)}>
-                  {stat.icon && <stat.icon className="w-6 h-6" />}
-                </div>
-              </CardContent>
-            </Card>
+            <Link href={stat.href}>
+              <Card className="border-none shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden relative group cursor-pointer">
+                <div className={cn("absolute inset-0 opacity-5 transition-opacity group-hover:opacity-10", stat.bg)} />
+                <CardContent className="p-5 flex items-center justify-between relative z-10">
+                  <div className="space-y-1">
+                    <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">{stat.label}</p>
+                    <h3 className="text-2xl font-black font-display tracking-tight text-foreground">{stat.value}</h3>
+                  </div>
+                  <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm group-hover:rotate-12 transition-all duration-300", stat.bg, stat.color)}>
+                    {stat.icon && <stat.icon className="w-6 h-6" />}
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
           </motion.div>
         ))}
       </div>
