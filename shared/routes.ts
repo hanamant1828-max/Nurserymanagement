@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Permissions, insertUserSchema, insertCategorySchema, insertVarietySchema, insertLotSchema, insertOrderSchema, insertSeedInwardSchema, users, categories, varieties, lots, orders, auditLogs, seedInward } from './schema';
+import { insertUserSchema, insertCategorySchema, insertVarietySchema, insertLotSchema, insertOrderSchema, insertSeedInwardSchema, users, categories, varieties, lots, orders, auditLogs, seedInward, rolePermissions } from './schema';
 
 export const errorSchemas = {
   validation: z.object({
@@ -176,7 +176,7 @@ export const api = {
     permissions: {
       method: 'GET' as const,
       path: '/api/roles/:role/permissions',
-      responses: { 200: z.array(z.custom<typeof Permissions.$inferSelect>()) },
+      responses: { 200: z.array(z.custom<typeof rolePermissions.$inferSelect>()) },
     },
     updatePermission: {
       method: 'POST' as const,

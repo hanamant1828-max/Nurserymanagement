@@ -29,8 +29,6 @@ export const rolePermissions = sqliteTable("role_permissions", {
   };
 });
 
-export const Permissions = rolePermissions;
-
 // 3. Categories
 export const categories = sqliteTable("categories", {
   id: sqliteInteger("id").primaryKey({ autoIncrement: true }),
