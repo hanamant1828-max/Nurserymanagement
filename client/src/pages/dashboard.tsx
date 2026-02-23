@@ -65,10 +65,16 @@ export default function Dashboard() {
     o.deliveryDate === format(today, 'yyyy-MM-dd')
   ).length || 0;
 
+  const sowingTodayPending = orders?.filter((o: any) => 
+    o && 
+    o.lotStatus === 'PENDING_LOT' && 
+    o.sowingDate === format(today, 'yyyy-MM-dd')
+  ).length || 0;
+
   const stats = [
     { 
       label: "Today's Sowing", 
-      value: sowingToday, 
+      value: sowingToday + sowingTodayPending, 
       icon: Sprout, 
       color: "text-green-600",
       bg: "bg-green-100",

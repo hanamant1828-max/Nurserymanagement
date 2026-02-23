@@ -97,6 +97,7 @@ export const orders = sqliteTable("orders", {
   deliveryDate: sqliteText("delivery_date").notNull(),
   status: sqliteText("status").default("BOOKED").notNull(), // BOOKED, DELIVERED, CANCELLED
   paymentStatus: sqliteText("payment_status").notNull(), // Pending, Partially Paid, Paid
+  sowingDate: sqliteText("sowing_date"), // User input sowing date for pending lots
   actualDeliveryDate: sqliteText("actual_delivery_date"),
   actualDeliveryTime: sqliteText("actual_delivery_time"),
   deliveredQty: sqliteText("delivered_qty").default("0.00"),
