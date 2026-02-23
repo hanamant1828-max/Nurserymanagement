@@ -74,11 +74,19 @@ export default function Dashboard() {
   const stats = [
     { 
       label: "Today's Sowing", 
-      value: sowingToday + sowingTodayPending, 
+      value: sowingToday, 
       icon: Sprout, 
       color: "text-green-600",
       bg: "bg-green-100",
       href: "/lots"
+    },
+    { 
+      label: "Pending Sowing", 
+      value: sowingTodayPending, 
+      icon: AlertCircle, 
+      color: "text-red-600",
+      bg: "bg-red-100",
+      href: "/pending-lot-reports"
     },
     { 
       label: "Today's Orders", 
