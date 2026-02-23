@@ -47,27 +47,23 @@ export default function Dashboard() {
   const unassignedOrders = orders?.filter((o: any) => o && o.lotStatus === 'PENDING_LOT' && o.status === 'BOOKED').length || 0;
   const activeLots = lots?.filter((l: any) => l && (l as any).available > 0).length || 0;
   const pendingOrders = orders?.filter((o: any) => o && o.status === 'BOOKED').length || 0;
+  
+  const ordersToday = orders?.filter((o: any) => 
+    o && 
+    o.deliveryDate === format(today, 'yyyy-MM-dd')
+  ).length || 0;
+
   const deliveriesToday = orders?.filter((o: any) => 
+    o && 
+    o.status === 'DELIVERED' && 
+    (o.actualDeliveryDate === format(today, 'yyyy-MM-dd') || (o.deliveryDate === format(today, 'yyyy-MM-dd') && !o.actualDeliveryDate))
+  ).length || 0;
+
+  const deliverableToday = orders?.filter((o: any) => 
     o && 
     o.status === 'BOOKED' && 
     o.deliveryDate === format(today, 'yyyy-MM-dd')
   ).length || 0;
-
-  const totalRevenue = orders?.filter((o: any) => o && o.status === 'DELIVERED')
-    .reduce((sum: number, o: any) => sum + Number(o.totalAmount || 0), 0) || 0;
-  
-  // Upcoming deliveries (next 7 days)
-  const upcomingDeliveries = orders?.filter((o: any) => {
-    if (!o || o.status !== 'BOOKED' || !o.deliveryDate) return false;
-    try {
-      const deliveryDate = parseISO(o.deliveryDate);
-      const diffTime = deliveryDate.getTime() - today.getTime();
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-      return diffDays >= 0 && diffDays <= 7;
-    } catch (e) {
-      return false;
-    }
-  }) || [];
 
   const stats = [
     { 
@@ -79,28 +75,28 @@ export default function Dashboard() {
       href: "/lots"
     },
     { 
-      label: "Today's Deliveries", 
+      label: "Today's Orders", 
+      value: ordersToday, 
+      icon: ShoppingCart, 
+      color: "text-purple-600",
+      bg: "bg-purple-100",
+      href: "/orders"
+    },
+    { 
+      label: "Today's Deliverable", 
+      value: deliverableToday, 
+      icon: Clock, 
+      color: "text-orange-600",
+      bg: "bg-orange-100",
+      href: "/today-deliveries"
+    },
+    { 
+      label: "Today's Delivered", 
       value: deliveriesToday, 
       icon: Truck, 
       color: "text-blue-600",
       bg: "bg-blue-100",
-      href: "/today-deliveries"
-    },
-    { 
-      label: "Unassigned Orders", 
-      value: unassignedOrders, 
-      icon: AlertCircle, 
-      color: "text-red-600",
-      bg: "bg-red-100",
-      href: "/orders"
-    },
-    { 
-      label: "Pending Orders", 
-      value: pendingOrders, 
-      icon: ShoppingCart, 
-      color: "text-orange-600",
-      bg: "bg-orange-100",
-      href: "/orders"
+      href: "/delivery-reports"
     },
   ];
 
@@ -109,11 +105,23 @@ export default function Dashboard() {
     if (!order) return acc;
     // variety name is accessed via order.lot.variety.name because of drizzle relations
     const varietyName = (order as any).lot?.variety?.name || "Unknown Variety";
-    acc[varietyName] = (acc[varietyName] || 0) + (order.bookedQty || 0);
+    acc[varietyName] = (acc[varietyName] || 0) + (Number(order.bookedQty) || 0);
     return acc;
   }, {} as Record<string, number>);
 
   const chartData = Object.entries(salesByVariety || {}).map(([name, value]) => ({ name, value }));
+
+  const upcomingDeliveries = orders?.filter((o: any) => {
+    if (!o || o.status !== 'BOOKED' || !o.deliveryDate) return false;
+    try {
+      const deliveryDate = parseISO(o.deliveryDate);
+      const diffTime = deliveryDate.getTime() - today.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+      return diffDays >= 0 && diffDays <= 7;
+    } catch (e) {
+      return false;
+    }
+  }) || [];
 
   return (
     <div className="space-y-8">
