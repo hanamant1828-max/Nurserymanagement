@@ -249,8 +249,13 @@ export async function registerRoutes(
   app.get("/api/roles", async (req, res) => {
     if (!req.isAuthenticated() || (req.user as any).role !== "admin") return res.sendStatus(403);
     const users = await storage.getUsers();
-    const roles = Array.from(new Set(users.map(u => u.role)));
-    res.json(roles);
+    const permissions = await db.select().from(rolePermissions);
+    
+    const rolesFromUsers = users.map(u => u.role);
+    const rolesFromPermissions = permissions.map(p => p.role);
+    
+    const allRoles = Array.from(new Set([...rolesFromUsers, ...rolesFromPermissions]));
+    res.json(allRoles);
   });
 
   app.post("/api/roles", async (req, res) => {
