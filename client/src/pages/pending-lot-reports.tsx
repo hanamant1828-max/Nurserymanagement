@@ -5,9 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Calendar as CalendarIcon, FileSpreadsheet, Loader2, Search, ShoppingCart } from "lucide-react";
+import { Calendar as CalendarIcon, FileSpreadsheet, Loader2, Search, ShoppingCart, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import * as XLSX from "xlsx";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 
@@ -56,6 +57,23 @@ export default function PendingLotReportsPage() {
 
   const totalBookedQty = filteredOrders.reduce((sum, o) => sum + (Number(o.bookedQty) || 0), 0);
 
+  const handleDownloadExcel = () => {
+    if (filteredOrders.length === 0) return;
+    const data = filteredOrders.map(o => ({
+      Customer: o.customerName,
+      Phone: o.phone,
+      Variety: o.variety?.name || o.lot?.variety?.name || "Unknown",
+      "Booked Qty": o.bookedQty,
+      Status: "Lot Pending",
+      "Sowing Date": o.sowingDate || "N/A",
+      "Delivery Date": o.deliveryDate || "N/A"
+    }));
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Pending Lots");
+    XLSX.writeFile(wb, `Pending_Lot_Report_${format(new Date(), "yyyy-MM-dd")}.xlsx`);
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-[60vh]">
@@ -72,6 +90,16 @@ export default function PendingLotReportsPage() {
           <p className="text-muted-foreground mt-1 font-medium">Orders waiting for lot allocation</p>
         </div>
         <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="h-9 gap-2" 
+            onClick={handleDownloadExcel}
+            disabled={filteredOrders.length === 0}
+          >
+            <Download className="h-4 w-4" />
+            Download
+          </Button>
           <Badge variant="outline" className="px-4 py-1 text-sm font-bold bg-primary/5 border-primary/20 text-primary">
             Total Orders: {filteredOrders.length}
           </Badge>

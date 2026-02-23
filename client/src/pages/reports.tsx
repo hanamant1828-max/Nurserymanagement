@@ -116,6 +116,7 @@ export default function ReportsPage() {
   };
 
   const exportToExcel = (data: any[], fileName: string) => {
+    if (data.length === 0) return;
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Report");
@@ -123,6 +124,7 @@ export default function ReportsPage() {
   };
 
   const exportToPDF = (data: any[], fileName: string, headers: string[], keys: string[]) => {
+    if (data.length === 0) return;
     const doc = new jsPDF();
     doc.text(fileName.replace(/_/g, " "), 14, 15);
     
@@ -370,10 +372,21 @@ export default function ReportsPage() {
                 <p className="text-xs text-muted-foreground">Detailed sowing data for the selected period.</p>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" className="h-9 text-xs flex-1 sm:flex-none" onClick={() => exportToPDF(dailySowingData, "Sowing_Report", ["Date", "Lot Number", "Variety", "Seeds Sown", "Ready Date"], ["sowingDate", "lotNumber", "variety.name", "seedsSown", "expectedReadyDate"])}>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="h-9 text-xs flex-1 sm:flex-none" 
+                  onClick={() => exportToPDF(dailySowingData, "Sowing_Report", ["Date", "Lot Number", "Variety", "Seeds Sown", "Ready Date"], ["sowingDate", "lotNumber", "variety.name", "seedsSown", "expectedReadyDate"])}
+                  disabled={dailySowingData.length === 0}
+                >
                   PDF
                 </Button>
-                <Button size="sm" className="h-9 text-xs flex-1 sm:flex-none shadow-sm" onClick={() => exportToExcel(dailySowingData, "Sowing_Report")}>
+                <Button 
+                  size="sm" 
+                  className="h-9 text-xs flex-1 sm:flex-none shadow-sm" 
+                  onClick={() => exportToExcel(dailySowingData, "Sowing_Report")}
+                  disabled={dailySowingData.length === 0}
+                >
                   <FileSpreadsheet className="w-4 h-4 mr-2" /> Excel
                 </Button>
               </div>
@@ -454,9 +467,30 @@ export default function ReportsPage() {
 
         <TabsContent value="stock" className="mt-0">
           <Card className="border-none shadow-sm overflow-hidden">
-            <CardHeader className="bg-muted/10 pb-4">
-              <CardTitle className="text-lg">Stock Report</CardTitle>
-              <p className="text-xs text-muted-foreground">Current available stock across all sowing lots.</p>
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-muted/10 pb-4">
+              <div>
+                <CardTitle className="text-lg">Stock Report</CardTitle>
+                <p className="text-xs text-muted-foreground">Current available stock across all sowing lots.</p>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="h-9 text-xs flex-1 sm:flex-none" 
+                  onClick={() => exportToPDF(lotStockData, "Stock_Report", ["Lot", "Variety", "Sown", "Available"], ["lotNumber", "variety.name", "seedsSown", "available"])}
+                  disabled={lotStockData.length === 0}
+                >
+                  PDF
+                </Button>
+                <Button 
+                  size="sm" 
+                  className="h-9 text-xs flex-1 sm:flex-none shadow-sm" 
+                  onClick={() => exportToExcel(lotStockData, "Stock_Report")}
+                  disabled={lotStockData.length === 0}
+                >
+                  <FileSpreadsheet className="w-4 h-4 mr-2" /> Excel
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="p-0 overflow-x-auto">
               <Table>
@@ -496,9 +530,30 @@ export default function ReportsPage() {
 
         <TabsContent value="variety" className="mt-0">
           <Card className="border-none shadow-sm overflow-hidden">
-            <CardHeader className="bg-muted/10 pb-4">
-              <CardTitle className="text-lg">Variety Performance</CardTitle>
-              <p className="text-xs text-muted-foreground">Aggregated performance metrics by plant variety.</p>
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-muted/10 pb-4">
+              <div>
+                <CardTitle className="text-lg">Variety Performance</CardTitle>
+                <p className="text-xs text-muted-foreground">Aggregated performance metrics by plant variety.</p>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="h-9 text-xs flex-1 sm:flex-none" 
+                  onClick={() => exportToPDF(varietyPerformance, "Variety_Performance", ["Variety", "Total Sown", "Damaged", "Available"], ["name", "sown", "damaged", "available"])}
+                  disabled={varietyPerformance.length === 0}
+                >
+                  PDF
+                </Button>
+                <Button 
+                  size="sm" 
+                  className="h-9 text-xs flex-1 sm:flex-none shadow-sm" 
+                  onClick={() => exportToExcel(varietyPerformance, "Variety_Performance")}
+                  disabled={varietyPerformance.length === 0}
+                >
+                  <FileSpreadsheet className="w-4 h-4 mr-2" /> Excel
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="p-0 overflow-x-auto">
               <Table>
@@ -538,9 +593,30 @@ export default function ReportsPage() {
 
         <TabsContent value="payments" className="mt-0">
           <Card className="border-none shadow-sm overflow-hidden">
-            <CardHeader className="bg-muted/10 pb-4">
-              <CardTitle className="text-lg">Payment Summary</CardTitle>
-              <p className="text-xs text-muted-foreground">Breakdown of advance payments by payment mode.</p>
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-muted/10 pb-4">
+              <div>
+                <CardTitle className="text-lg">Payment Summary</CardTitle>
+                <p className="text-xs text-muted-foreground">Breakdown of advance payments by payment mode.</p>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="h-9 text-xs flex-1 sm:flex-none" 
+                  onClick={() => exportToPDF(paymentSummary, "Payment_Report", ["Mode", "Count", "Total Advance"], ["mode", "count", "totalAdvance"])}
+                  disabled={paymentSummary.length === 0}
+                >
+                  PDF
+                </Button>
+                <Button 
+                  size="sm" 
+                  className="h-9 text-xs flex-1 sm:flex-none shadow-sm" 
+                  onClick={() => exportToExcel(paymentSummary, "Payment_Report")}
+                  disabled={paymentSummary.length === 0}
+                >
+                  <FileSpreadsheet className="w-4 h-4 mr-2" /> Excel
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="p-0 overflow-x-auto">
               <Table>
