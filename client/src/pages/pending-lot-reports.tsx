@@ -9,6 +9,8 @@ import { Calendar as CalendarIcon, FileSpreadsheet, Loader2, Search, ShoppingCar
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import * as XLSX from "xlsx";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 
@@ -74,6 +76,29 @@ export default function PendingLotReportsPage() {
     XLSX.writeFile(wb, `Pending_Lot_Report_${format(new Date(), "yyyy-MM-dd")}.xlsx`);
   };
 
+  const handleDownloadPDF = () => {
+    if (filteredOrders.length === 0) return;
+    const doc = new jsPDF();
+    doc.text("Pending Lot Report", 14, 15);
+    
+    const headers = ["Customer", "Variety", "Booked Qty", "Sowing Date", "Delivery Date"];
+    const data = filteredOrders.map(o => [
+      o.customerName,
+      o.variety?.name || o.lot?.variety?.name || "Unknown",
+      o.bookedQty,
+      o.sowingDate || "N/A",
+      o.deliveryDate || "N/A"
+    ]);
+
+    autoTable(doc, {
+      head: [headers],
+      body: data,
+      startY: 20,
+    });
+
+    doc.save(`Pending_Lot_Report_${format(new Date(), "yyyy-MM-dd")}.pdf`);
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-[60vh]">
@@ -94,11 +119,20 @@ export default function PendingLotReportsPage() {
             variant="outline" 
             size="sm" 
             className="h-9 gap-2" 
+            onClick={handleDownloadPDF}
+            disabled={filteredOrders.length === 0}
+          >
+            PDF
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="h-9 gap-2" 
             onClick={handleDownloadExcel}
             disabled={filteredOrders.length === 0}
           >
-            <Download className="h-4 w-4" />
-            Download
+            <FileSpreadsheet className="h-4 w-4" />
+            Excel
           </Button>
           <Badge variant="outline" className="px-4 py-1 text-sm font-bold bg-primary/5 border-primary/20 text-primary">
             Total Orders: {filteredOrders.length}
