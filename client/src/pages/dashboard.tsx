@@ -44,6 +44,7 @@ export default function Dashboard() {
   // Calculate Metrics
   const today = new Date();
   const sowingToday = lots?.filter((l: any) => l && l.sowingDate === format(today, 'yyyy-MM-dd')).length || 0;
+  const unassignedOrders = orders?.filter((o: any) => o && o.lotStatus === 'PENDING_LOT' && o.status === 'BOOKED').length || 0;
   const activeLots = lots?.filter((l: any) => l && (l as any).available > 0).length || 0;
   const pendingOrders = orders?.filter((o: any) => o && o.status === 'BOOKED').length || 0;
   const deliveriesToday = orders?.filter((o: any) => 
@@ -84,18 +85,18 @@ export default function Dashboard() {
       bg: "bg-blue-100"
     },
     { 
+      label: "Unassigned Orders", 
+      value: unassignedOrders, 
+      icon: AlertCircle, 
+      color: "text-red-600",
+      bg: "bg-red-100"
+    },
+    { 
       label: "Pending Orders", 
       value: pendingOrders, 
       icon: ShoppingCart, 
       color: "text-orange-600",
       bg: "bg-orange-100"
-    },
-    { 
-      label: "Upcoming Deliveries", 
-      value: upcomingDeliveries.length, 
-      icon: Clock, 
-      color: "text-purple-600",
-      bg: "bg-purple-100"
     },
   ];
 
