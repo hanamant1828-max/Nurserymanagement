@@ -40,6 +40,8 @@ export default function UserManagementPage() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [selectedRole, setSelectedRole] = useState<string>("staff");
   
+  const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
+  
   const { data: users, isLoading: usersLoading } = useQuery<User[]>({ queryKey: ["/api/users"] });
   const { data: roles, isLoading: rolesLoading } = useQuery<string[]>({ queryKey: ["/api/roles"] });
   const { data: logs, isLoading: logsLoading } = useQuery<(AuditLog & { user: User })[]>({ queryKey: ["/api/audit-logs"] });
@@ -50,6 +52,7 @@ export default function UserManagementPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/roles"] });
+      setIsRoleModalOpen(false);
       toast({ title: "Success", description: "Role created successfully" });
     },
   });
@@ -119,7 +122,7 @@ export default function UserManagementPage() {
     );
   }
 
-  const allRoles = Array.from(new Set([...(roles || []), "staff", "manager", "admin"]));
+  const allRoles = roles || ["admin", "staff", "manager"];
 
   return (
     <div className="space-y-8">
@@ -261,79 +264,88 @@ export default function UserManagementPage() {
           </div>
         </TabsContent>
 
-          <TabsContent value="roles" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <Shield className="h-5 w-5" />
-                    Add New Role
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={(e) => {
-                    e.preventDefault();
-                    const formData = new FormData(e.currentTarget);
-                    const name = formData.get("name") as string;
-                    if (name) {
-                      createRoleMutation.mutate(name.toLowerCase());
-                      e.currentTarget.reset();
-                    }
-                  }} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="role-name">Role Name</Label>
-                      <Input id="role-name" name="name" placeholder="e.g. supervisor" required />
-                    </div>
-                    <Button type="submit" className="w-full" disabled={createRoleMutation.isPending}>
-                      {createRoleMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      Create Role
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
+        <TabsContent value="roles" className="space-y-6">
+          <div className="flex justify-end">
+            <Button onClick={() => setIsRoleModalOpen(true)} className="gap-2">
+              <Shield className="h-4 w-4" />
+              Add New Role
+            </Button>
+          </div>
 
-              <Card className="md:col-span-2">
-                <CardHeader>
-                  <CardTitle className="text-lg">System Roles</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="rounded-md border overflow-hidden">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b bg-muted/50">
-                          <th className="h-10 px-4 text-left font-medium">Role Name</th>
-                          <th className="h-10 px-4 text-right font-medium">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {allRoles.map((role) => (
-                          <tr key={role} className="border-b hover:bg-muted/30">
-                            <td className="p-4 font-medium capitalize">{role}</td>
-                            <td className="p-4 text-right">
-                              {!["admin", "staff", "manager"].includes(role) && (
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon" 
-                                  onClick={() => {
-                                    if (confirm(`Are you sure you want to delete the role "${role}"?`)) {
-                                      deleteRoleMutation.mutate(role);
-                                    }
-                                  }}
-                                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">System Roles</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="rounded-md border overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b bg-muted/50">
+                      <th className="h-10 px-4 text-left font-medium">Role Name</th>
+                      <th className="h-10 px-4 text-right font-medium">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {allRoles.map((role) => (
+                      <tr key={role} className="border-b hover:bg-muted/30">
+                        <td className="p-4 font-medium capitalize">{role}</td>
+                        <td className="p-4 text-right">
+                          {!["admin", "staff", "manager"].includes(role) && (
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              onClick={() => {
+                                if (confirm(`Are you sure you want to delete the role "${role}"?`)) {
+                                  deleteRoleMutation.mutate(role);
+                                }
+                              }}
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Dialog open={isRoleModalOpen} onOpenChange={setIsRoleModalOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5" />
+                  Add New Role
+                </DialogTitle>
+              </DialogHeader>
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                const name = formData.get("name") as string;
+                if (name) {
+                  createRoleMutation.mutate(name.toLowerCase());
+                }
+              }} className="space-y-4 pt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="role-name">Role Name</Label>
+                  <Input id="role-name" name="name" placeholder="e.g. supervisor" required />
+                </div>
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => setIsRoleModalOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={createRoleMutation.isPending}>
+                    {createRoleMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Create Role
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </TabsContent>
 
           <TabsContent value="permissions" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
