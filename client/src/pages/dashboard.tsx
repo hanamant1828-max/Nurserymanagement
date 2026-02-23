@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useLots } from "@/hooks/use-lots";
 import { useOrders } from "@/hooks/use-orders";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Sprout, ShoppingCart, Clock, Truck, TrendingUp, AlertCircle, LayoutDashboard, List, Layers, Package, Users, BarChart3 } from "lucide-react";
+import { Sprout, ShoppingCart, Clock, Truck, TrendingUp, AlertCircle, BarChart3 } from "lucide-react";
 import { format, isToday, parseISO } from "date-fns";
 import { motion } from "framer-motion";
 import { Link } from "wouter";
@@ -99,16 +99,6 @@ export default function Dashboard() {
     },
   ];
 
-  const navButtons = [
-    { label: "Categories", href: "/categories", icon: List },
-    { label: "Varieties", href: "/varieties", icon: Layers },
-    { label: "Sowing Lots", href: "/lots", icon: Package },
-    { label: "Book Orders", href: "/orders", icon: ShoppingCart },
-    { label: "Today's Deliveries", href: "/today-deliveries", icon: Truck },
-    { label: "Customers", href: "/customers", icon: Users },
-    { label: "Reports", href: "/reports", icon: BarChart3 },
-  ];
-
   // Prepare chart data (Sales by Variety)
   const salesByVariety = orders?.reduce((acc: Record<string, number>, order: any) => {
     if (!order) return acc;
@@ -154,30 +144,6 @@ export default function Dashboard() {
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Quick Navigation */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
-        {navButtons.map((btn, idx) => (
-          <motion.div
-            key={btn.href}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 + (idx * 0.03) }}
-          >
-            <Link href={btn.href}>
-              <Button 
-                variant="outline" 
-                className="w-full h-auto py-5 flex flex-col gap-2.5 hover-elevate active-elevate-2 bg-card border-2 border-transparent hover:border-primary/10 shadow-sm rounded-2xl"
-              >
-                <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                  <btn.icon className="w-5 h-5 text-primary" />
-                </div>
-                <span className="text-xs font-bold tracking-tight">{btn.label}</span>
-              </Button>
-            </Link>
           </motion.div>
         ))}
       </div>
