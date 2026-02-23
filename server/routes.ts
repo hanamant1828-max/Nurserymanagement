@@ -240,6 +240,39 @@ export async function registerRoutes(
   });
 
   // Role Management
+  app.get("/api/roles", async (req, res) => {
+    if (!req.isAuthenticated() || (req.user as any).role !== "admin") return res.sendStatus(403);
+    const users = await storage.getUsers();
+    const roles = Array.from(new Set(users.map(u => u.role)));
+    res.json(roles);
+  });
+
+  app.post("/api/roles", async (req, res) => {
+    if (!req.isAuthenticated() || (req.user as any).role !== "admin") return res.sendStatus(403);
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ message: "Role name is required" });
+    
+    // In this system, roles are defined by their presence in role_permissions or users.
+    // To "create" a role, we can just initialize its permissions for at least one page.
+    await storage.updateRolePermission(name, "/", { canView: true });
+    res.status(201).json({ name });
+  });
+
+  app.delete("/api/roles/:role", async (req, res) => {
+    if (!req.isAuthenticated() || (req.user as any).role !== "admin") return res.sendStatus(403);
+    const { role } = req.params;
+    
+    // Check if any users are using this role
+    const users = await storage.getUsers();
+    if (users.some(u => u.role === role)) {
+      return res.status(400).json({ message: "Cannot delete role because it is assigned to users" });
+    }
+
+    // Delete permissions for this role
+    await db.delete(rolePermissions).where(eq(rolePermissions.role, role));
+    res.sendStatus(200);
+  });
+
   app.get("/api/roles/:role/permissions", async (req, res) => {
     if (!req.isAuthenticated() || (req.user as any).role !== "admin") return res.sendStatus(403);
     const permissions = await storage.getRolePermissions(req.params.role);
