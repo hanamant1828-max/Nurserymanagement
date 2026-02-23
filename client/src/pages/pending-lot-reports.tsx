@@ -154,10 +154,10 @@ export default function PendingLotReportsPage() {
                       </TableCell>
                       <TableCell>
                         <div className="font-semibold text-sm">
-                          {order.variety?.name || "Unknown Variety"}
+                          {order.variety?.name || order.lot?.variety?.name || "Unknown Variety"}
                         </div>
                         <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">
-                          {order.category?.name || "Unknown"}
+                          {order.category?.name || order.lot?.category?.name || "Unknown"}
                         </div>
                       </TableCell>
                       <TableCell>

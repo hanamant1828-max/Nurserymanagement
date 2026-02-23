@@ -173,6 +173,8 @@ export const lotsRelations = relations(lots, ({ one, many }) => ({
 
 export const ordersRelations = relations(orders, ({ one }) => ({
   lot: one(lots, { fields: [orders.lotId], references: [lots.id] }),
+  variety: one(varieties, { fields: [orders.varietyId], references: [varieties.id] }),
+  category: one(categories, { fields: [orders.categoryId], references: [categories.id] }),
   creator: one(users, { fields: [orders.createdBy], references: [users.id] }),
 }));
 

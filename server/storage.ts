@@ -399,7 +399,7 @@ export class DatabaseStorage implements IStorage {
     });
   }
 
-  async getOrders(page: number = 1, limit: number = 50, sortField: string = "id", sortOrder: "asc" | "desc" = "desc"): Promise<{ orders: (Order & { lot: (Lot & { variety: Variety; category: Category }) | null; creator?: User })[]; total: number }> {
+  async getOrders(page: number = 1, limit: number = 50, sortField: string = "id", sortOrder: "asc" | "desc" = "desc"): Promise<{ orders: (Order & { lot: (Lot & { variety: Variety; category: Category }) | null; variety?: Variety; category?: Category; creator?: User })[]; total: number }> {
     const offset = (page - 1) * limit;
     
     const [totalResult] = await db.select({ count: sql<number>`count(*)` }).from(orders);
@@ -413,6 +413,8 @@ export class DatabaseStorage implements IStorage {
             category: true,
           }
         },
+        variety: true,
+        category: true,
         creator: true,
       },
       orderBy: (orders, { asc, desc }) => {

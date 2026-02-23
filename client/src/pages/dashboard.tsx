@@ -117,8 +117,8 @@ export default function Dashboard() {
   // Prepare chart data (Sales by Variety)
   const salesByVariety = orders?.reduce((acc: Record<string, number>, order: any) => {
     if (!order) return acc;
-    // variety name is accessed via order.lot.variety.name because of drizzle relations
-    const varietyName = (order as any).lot?.variety?.name || "Unknown Variety";
+    // variety name is accessed via order.variety.name or order.lot.variety.name
+    const varietyName = order.variety?.name || order.lot?.variety?.name || "Unknown Variety";
     acc[varietyName] = (acc[varietyName] || 0) + (Number(order.bookedQty) || 0);
     return acc;
   }, {} as Record<string, number>);
@@ -226,7 +226,7 @@ export default function Dashboard() {
                     <div className="min-w-0">
                       <p className="font-bold text-sm truncate">{order.customerName}</p>
                       <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider truncate">
-                        {(order as any).lot?.variety?.name || "Unknown"}
+                        {order.variety?.name || order.lot?.variety?.name || "Unknown"}
                       </p>
                     </div>
                     <div className="text-right shrink-0">
