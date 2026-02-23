@@ -21,6 +21,7 @@ import CustomersPage from "@/pages/customers";
 import ReportsPage from "@/pages/reports";
 import DeliveryReportsPage from "@/pages/delivery-reports";
 import SeedInwardPage from "@/pages/seed-inward";
+import PendingLotReportsPage from "@/pages/pending-lot-reports";
 import UserManagementPage from "@/pages/users";
 import NotFound from "@/pages/not-found";
 
@@ -129,6 +130,9 @@ function Router() {
       </Route>
       <Route path="/seed-inward">
         {() => <ProtectedRoute component={SeedInwardPage} path="/seed-inward" />}
+      </Route>
+      <Route path="/pending-lot-reports">
+        {() => <ProtectedRoute component={PendingLotReportsPage} path="/pending-lot-reports" />}
       </Route>
       <Route path="/users">
         {() => <AdminRoute component={UserManagementPage} />}

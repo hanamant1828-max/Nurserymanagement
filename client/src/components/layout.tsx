@@ -46,6 +46,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/today-deliveries", label: "Today's Deliveries", icon: CalendarCheck },
     { href: "/customers", label: "Customers", icon: Users },
     { href: "/delivery-reports", label: "Delivery Reports", icon: Truck },
+    { href: "/pending-lot-reports", label: "Pending Lot Reports", icon: Layers },
     { href: "/reports?view=standard", label: "Reports", icon: BarChart3 },
   ];
 
