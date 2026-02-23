@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { insertUserSchema, insertCategorySchema, insertVarietySchema, insertLotSchema, insertOrderSchema, insertSeedInwardSchema, users, categories, varieties, lots, orders, auditLogs, seedInward } from './schema';
+import { Permissions, insertUserSchema, insertCategorySchema, insertVarietySchema, insertLotSchema, insertOrderSchema, insertSeedInwardSchema, users, categories, varieties, lots, orders, auditLogs, seedInward } from './schema';
 
 export const errorSchemas = {
   validation: z.object({
@@ -144,9 +144,50 @@ export const api = {
       input: insertUserSchema,
       responses: { 201: z.custom<typeof users.$inferSelect>() },
     },
+    update: {
+      method: 'PUT' as const,
+      path: '/api/users/:id',
+      input: insertUserSchema.partial(),
+      responses: { 200: z.custom<typeof users.$inferSelect>() },
+    },
     delete: {
       method: 'DELETE' as const,
       path: '/api/users/:id',
+      responses: { 200: z.void() },
+    },
+  },
+  roles: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/roles',
+      responses: { 200: z.array(z.string()) },
+    },
+    create: {
+      method: 'POST' as const,
+      path: '/api/roles',
+      input: z.object({ name: z.string() }),
+      responses: { 201: z.object({ name: z.string() }) },
+    },
+    delete: {
+      method: 'DELETE' as const,
+      path: '/api/roles/:role',
+      responses: { 200: z.void() },
+    },
+    permissions: {
+      method: 'GET' as const,
+      path: '/api/roles/:role/permissions',
+      responses: { 200: z.array(z.custom<typeof Permissions.$inferSelect>()) },
+    },
+    updatePermission: {
+      method: 'POST' as const,
+      path: '/api/roles/:role/permissions',
+      input: z.object({
+        pagePath: z.string(),
+        canView: z.boolean().optional(),
+        canCreate: z.boolean().optional(),
+        canUpdate: z.boolean().optional(),
+        canDelete: z.boolean().optional(),
+      }),
       responses: { 200: z.void() },
     },
   },

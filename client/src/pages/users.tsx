@@ -41,7 +41,29 @@ export default function UserManagementPage() {
   const [selectedRole, setSelectedRole] = useState<string>("staff");
   
   const { data: users, isLoading: usersLoading } = useQuery<User[]>({ queryKey: ["/api/users"] });
+  const { data: roles, isLoading: rolesLoading } = useQuery<string[]>({ queryKey: ["/api/roles"] });
   const { data: logs, isLoading: logsLoading } = useQuery<(AuditLog & { user: User })[]>({ queryKey: ["/api/audit-logs"] });
+  
+  const createRoleMutation = useMutation({
+    mutationFn: async (role: string) => {
+      await apiRequest("POST", "/api/roles", { name: role });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/roles"] });
+      toast({ title: "Success", description: "Role created successfully" });
+    },
+  });
+
+  const deleteRoleMutation = useMutation({
+    mutationFn: async (role: string) => {
+      await apiRequest("DELETE", `/api/roles/${role}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/roles"] });
+      toast({ title: "Success", description: "Role deleted successfully" });
+    },
+  });
+
   const { data: permissions, isLoading: permissionsLoading } = useQuery<RolePermission[]>({
     queryKey: [`/api/roles/${selectedRole}/permissions`],
     enabled: !!selectedRole,
@@ -89,7 +111,7 @@ export default function UserManagementPage() {
     },
   });
 
-  if (usersLoading || logsLoading) {
+  if (usersLoading || logsLoading || rolesLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -97,9 +119,7 @@ export default function UserManagementPage() {
     );
   }
 
-  const roles = Array.from(new Set(users?.map((u) => u.role) || []));
-  if (!roles.includes("staff")) roles.push("staff");
-  if (!roles.includes("manager")) roles.push("manager");
+  const allRoles = Array.from(new Set([...(roles || []), "staff", "manager", "admin"]));
 
   return (
     <div className="space-y-8">
@@ -111,6 +131,7 @@ export default function UserManagementPage() {
       <Tabs defaultValue="users" className="space-y-6">
         <TabsList>
           <TabsTrigger value="users">Users</TabsTrigger>
+          <TabsTrigger value="roles">Roles</TabsTrigger>
           <TabsTrigger value="permissions">Permissions</TabsTrigger>
           <TabsTrigger value="logs">Audit Logs</TabsTrigger>
         </TabsList>
@@ -160,9 +181,9 @@ export default function UserManagementPage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="staff">Staff</SelectItem>
-                        <SelectItem value="manager">Manager</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
+                        {allRoles.map(r => (
+                          <SelectItem key={r} value={r} className="capitalize">{r}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -240,14 +261,88 @@ export default function UserManagementPage() {
           </div>
         </TabsContent>
 
-        <TabsContent value="permissions" className="space-y-6">
+          <TabsContent value="roles" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Shield className="h-5 w-5" />
+                    Add New Role
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.currentTarget);
+                    const name = formData.get("name") as string;
+                    if (name) {
+                      createRoleMutation.mutate(name.toLowerCase());
+                      e.currentTarget.reset();
+                    }
+                  }} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="role-name">Role Name</Label>
+                      <Input id="role-name" name="name" placeholder="e.g. supervisor" required />
+                    </div>
+                    <Button type="submit" className="w-full" disabled={createRoleMutation.isPending}>
+                      {createRoleMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Create Role
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+
+              <Card className="md:col-span-2">
+                <CardHeader>
+                  <CardTitle className="text-lg">System Roles</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="rounded-md border overflow-hidden">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b bg-muted/50">
+                          <th className="h-10 px-4 text-left font-medium">Role Name</th>
+                          <th className="h-10 px-4 text-right font-medium">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {allRoles.map((role) => (
+                          <tr key={role} className="border-b hover:bg-muted/30">
+                            <td className="p-4 font-medium capitalize">{role}</td>
+                            <td className="p-4 text-right">
+                              {!["admin", "staff", "manager"].includes(role) && (
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  onClick={() => {
+                                    if (confirm(`Are you sure you want to delete the role "${role}"?`)) {
+                                      deleteRoleMutation.mutate(role);
+                                    }
+                                  }}
+                                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="permissions" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <Card className="md:col-span-1">
               <CardHeader>
                 <CardTitle className="text-lg">Roles</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                {roles.map((role) => (
+                {allRoles.map((role) => (
                   <Button
                     key={role}
                     variant={selectedRole === role ? "default" : "outline"}
@@ -433,9 +528,9 @@ export default function UserManagementPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="staff">Staff</SelectItem>
-                    <SelectItem value="manager">Manager</SelectItem>
-                    <SelectItem value="admin">Admin</SelectItem>
+                    {allRoles.map(r => (
+                      <SelectItem key={r} value={r} className="capitalize">{r}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
