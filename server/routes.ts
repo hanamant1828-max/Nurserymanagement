@@ -6,7 +6,7 @@ import {
 import { db } from "./db";
 import type { Express } from "express";
 import type { Server } from "http";
-import { setupAuth } from "./auth";
+import { setupAuth, hashPassword } from "./auth";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
@@ -119,17 +119,6 @@ export async function registerRoutes(
     res.json(lot);
   });
 
-  // Orders
-  app.get(api.orders.list.path, async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 50;
-    const sortField = (req.query.sortField as string) || "id";
-    const sortOrder = (req.query.sortOrder as "asc" | "desc") || "desc";
-    const result = await storage.getOrders(page, limit, sortField, sortOrder);
-    res.json(result);
-  });
-
   app.delete(api.lots.delete.path, async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const id = Number(req.params.id);
@@ -145,6 +134,17 @@ export async function registerRoutes(
 
     await storage.deleteLot(id);
     res.sendStatus(200);
+  });
+
+  // Orders
+  app.get(api.orders.list.path, async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 50;
+    const sortField = (req.query.sortField as string) || "id";
+    const sortOrder = (req.query.sortOrder as "asc" | "desc") || "desc";
+    const result = await storage.getOrders(page, limit, sortField, sortOrder);
+    res.json(result);
   });
 
   app.post(api.orders.create.path, async (req, res) => {
@@ -235,8 +235,51 @@ export async function registerRoutes(
 
   app.post("/api/users", async (req, res) => {
     if (!req.isAuthenticated() || (req.user as any).role !== "admin") return res.sendStatus(403);
-    const user = await storage.createUser(req.body);
-    res.status(201).json(user);
+    
+    try {
+      // Hash password before creating user
+      const { password, ...userData } = req.body;
+      const hashedPassword = await hashPassword(password);
+      
+      const user = await storage.createUser({
+        ...userData,
+        password: hashedPassword
+      });
+      res.status(201).json(user);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.put("/api/users/:id", async (req, res) => {
+    if (!req.isAuthenticated() || (req.user as any).role !== "admin") return res.sendStatus(403);
+    
+    try {
+      const id = Number(req.params.id);
+      const { password, ...userData } = req.body;
+      
+      const updateData: any = { ...userData };
+      if (password && typeof password === 'string' && password.trim() !== "") {
+        updateData.password = await hashPassword(password);
+      } else {
+        delete updateData.password;
+      }
+      
+      const user = await storage.updateUser(id, updateData);
+      
+      await storage.createAuditLog({
+        userId: (req.user as any).id,
+        action: "UPDATE",
+        entityType: "user",
+        entityId: id,
+        details: `Updated user: ${user.username}`,
+      });
+
+      res.json(user);
+    } catch (error: any) {
+      console.error("Update user error:", error);
+      res.status(400).json({ message: error.message });
+    }
   });
 
   app.delete("/api/users/:id", async (req, res) => {

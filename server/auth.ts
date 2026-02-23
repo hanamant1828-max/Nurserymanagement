@@ -5,11 +5,13 @@ import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
-import { User } from "@shared/schema";
+import { User, users } from "@shared/schema";
+import { eq } from "drizzle-orm";
+import { db } from "./db";
 
 const scryptAsync = promisify(scrypt);
 
-async function hashPassword(password: string) {
+export async function hashPassword(password: string) {
   const salt = randomBytes(16).toString("hex");
   const buf = (await scryptAsync(password, salt, 64)) as Buffer;
   return `${buf.toString("hex")}.${salt}`;
@@ -46,11 +48,16 @@ export function setupAuth(app: Express) {
     new LocalStrategy(async (username, password, done) => {
       try {
         const user = await storage.getUserByUsername(username);
-        if (!user || !(await comparePasswords(password, user.password))) {
-          return done(null, false);
-        } else {
-          return done(null, user);
+        if (!user) {
+          return done(null, false, { message: "Invalid username or password" });
         }
+        
+        const isValid = await comparePasswords(password, user.password);
+        if (!isValid) {
+          return done(null, false, { message: "Invalid username or password" });
+        }
+        
+        return done(null, user);
       } catch (err) {
         return done(err);
       }
@@ -97,14 +104,26 @@ export function setupAuth(app: Express) {
 
   // Initial Admin User
   (async () => {
-    const admin = await storage.getUserByUsername("admin");
-    if (!admin) {
+    try {
+      const admin = await storage.getUserByUsername("admin");
       const hashedPassword = await hashPassword("admin123");
-      await storage.createUser({
-        username: "admin",
-        password: hashedPassword,
-        role: "admin",
-      });
+      if (!admin) {
+        await storage.createUser({
+          username: "admin",
+          password: hashedPassword,
+          role: "admin",
+        });
+        console.log("Admin user created");
+      } else if (!admin.password.includes('.') || admin.password === 'admin123') {
+        // Force update admin password if it's not in the correct hash format (hex.salt) 
+        // or if it's stored as plain text
+        await db.update(users)
+          .set({ password: hashedPassword })
+          .where(eq(users.username, "admin"));
+        console.log("Admin password updated to hashed format");
+      }
+    } catch (error) {
+      console.error("Error initializing admin user:", error);
     }
   })();
 }
