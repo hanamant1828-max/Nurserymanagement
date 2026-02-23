@@ -1,3 +1,9 @@
+import { eq, sql, and, desc } from "drizzle-orm";
+import {
+  users, rolePermissions, categories, varieties, lots, orders, auditLogs, seedInward,
+  type User, type RolePermission, type Category, type Variety, type Lot, type Order, type AuditLog, type SeedInward,
+} from "@shared/schema";
+import { db } from "./db";
 import type { Express } from "express";
 import type { Server } from "http";
 import { setupAuth } from "./auth";
