@@ -28,7 +28,7 @@ Preferred communication style: Simple, everyday language.
 - **Password Hashing**: Node.js crypto module with scrypt
 
 ### Data Storage
-- **Database**: SQLite (via better-sqlite3, file: sqlite.db)
+- **Database**: PostgreSQL (via node-postgres)
 - **ORM**: Drizzle ORM with drizzle-zod for schema validation
 - **Session Store**: In-memory (memorystore)
 - **Schema Location**: `shared/schema.ts` contains all table definitions
@@ -63,11 +63,13 @@ shared/           # Shared code between client/server
 - **varieties**: Plant varieties linked to categories
 - **lots**: Sowing lots tracking seeds sown, damaged, and availability
 - **orders**: Customer order bookings with delivery dates and status
+- **employees**: Employee records with face descriptors for biometric auth
+- **attendance**: Attendance tracking for employees
 
 ## External Dependencies
 
 ### Database
-- SQLite database (file-based, `sqlite.db` in project root)
+- PostgreSQL database (Production)
 - Drizzle Kit for schema migrations (`npm run db:push`)
 
 ### Session Management
