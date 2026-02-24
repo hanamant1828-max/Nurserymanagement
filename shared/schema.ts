@@ -147,6 +147,19 @@ export const seedInward = sqliteTable("seed_inward", {
   };
 });
 
+// 10. Employees
+export const employees = sqliteTable("employees", {
+  id: sqliteInteger("id").primaryKey({ autoIncrement: true }),
+  name: sqliteText("name").notNull(),
+  designation: sqliteText("designation").notNull(),
+  phoneNumber: sqliteText("phone_number").notNull(),
+  email: sqliteText("email"),
+  address: sqliteText("address"),
+  joiningDate: sqliteText("joining_date"),
+  salary: sqliteText("salary"),
+  active: sqliteInteger("active", { mode: "boolean" }).default(true).notNull(),
+});
+
 // Relations
 export const categoriesRelations = relations(categories, ({ many }) => ({
   varieties: many(varieties),
@@ -191,6 +204,7 @@ export const insertLotSchema = createInsertSchema(lots).omit({ id: true });
 export const insertOrderSchema = createInsertSchema(orders).omit({ id: true });
 export const insertAuditLogSchema = createInsertSchema(auditLogs).omit({ id: true });
 export const insertSeedInwardSchema = createInsertSchema(seedInward).omit({ id: true });
+export const insertEmployeeSchema = createInsertSchema(employees).omit({ id: true });
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -201,3 +215,4 @@ export type Lot = typeof lots.$inferSelect;
 export type Order = typeof orders.$inferSelect;
 export type AuditLog = typeof auditLogs.$inferSelect;
 export type SeedInward = typeof seedInward.$inferSelect;
+export type Employee = typeof employees.$inferSelect;

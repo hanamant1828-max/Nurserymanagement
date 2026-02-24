@@ -1,7 +1,7 @@
 import { eq, sql, and, desc } from "drizzle-orm";
 import {
-  users, rolePermissions, categories, varieties, lots, orders, auditLogs, seedInward,
-  type User, type RolePermission, type Category, type Variety, type Lot, type Order, type AuditLog, type SeedInward,
+  users, rolePermissions, categories, varieties, lots, orders, auditLogs, seedInward, employees,
+  type User, type RolePermission, type Category, type Variety, type Lot, type Order, type AuditLog, type SeedInward, type Employee,
 } from "@shared/schema";
 import { db } from "./db";
 import type { Express } from "express";
@@ -422,6 +422,54 @@ export async function registerRoutes(
       entityType: "seed_inward",
       entityId: id,
       details: `Deleted seed inward entry ID: ${id}`,
+    });
+    res.sendStatus(200);
+  });
+
+  // Employees
+  app.get("/api/employees", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const result = await storage.getEmployees();
+    res.json(result);
+  });
+
+  app.post("/api/employees", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const result = await storage.createEmployee(req.body);
+    await storage.createAuditLog({
+      userId: (req.user as any).id,
+      action: "CREATE",
+      entityType: "employee",
+      entityId: result.id,
+      details: `Created employee: ${result.name}`,
+    });
+    res.status(201).json(result);
+  });
+
+  app.put("/api/employees/:id", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const id = Number(req.params.id);
+    const result = await storage.updateEmployee(id, req.body);
+    await storage.createAuditLog({
+      userId: (req.user as any).id,
+      action: "UPDATE",
+      entityType: "employee",
+      entityId: id,
+      details: `Updated employee: ${result.name}`,
+    });
+    res.json(result);
+  });
+
+  app.delete("/api/employees/:id", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const id = Number(req.params.id);
+    await storage.deleteEmployee(id);
+    await storage.createAuditLog({
+      userId: (req.user as any).id,
+      action: "DELETE",
+      entityType: "employee",
+      entityId: id,
+      details: `Deleted employee ID: ${id}`,
     });
     res.sendStatus(200);
   });

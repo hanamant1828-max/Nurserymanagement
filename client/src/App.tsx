@@ -22,6 +22,7 @@ import ReportsPage from "@/pages/reports";
 import DeliveryReportsPage from "@/pages/delivery-reports";
 import SeedInwardPage from "@/pages/seed-inward";
 import PendingLotReportsPage from "@/pages/pending-lot-reports";
+import EmployeesPage from "@/pages/employees";
 import UserManagementPage from "@/pages/users";
 import NotFound from "@/pages/not-found";
 
@@ -133,6 +134,9 @@ function Router() {
       </Route>
       <Route path="/pending-lot-reports">
         {() => <ProtectedRoute component={PendingLotReportsPage} path="/pending-lot-reports" />}
+      </Route>
+      <Route path="/employees">
+        {() => <ProtectedRoute component={EmployeesPage} path="/employees" />}
       </Route>
       <Route path="/users">
         {() => <AdminRoute component={UserManagementPage} />}

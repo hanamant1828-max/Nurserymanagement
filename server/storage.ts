@@ -1,12 +1,12 @@
 import {
-  users, rolePermissions, categories, varieties, lots, orders, auditLogs, seedInward,
-  type User, type RolePermission, type Category, type Variety, type Lot, type Order, type AuditLog, type SeedInward,
+  users, rolePermissions, categories, varieties, lots, orders, auditLogs, seedInward, employees,
+  type User, type RolePermission, type Category, type Variety, type Lot, type Order, type AuditLog, type SeedInward, type Employee,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, sql, and, desc } from "drizzle-orm";
 import session from "express-session";
 import createMemoryStore from "memorystore";
-import { insertUserSchema, insertRolePermissionSchema, insertCategorySchema, insertVarietySchema, insertLotSchema, insertOrderSchema, insertAuditLogSchema, insertSeedInwardSchema } from "@shared/schema";
+import { insertUserSchema, insertRolePermissionSchema, insertCategorySchema, insertVarietySchema, insertLotSchema, insertOrderSchema, insertAuditLogSchema, insertSeedInwardSchema, insertEmployeeSchema } from "@shared/schema";
 import { z } from "zod";
 
 const MemoryStore = createMemoryStore(session);
@@ -18,6 +18,7 @@ export type InsertVariety = z.infer<typeof insertVarietySchema>;
 export type InsertLot = z.infer<typeof insertLotSchema>;
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
 export type InsertSeedInward = z.infer<typeof insertSeedInwardSchema>;
+export type InsertEmployee = z.infer<typeof insertEmployeeSchema>;
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -73,6 +74,13 @@ export interface IStorage {
   createSeedInward(seedInward: InsertSeedInward): Promise<SeedInward>;
   updateSeedInward(id: number, seedInward: Partial<InsertSeedInward>): Promise<SeedInward>;
   deleteSeedInward(id: number): Promise<void>;
+
+  // Employees
+  getEmployees(): Promise<Employee[]>;
+  getEmployee(id: number): Promise<Employee | undefined>;
+  createEmployee(employee: InsertEmployee): Promise<Employee>;
+  updateEmployee(id: number, employee: Partial<InsertEmployee>): Promise<Employee>;
+  deleteEmployee(id: number): Promise<void>;
 
   // Audit Logs
   createAuditLog(log: z.infer<typeof insertAuditLogSchema>): Promise<AuditLog>;
@@ -542,6 +550,29 @@ export class DatabaseStorage implements IStorage {
 
   async deleteSeedInward(id: number): Promise<void> {
     await db.delete(seedInward).where(eq(seedInward.id, id));
+  }
+
+  async getEmployees(): Promise<Employee[]> {
+    return await db.select().from(employees).orderBy(employees.name);
+  }
+
+  async getEmployee(id: number): Promise<Employee | undefined> {
+    const [employee] = await db.select().from(employees).where(eq(employees.id, id));
+    return employee;
+  }
+
+  async createEmployee(insertEmployee: InsertEmployee): Promise<Employee> {
+    const [employee] = await db.insert(employees).values(insertEmployee).returning();
+    return employee;
+  }
+
+  async updateEmployee(id: number, update: Partial<InsertEmployee>): Promise<Employee> {
+    const [employee] = await db.update(employees).set(update).where(eq(employees.id, id)).returning();
+    return employee;
+  }
+
+  async deleteEmployee(id: number): Promise<void> {
+    await db.delete(employees).where(eq(employees.id, id));
   }
 }
 
