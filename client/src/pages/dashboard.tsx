@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useLots } from "@/hooks/use-lots";
 import { useOrders } from "@/hooks/use-orders";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Sprout, ShoppingCart, Clock, Truck, TrendingUp, AlertCircle, BarChart3 } from "lucide-react";
+import { Sprout, ShoppingCart, Clock, Truck, TrendingUp, AlertCircle, BarChart3, CheckCircle, Layers } from "lucide-react";
 import { format, isToday, parseISO } from "date-fns";
 import { motion } from "framer-motion";
 import { Link } from "wouter";
@@ -75,6 +75,9 @@ export default function Dashboard() {
   const totalRevenue = orders?.reduce((sum, o) => sum + (Number(o.totalAmount) || 0), 0) || 0;
   const totalAdvance = orders?.reduce((sum, o) => sum + (Number(o.advanceAmount) || 0), 0) || 0;
   const totalBalance = orders?.reduce((sum, o) => sum + (Number(o.remainingBalance) || 0), 0) || 0;
+  const totalDelivered = orders?.filter((o: any) => o && o.status === 'DELIVERED').length || 0;
+  const totalCancelled = orders?.filter((o: any) => o && o.status === 'CANCELLED').length || 0;
+  const totalInStock = lots?.reduce((sum, l) => sum + (Number((l as any).available) || 0), 0) || 0;
 
   const stats = [
     { 
@@ -140,6 +143,30 @@ export default function Dashboard() {
       color: "text-indigo-600",
       bg: "bg-indigo-100",
       href: "/reports"
+    },
+    { 
+      label: "Total Delivered", 
+      value: totalDelivered, 
+      icon: CheckCircle, 
+      color: "text-sky-600",
+      bg: "bg-sky-100",
+      href: "/delivery-reports"
+    },
+    { 
+      label: "Total In Stock", 
+      value: totalInStock.toLocaleString(), 
+      icon: Layers, 
+      color: "text-cyan-600",
+      bg: "bg-cyan-100",
+      href: "/lots"
+    },
+    { 
+      label: "Cancelled Orders", 
+      value: totalCancelled, 
+      icon: AlertCircle, 
+      color: "text-slate-600",
+      bg: "bg-slate-100",
+      href: "/orders"
     },
   ];
 
