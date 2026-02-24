@@ -1,12 +1,12 @@
 import {
-  users, rolePermissions, categories, varieties, lots, orders, auditLogs, seedInward, employees,
-  type User, type RolePermission, type Category, type Variety, type Lot, type Order, type AuditLog, type SeedInward, type Employee,
+  users, rolePermissions, categories, varieties, lots, orders, auditLogs, seedInward, employees, attendance,
+  type User, type RolePermission, type Category, type Variety, type Lot, type Order, type AuditLog, type SeedInward, type Employee, type Attendance,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, sql, and, desc } from "drizzle-orm";
 import session from "express-session";
 import createMemoryStore from "memorystore";
-import { insertUserSchema, insertRolePermissionSchema, insertCategorySchema, insertVarietySchema, insertLotSchema, insertOrderSchema, insertAuditLogSchema, insertSeedInwardSchema, insertEmployeeSchema } from "@shared/schema";
+import { insertUserSchema, insertRolePermissionSchema, insertCategorySchema, insertVarietySchema, insertLotSchema, insertOrderSchema, insertAuditLogSchema, insertSeedInwardSchema, insertEmployeeSchema, insertAttendanceSchema } from "@shared/schema";
 import { z } from "zod";
 
 const MemoryStore = createMemoryStore(session);
@@ -19,6 +19,7 @@ export type InsertLot = z.infer<typeof insertLotSchema>;
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
 export type InsertSeedInward = z.infer<typeof insertSeedInwardSchema>;
 export type InsertEmployee = z.infer<typeof insertEmployeeSchema>;
+export type InsertAttendance = z.infer<typeof insertAttendanceSchema>;
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -81,6 +82,11 @@ export interface IStorage {
   createEmployee(employee: InsertEmployee): Promise<Employee>;
   updateEmployee(id: number, employee: Partial<InsertEmployee>): Promise<Employee>;
   deleteEmployee(id: number): Promise<void>;
+
+  // Attendance
+  getAttendance(date: string): Promise<(Attendance & { employee: Employee })[]>;
+  recordAttendance(attendance: InsertAttendance): Promise<Attendance>;
+  getEmployeeAttendance(employeeId: number, startDate: string, endDate: string): Promise<Attendance[]>;
 
   // Audit Logs
   createAuditLog(log: z.infer<typeof insertAuditLogSchema>): Promise<AuditLog>;
@@ -573,6 +579,45 @@ export class DatabaseStorage implements IStorage {
 
   async deleteEmployee(id: number): Promise<void> {
     await db.delete(employees).where(eq(employees.id, id));
+  }
+
+  async getAttendance(date: string): Promise<(Attendance & { employee: Employee })[]> {
+    return await db.query.attendance.findMany({
+      where: eq(attendance.date, date),
+      with: {
+        employee: true
+      }
+    }) as any;
+  }
+
+  async recordAttendance(insertAttendance: InsertAttendance): Promise<Attendance> {
+    const [existing] = await db.select().from(attendance).where(
+      and(
+        eq(attendance.employeeId, insertAttendance.employeeId),
+        eq(attendance.date, insertAttendance.date)
+      )
+    );
+
+    if (existing) {
+      const [updated] = await db.update(attendance)
+        .set(insertAttendance)
+        .where(eq(attendance.id, existing.id))
+        .returning();
+      return updated;
+    }
+
+    const [newRecord] = await db.insert(attendance).values(insertAttendance).returning();
+    return newRecord;
+  }
+
+  async getEmployeeAttendance(employeeId: number, startDate: string, endDate: string): Promise<Attendance[]> {
+    return await db.select().from(attendance).where(
+      and(
+        eq(attendance.employeeId, employeeId),
+        sql`${attendance.date} >= ${startDate}`,
+        sql`${attendance.date} <= ${endDate}`
+      )
+    ).orderBy(attendance.date);
   }
 }
 

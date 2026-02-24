@@ -1,7 +1,7 @@
 import { eq, sql, and, desc } from "drizzle-orm";
 import {
-  users, rolePermissions, categories, varieties, lots, orders, auditLogs, seedInward, employees,
-  type User, type RolePermission, type Category, type Variety, type Lot, type Order, type AuditLog, type SeedInward, type Employee,
+  users, rolePermissions, categories, varieties, lots, orders, auditLogs, seedInward, employees, attendance,
+  type User, type RolePermission, type Category, type Variety, type Lot, type Order, type AuditLog, type SeedInward, type Employee, type Attendance,
 } from "@shared/schema";
 import { db } from "./db";
 import type { Express } from "express";
@@ -472,6 +472,29 @@ export async function registerRoutes(
       details: `Deleted employee ID: ${id}`,
     });
     res.sendStatus(200);
+  });
+
+  // Attendance
+  app.get("/api/attendance", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const date = req.query.date as string || new Date().toISOString().split('T')[0];
+    const result = await storage.getAttendance(date);
+    res.json(result);
+  });
+
+  app.post("/api/attendance", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const result = await storage.recordAttendance(req.body);
+    res.json(result);
+  });
+
+  app.get("/api/employees/:id/attendance", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const id = Number(req.params.id);
+    const startDate = req.query.startDate as string;
+    const endDate = req.query.endDate as string;
+    const result = await storage.getEmployeeAttendance(id, startDate, endDate);
+    res.json(result);
   });
 
   // Audit Logs

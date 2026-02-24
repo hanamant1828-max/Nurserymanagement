@@ -160,6 +160,19 @@ export const employees = sqliteTable("employees", {
   active: sqliteInteger("active", { mode: "boolean" }).default(true).notNull(),
 });
 
+// 11. Attendance
+export const attendance = sqliteTable("attendance", {
+  id: sqliteInteger("id").primaryKey({ autoIncrement: true }),
+  employeeId: sqliteInteger("employee_id").notNull(),
+  date: sqliteText("date").notNull(), // YYYY-MM-DD
+  status: sqliteText("status").notNull(), // PRESENT, ABSENT, LEAVE
+  remarks: sqliteText("remarks"),
+}, (table) => {
+  return {
+    employeeDateIdx: sqliteIndex("idx_attendance_employee_date").on(table.employeeId, table.date),
+  };
+});
+
 // Relations
 export const categoriesRelations = relations(categories, ({ many }) => ({
   varieties: many(varieties),
@@ -195,6 +208,10 @@ export const auditLogsRelations = relations(auditLogs, ({ one }) => ({
   user: one(users, { fields: [auditLogs.userId], references: [users.id] }),
 }));
 
+export const attendanceRelations = relations(attendance, ({ one }) => ({
+  employee: one(employees, { fields: [attendance.employeeId], references: [employees.id] }),
+}));
+
 // Schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true });
 export const insertRolePermissionSchema = createInsertSchema(rolePermissions).omit({ id: true });
@@ -205,6 +222,7 @@ export const insertOrderSchema = createInsertSchema(orders).omit({ id: true });
 export const insertAuditLogSchema = createInsertSchema(auditLogs).omit({ id: true });
 export const insertSeedInwardSchema = createInsertSchema(seedInward).omit({ id: true });
 export const insertEmployeeSchema = createInsertSchema(employees).omit({ id: true });
+export const insertAttendanceSchema = createInsertSchema(attendance).omit({ id: true });
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -216,3 +234,4 @@ export type Order = typeof orders.$inferSelect;
 export type AuditLog = typeof auditLogs.$inferSelect;
 export type SeedInward = typeof seedInward.$inferSelect;
 export type Employee = typeof employees.$inferSelect;
+export type Attendance = typeof attendance.$inferSelect;
