@@ -18,20 +18,58 @@ import {
   Calendar as CalendarIcon,
   ChevronLeft,
   ChevronRight,
-  Search
+  Search,
+  Camera
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { FaceScanner } from "@/components/FaceScanner";
+import * as faceapi from 'face-api.js';
 
 export default function AttendancePage() {
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [verifyingEmployee, setVerifyingEmployee] = useState<any>(null);
+  
   const { data: employees, isLoading: employeesLoading } = useEmployees();
   const { data: attendanceData, isLoading: attendanceLoading } = useAttendance(date);
   const { mutate: recordAttendance } = useRecordAttendance();
   const { toast } = useToast();
+
+  const handleFaceVerify = async (descriptor: Float32Array) => {
+    if (!verifyingEmployee || !verifyingEmployee.faceDescriptor) return;
+
+    try {
+      const savedDescriptor = new Float32Array(JSON.parse(verifyingEmployee.faceDescriptor));
+      const distance = faceapi.euclideanDistance(descriptor, savedDescriptor);
+      
+      // Threshold for face matching (usually 0.6 is good for SSD MobileNet)
+      if (distance < 0.6) {
+        handleStatusChange(verifyingEmployee.id, "PRESENT");
+        setScannerOpen(false);
+        toast({
+          title: "Verification Successful",
+          description: `Attendance marked for ${verifyingEmployee.name}`,
+        });
+      } else {
+        toast({
+          title: "Verification Failed",
+          description: "Face does not match our records.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to process face data.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const activeEmployees = employees?.filter(e => e.active) || [];
   const filteredEmployees = activeEmployees.filter(e => 
@@ -180,11 +218,25 @@ export default function AttendancePage() {
                         </SelectContent>
                       </Select>
                     </TableCell>
-                    <TableCell className="py-4 pr-6 text-right">
-                      {status === "PRESENT" && <CheckCircle2 className="w-5 h-5 text-emerald-500 ml-auto" />}
-                      {status === "ABSENT" && <XCircle className="w-5 h-5 text-destructive ml-auto" />}
-                      {status === "LEAVE" && <Clock className="w-5 h-5 text-amber-500 ml-auto" />}
-                      {status === "PENDING" && <div className="w-2 h-2 rounded-full bg-muted-foreground/30 ml-auto" />}
+                    <TableCell className="py-4 pr-6 text-right flex items-center justify-end gap-2">
+                      {employee.faceDescriptor && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 rounded-lg hover:bg-primary/10 text-primary"
+                          onClick={() => {
+                            setVerifyingEmployee(employee);
+                            setScannerOpen(true);
+                          }}
+                          title="Verify with Face Scan"
+                        >
+                          <Camera className="w-4 h-4" />
+                        </Button>
+                      )}
+                      {status === "PRESENT" && <CheckCircle2 className="w-5 h-5 text-emerald-500" />}
+                      {status === "ABSENT" && <XCircle className="w-5 h-5 text-destructive" />}
+                      {status === "LEAVE" && <Clock className="w-5 h-5 text-amber-500" />}
+                      {status === "PENDING" && <div className="w-2 h-2 rounded-full bg-muted-foreground/30" />}
                     </TableCell>
                   </TableRow>
                 );
@@ -193,6 +245,20 @@ export default function AttendancePage() {
           </TableBody>
         </Table>
       </div>
+
+      <Dialog open={scannerOpen} onOpenChange={setScannerOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Face Verification</DialogTitle>
+          </DialogHeader>
+          {verifyingEmployee && (
+            <FaceScanner 
+              employeeName={verifyingEmployee.name}
+              onScanComplete={handleFaceVerify}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
