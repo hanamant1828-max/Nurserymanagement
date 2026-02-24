@@ -157,7 +157,7 @@ export const employees = sqliteTable("employees", {
   address: sqliteText("address"),
   joiningDate: sqliteText("joining_date"),
   salary: sqliteText("salary"),
-  faceDescriptor: sqliteText("face_descriptor"), // Store as JSON string
+  faceDescriptor: sqliteText("face_descriptor"), // Store as Base64 encoded string or JSON string
   active: sqliteInteger("active", { mode: "boolean" }).default(true).notNull(),
 });
 
