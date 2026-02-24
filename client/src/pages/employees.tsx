@@ -38,9 +38,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Badge } from "@/components/ui/badge";
 import { insertEmployeeSchema, type Employee } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
-import { FaceScanner } from "@/components/FaceScanner";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useMutation } from "@tanstack/react-query";
 
 const formSchema = insertEmployeeSchema;
 
@@ -49,30 +46,11 @@ export default function EmployeesPage() {
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
-  const [scannerOpen, setScannerOpen] = useState(false);
-  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const { toast } = useToast();
 
-  const faceRegistration = useMutation({
-    mutationFn: async ({ id, descriptor }: { id: number; descriptor: number[] }) => {
-      const res = await apiRequest("POST", `/api/employees/${id}/face-registration`, { faceDescriptor: descriptor });
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/employees"] });
-      setScannerOpen(false);
-      toast({ title: "Success", description: "Face registered successfully" });
-    },
-    onError: (error: any) => {
-      toast({ title: "Error", description: error.message || "Failed to register face", variant: "destructive" });
-    }
-  });
-
-  const handleFaceScan = (descriptor: Float32Array) => {
-    if (selectedEmployee) {
-      faceRegistration.mutate({ id: selectedEmployee.id, descriptor: Array.from(descriptor) });
-    }
-  };
+  const { mutate: create, isPending: creating } = useCreateEmployee();
+  const { mutate: update, isPending: updating } = useUpdateEmployee();
+  const { mutate: deleteEmployee } = useDeleteEmployee();
 
   const filteredEmployees = employees?.filter(e => 
     e.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -93,10 +71,6 @@ export default function EmployeesPage() {
       active: true 
     },
   });
-
-  const { mutate: create, isPending: creating } = useCreateEmployee();
-  const { mutate: update, isPending: updating } = useUpdateEmployee();
-  const { mutate: deleteEmployee } = useDeleteEmployee();
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     if (editingId) {
@@ -403,18 +377,6 @@ export default function EmployeesPage() {
                     </TableCell>
                     <TableCell className="py-4 pr-6 text-right">
                       <div className="flex justify-end gap-1.5">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-9 w-9 rounded-xl hover:bg-primary/10 hover:text-primary" 
-                          onClick={() => {
-                            setSelectedEmployee(employee);
-                            setScannerOpen(true);
-                          }}
-                          title="Register Face"
-                        >
-                          <Camera className="w-4 h-4" />
-                        </Button>
                         <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-primary/10 hover:text-primary" onClick={() => handleEdit(employee)}>
                           <Edit2 className="w-4 h-4" />
                         </Button>
@@ -492,17 +454,6 @@ export default function EmployeesPage() {
               </div>
 
               <div className="flex gap-2 pt-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="flex-1 h-10 rounded-xl bg-primary/5 border-transparent hover:bg-primary hover:text-primary-foreground" 
-                  onClick={() => {
-                    setSelectedEmployee(employee);
-                    setScannerOpen(true);
-                  }}
-                >
-                  <Camera className="w-3.5 h-3.5 mr-2" /> Face
-                </Button>
                 <Button variant="outline" size="sm" className="flex-1 h-10 rounded-xl bg-muted/20 border-transparent hover:bg-primary hover:text-primary-foreground" onClick={() => handleEdit(employee)}>
                   <Edit2 className="w-3.5 h-3.5 mr-2" /> Edit
                 </Button>
@@ -528,20 +479,6 @@ export default function EmployeesPage() {
           ))
         )}
       </div>
-
-      <Dialog open={scannerOpen} onOpenChange={setScannerOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Face Registration</DialogTitle>
-          </DialogHeader>
-          {selectedEmployee && (
-            <FaceScanner 
-              employeeName={selectedEmployee.name}
-              onScanComplete={handleFaceScan}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
