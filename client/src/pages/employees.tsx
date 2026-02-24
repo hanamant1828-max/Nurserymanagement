@@ -73,8 +73,16 @@ export default function EmployeesPage() {
   });
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
+    const submitData = {
+      ...data,
+      email: data.email || null,
+      address: data.address || null,
+      joiningDate: data.joiningDate || null,
+      salary: data.salary || null,
+    };
+
     if (editingId) {
-      update({ id: editingId, ...data }, { 
+      update({ id: editingId, ...submitData }, { 
         onSuccess: () => { 
           setOpen(false); 
           resetForm();
@@ -82,7 +90,7 @@ export default function EmployeesPage() {
         } 
       });
     } else {
-      create(data, { 
+      create(submitData, { 
         onSuccess: () => { 
           setOpen(false); 
           resetForm();

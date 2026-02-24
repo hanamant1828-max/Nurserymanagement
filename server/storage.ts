@@ -219,7 +219,7 @@ export class DatabaseStorage implements IStorage {
     });
 
     return allLots.map((lot: any) => {
-      const totalBooked = (lot.orders || []).reduce((sum: number, o: any) => sum + Number(o.bookedQty || 0), 0);
+      const totalBooked = (lot.orders || []).reduce((sum: number, o: any) => sum + (Number(o.bookedQty) || 0), 0);
       const available = (Number(lot.seedsSown) || 0) - (Number(lot.damaged) || 0) - totalBooked;
 
       return {
@@ -453,8 +453,8 @@ export class DatabaseStorage implements IStorage {
       const lot = await this.getLot(lotId);
       if (lot) {
         const ordersForLot = await db.select().from(orders).where(eq(orders.lotId, lotId));
-        const totalBooked = ordersForLot.reduce((sum, o) => sum + Number(o.bookedQty), 0);
-        const availableStock = Number(lot.seedsSown) - Number(lot.damaged) - totalBooked;
+        const totalBooked = ordersForLot.reduce((sum, o) => sum + (Number(o.bookedQty) || 0), 0);
+        const availableStock = (Number(lot.seedsSown) || 0) - (Number(lot.damaged) || 0) - totalBooked;
         
         const allocation = Math.min(Number(insertOrder.bookedQty), availableStock);
         allocatedQuantity = allocation.toString();
@@ -566,12 +566,29 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createEmployee(insertEmployee: InsertEmployee): Promise<Employee> {
-    const [employee] = await db.insert(employees).values(insertEmployee).returning();
+    const [employee] = await db.insert(employees).values({
+      name: insertEmployee.name,
+      designation: insertEmployee.designation,
+      phoneNumber: insertEmployee.phoneNumber,
+      email: insertEmployee.email || null,
+      address: insertEmployee.address || null,
+      joiningDate: insertEmployee.joiningDate || null,
+      salary: insertEmployee.salary || null,
+      active: insertEmployee.active ?? true,
+      faceDescriptor: null
+    }).returning();
     return employee;
   }
 
   async updateEmployee(id: number, update: Partial<InsertEmployee> & { faceDescriptor?: string }): Promise<Employee> {
-    const [employee] = await db.update(employees).set(update).where(eq(employees.id, id)).returning();
+    const cleanUpdate: any = { ...update };
+    // Ensure empty strings are treated as null for optional fields
+    if (cleanUpdate.email === "") cleanUpdate.email = null;
+    if (cleanUpdate.address === "") cleanUpdate.address = null;
+    if (cleanUpdate.joiningDate === "") cleanUpdate.joiningDate = null;
+    if (cleanUpdate.salary === "") cleanUpdate.salary = null;
+
+    const [employee] = await db.update(employees).set(cleanUpdate).where(eq(employees.id, id)).returning();
     return employee;
   }
 
@@ -604,7 +621,12 @@ export class DatabaseStorage implements IStorage {
       return updated;
     }
 
-    const [newRecord] = await db.insert(attendance).values(insertAttendance).returning();
+    const [newRecord] = await db.insert(attendance).values({
+      employeeId: insertAttendance.employeeId,
+      date: insertAttendance.date,
+      status: insertAttendance.status,
+      remarks: insertAttendance.remarks ?? null
+    }).returning();
     return newRecord;
   }
 

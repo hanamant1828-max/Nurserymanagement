@@ -452,15 +452,20 @@ export async function registerRoutes(
 
   app.post("/api/employees", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
-    const result = await storage.createEmployee(req.body);
-    await storage.createAuditLog({
-      userId: (req.user as any).id,
-      action: "CREATE",
-      entityType: "employee",
-      entityId: result.id,
-      details: `Created employee: ${result.name}`,
-    });
-    res.status(201).json(result);
+    try {
+      const result = await storage.createEmployee(req.body);
+      await storage.createAuditLog({
+        userId: (req.user as any).id,
+        action: "CREATE",
+        entityType: "employee",
+        entityId: result.id,
+        details: `Created employee: ${result.name}`,
+      });
+      res.status(201).json(result);
+    } catch (error: any) {
+      console.error("Create employee error:", error);
+      res.status(400).json({ message: error.message });
+    }
   });
 
   app.put("/api/employees/:id", async (req, res) => {
