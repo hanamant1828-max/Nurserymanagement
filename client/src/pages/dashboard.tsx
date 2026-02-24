@@ -71,6 +71,11 @@ export default function Dashboard() {
     o.sowingDate === format(today, 'yyyy-MM-dd')
   ).length || 0;
 
+  const totalBookedQty = orders?.reduce((sum, o) => sum + (Number(o.bookedQty) || 0), 0) || 0;
+  const totalRevenue = orders?.reduce((sum, o) => sum + (Number(o.totalAmount) || 0), 0) || 0;
+  const totalAdvance = orders?.reduce((sum, o) => sum + (Number(o.advanceAmount) || 0), 0) || 0;
+  const totalBalance = orders?.reduce((sum, o) => sum + (Number(o.remainingBalance) || 0), 0) || 0;
+
   const stats = [
     { 
       label: "Today's Sowing", 
@@ -111,6 +116,30 @@ export default function Dashboard() {
       color: "text-blue-600",
       bg: "bg-blue-100",
       href: "/delivery-reports"
+    },
+    { 
+      label: "Total Revenue", 
+      value: `₹${totalRevenue.toLocaleString()}`, 
+      icon: TrendingUp, 
+      color: "text-emerald-600",
+      bg: "bg-emerald-100",
+      href: "/reports"
+    },
+    { 
+      label: "Balance Amount", 
+      value: `₹${totalBalance.toLocaleString()}`, 
+      icon: AlertCircle, 
+      color: "text-amber-600",
+      bg: "bg-amber-100",
+      href: "/reports"
+    },
+    { 
+      label: "Total Booked Qty", 
+      value: totalBookedQty.toLocaleString(), 
+      icon: BarChart3, 
+      color: "text-indigo-600",
+      bg: "bg-indigo-100",
+      href: "/reports"
     },
   ];
 
