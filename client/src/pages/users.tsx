@@ -224,7 +224,19 @@ export default function UserManagementPage() {
               <form onSubmit={(e) => {
                 e.preventDefault();
                 const formData = new FormData(e.currentTarget);
-                createUserMutation.mutate(Object.fromEntries(formData));
+                const data = Object.fromEntries(formData);
+                
+                if (data.password !== data.confirmPassword) {
+                  toast({
+                    variant: "destructive",
+                    title: "Error",
+                    description: "Passwords do not match",
+                  });
+                  return;
+                }
+
+                const { confirmPassword, ...userData } = data;
+                createUserMutation.mutate(userData);
               }} className="space-y-4 pt-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -244,9 +256,15 @@ export default function UserManagementPage() {
                   <Label htmlFor="username">Username</Label>
                   <Input id="username" name="username" required />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input id="password" name="password" type="password" required autoComplete="new-password" />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input id="password" name="password" type="password" required autoComplete="new-password" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword">Confirm Password</Label>
+                    <Input id="confirmPassword" name="confirmPassword" type="password" required autoComplete="new-password" />
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="role">Role</Label>
