@@ -266,21 +266,19 @@ export class DatabaseStorage implements IStorage {
       throw new Error(`Insufficient packet quantity. Available: ${inward.availableQuantity}, Requested: ${packetsSown}`);
     }
 
-    const currentInward = inward; // for closure
-    const lot = db.transaction((tx) => {
+    const lot = await db.transaction(async (tx) => {
       // Update seed inward stock
-      tx.update(seedInward)
+      await tx.update(seedInward)
         .set({
-          usedQuantity: currentInward.usedQuantity + packetsSown,
-          availableQuantity: currentInward.availableQuantity - packetsSown,
+          usedQuantity: inward.usedQuantity + packetsSown,
+          availableQuantity: inward.availableQuantity - packetsSown,
         })
-        .where(eq(seedInward.id, currentInward.id))
-        .run();
+        .where(eq(seedInward.id, inward.id));
 
-      const [newLot] = tx.insert(lots).values({
+      const [newLot] = await tx.insert(lots).values({
         ...insertLot,
-        seedInwardId: currentInward.id
-      }).returning().all();
+        seedInwardId: inward.id
+      }).returning();
       return newLot;
     });
 

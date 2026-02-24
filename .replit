@@ -44,7 +44,9 @@ waitForPort = 5000
 
 [agent]
 expertMode = true
+integrations = ["javascript_database:1.0.0"]
 
 [userenv]
 
 [userenv.shared]
+NODE_ENV = "production"
