@@ -184,7 +184,7 @@ export default function LoginPage() {
         >
           Secure Access • Kisan Hi-Tech Nursery Management
         </motion.p>
-      </div>
+      </motion.div>
     </div>
   );
 }
