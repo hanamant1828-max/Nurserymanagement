@@ -1507,7 +1507,7 @@ export default function Orders() {
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Button variant="outline" size="icon" onClick={() => handlePrint(order)} className="h-8 w-8" title="Print Invoice"><Printer className="h-4 w-4 text-primary" /></Button>
-                      {order.status !== "DELIVERED" && order.status !== "CANCELLED" && (
+                      {order.status !== "DELIVERED" && order.status !== "CANCELLED" && order.lotId && (
                         <Button 
                           variant="outline" 
                           size="icon" 
@@ -1613,7 +1613,7 @@ export default function Orders() {
                 <Button variant="outline" size="sm" onClick={() => handlePrint(order)} className="flex-1 h-9">
                   <Printer className="h-4 w-4 mr-2 text-primary" /> Print
                 </Button>
-                {order.status !== "DELIVERED" && order.status !== "CANCELLED" && (
+                {order.status !== "DELIVERED" && order.status !== "CANCELLED" && order.lotId && (
                   <Button 
                     variant="outline" 
                     size="sm" 
