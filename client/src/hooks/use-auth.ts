@@ -41,6 +41,9 @@ export function useLogin() {
     onSuccess: (user) => {
       queryClient.setQueryData([api.auth.me.path], user);
     },
+    onError: (error: Error) => {
+      // Error handled by components
+    }
   });
 }
 
