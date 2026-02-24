@@ -433,6 +433,23 @@ export async function registerRoutes(
     res.json(result);
   });
 
+  app.post("/api/employees/:id/face-registration", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const id = Number(req.params.id);
+    const { faceDescriptor } = req.body;
+    if (!faceDescriptor) return res.status(400).json({ message: "Face descriptor is required" });
+    
+    const result = await storage.updateEmployee(id, { faceDescriptor: JSON.stringify(faceDescriptor) });
+    await storage.createAuditLog({
+      userId: (req.user as any).id,
+      action: "UPDATE",
+      entityType: "employee",
+      entityId: id,
+      details: `Registered face for employee: ${result.name}`,
+    });
+    res.json(result);
+  });
+
   app.post("/api/employees", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const result = await storage.createEmployee(req.body);
