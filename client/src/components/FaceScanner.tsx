@@ -170,75 +170,75 @@ export function FaceScanner({ onScanComplete, employeeName }: FaceScannerProps) 
         </div>
 
         <div className="flex flex-col gap-3">
-          {!isCameraActive ? (
+          <Button 
+            onClick={startCamera} 
+            disabled={!isModelsLoaded || !employeeName || isCameraActive}
+            data-testid="button-start-camera"
+            className={`w-full h-12 text-base font-semibold rounded-xl transition-all active:scale-[0.98] ${
+              !isCameraActive ? "bg-primary hover:bg-primary/90" : "bg-muted text-muted-foreground hidden"
+            }`}
+          >
+            {!isModelsLoaded ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Initializing AI Models...
+              </>
+            ) : (
+              <>
+                <Camera className="mr-2 h-5 w-5" />
+                Start Camera
+              </>
+            )}
+          </Button>
+
+          {isCameraActive && !capturedDescriptor && (
             <Button 
-              onClick={startCamera} 
-              disabled={!isModelsLoaded || !employeeName}
-              data-testid="button-start-camera"
-              className="w-full h-12 text-base font-semibold rounded-xl transition-all active:scale-[0.98]"
+              onClick={handleScan} 
+              disabled={isScanning}
+              data-testid="button-scan-face"
+              className="w-full h-12 text-base font-semibold rounded-xl shadow-md bg-primary hover:bg-primary/90 transition-all active:scale-[0.98]"
             >
-              {!isModelsLoaded ? (
+              {isScanning ? (
                 <>
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Initializing AI Models...
+                  Scanning...
                 </>
               ) : (
                 <>
                   <Camera className="mr-2 h-5 w-5" />
-                  Start Camera
+                  Capture Face
                 </>
               )}
             </Button>
-          ) : (
-            <div className="space-y-3">
-              <Button 
-                onClick={handleScan} 
-                disabled={isScanning}
-                data-testid="button-scan-face"
-                className="w-full h-12 text-base font-semibold rounded-xl shadow-md bg-primary hover:bg-primary/90 transition-all active:scale-[0.98]"
-              >
-                {isScanning ? (
-                  <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Scanning...
-                  </>
-                ) : (
-                  <>
-                    <Camera className="mr-2 h-5 w-5" />
-                    Capture Face
-                  </>
-                )}
-              </Button>
+          )}
 
-              <Button 
-                onClick={handleSave}
-                disabled={!capturedDescriptor || isScanning}
-                className={`w-full h-12 text-base font-semibold rounded-xl shadow-lg transition-all active:scale-[0.98] ${
-                  capturedDescriptor 
-                    ? "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200 dark:shadow-none" 
-                    : "bg-muted text-muted-foreground grayscale cursor-not-allowed"
-                }`}
-                data-testid="button-save-face"
-              >
-                <CheckCircle2 className="mr-2 h-5 w-5" />
-                Save Face Data
-              </Button>
+          {capturedDescriptor && isCameraActive && (
+            <Button 
+              onClick={handleSave}
+              disabled={isScanning}
+              className="w-full h-12 text-base font-semibold rounded-xl shadow-lg transition-all active:scale-[0.98] bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200 dark:shadow-none"
+              data-testid="button-save-face"
+            >
+              <CheckCircle2 className="mr-2 h-5 w-5" />
+              Save Face Data
+            </Button>
+          )}
 
-              <div className="flex flex-col gap-2 pt-2">
-                <p className="text-[11px] text-center text-muted-foreground font-medium">
-                  {capturedDescriptor 
-                    ? "✓ Face captured successfully! Click Save to register." 
-                    : "Position your face clearly in the frame and click Capture Face."}
-                </p>
-                <Button 
-                  variant="ghost" 
-                  onClick={stopCamera}
-                  data-testid="button-stop-camera"
-                  className="w-full h-10 rounded-xl text-muted-foreground hover:text-foreground text-xs"
-                >
-                  Cancel & Close Camera
-                </Button>
-              </div>
+          {isCameraActive && (
+            <div className="flex flex-col gap-2 pt-2">
+              <p className="text-[11px] text-center text-muted-foreground font-medium">
+                {capturedDescriptor 
+                  ? "✓ Face captured successfully! Click Save to register." 
+                  : "Position your face clearly in the frame and click Capture Face."}
+              </p>
+              <Button 
+                variant="ghost" 
+                onClick={stopCamera}
+                data-testid="button-stop-camera"
+                className="w-full h-10 rounded-xl text-muted-foreground hover:text-foreground text-xs"
+              >
+                Cancel & Close Camera
+              </Button>
             </div>
           )}
         </div>

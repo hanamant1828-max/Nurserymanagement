@@ -1,0 +1,122 @@
+In the Employee Face Registration page, below the "Start Camera" button, add two new buttons:
+
+"Capture Face"
+
+"Save Face Data"
+
+They should follow this proper workflow:
+
+• Initially:
+
+Only "Start Camera" button visible
+
+Capture and Save buttons hidden
+
+• After clicking "Start Camera":
+
+Camera opens
+
+Show "Capture Face" button
+
+Hide "Save Face Data" button
+
+• After clicking "Capture Face":
+
+Detect single face using face-api.js
+
+Generate descriptor
+
+Store descriptor temporarily in state
+
+Show "Save Face Data" button
+
+• After clicking "Save Face Data":
+
+Save descriptor to backend linked to selected employee
+
+Stop camera
+
+Hide Capture and Save buttons
+
+Show success message
+
+UI Implementation
+
+Add buttons below Start Camera:
+
+<button onClick={startCamera}>
+  Start Camera
+</button>
+
+{cameraOn && !capturedDescriptor && (
+  <button onClick={captureFace}>
+    Capture Face
+  </button>
+)}
+
+{capturedDescriptor && (
+  <button onClick={saveFaceData}>
+    Save Face Data
+  </button>
+)}
+Capture Face Logic
+const captureFace = async () => {
+  const detection = await faceapi
+    .detectSingleFace(
+      videoRef.current,
+      new faceapi.TinyFaceDetectorOptions()
+    )
+    .withFaceLandmarks()
+    .withFaceDescriptor();
+
+  if (!detection) {
+    alert("No face detected. Try again.");
+    return;
+  }
+
+  setCapturedDescriptor(Array.from(detection.descriptor));
+};
+Save Face Data Logic
+const saveFaceData = async () => {
+  await fetch("/api/employees/save-face", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      employeeId: selectedEmployee.id,
+      faceDescriptor: capturedDescriptor
+    })
+  });
+
+  stopCamera();
+  setCapturedDescriptor(null);
+  alert("Face data saved successfully");
+};
+Button State Rules
+
+Disable Capture button if no face detected
+
+Disable Save button if descriptor not available
+
+Disable Start Camera if no employee selected
+
+Final Flow Must Be:
+
+Select Employee
+↓
+Start Camera
+↓
+Live Preview
+↓
+Capture Face
+↓
+Save Face Data
+↓
+Camera Stops
+
+After implementing, verify:
+
+✔ Camera opens
+✔ Face detects
+✔ Descriptor generated
+✔ Data saved in DB
+✔ Camera stops automatically
