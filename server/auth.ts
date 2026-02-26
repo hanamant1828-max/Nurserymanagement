@@ -105,22 +105,22 @@ export function setupAuth(app: Express) {
   // Initial Admin User
   (async () => {
     try {
-      const admin = await storage.getUserByUsername("admin");
-      const hashedPassword = await hashPassword("admin123");
+      const username = "admin";
+      const password = "password123";
+      const admin = await storage.getUserByUsername(username);
+      const hashedPassword = await hashPassword(password);
       if (!admin) {
         await storage.createUser({
-          username: "admin",
+          username: username,
           password: hashedPassword,
           role: "admin",
         });
-        console.log("Admin user created");
-      } else if (!admin.password.includes('.') || admin.password === 'admin123') {
-        // Force update admin password if it's not in the correct hash format (hex.salt) 
-        // or if it's stored as plain text
+        console.log(`Admin user created with username: ${username} and password: ${password}`);
+      } else {
         await db.update(users)
           .set({ password: hashedPassword })
-          .where(eq(users.username, "admin"));
-        console.log("Admin password updated to hashed format");
+          .where(eq(users.username, username));
+        console.log(`Admin password updated to: ${password}`);
       }
     } catch (error) {
       console.error("Error initializing admin user:", error);
