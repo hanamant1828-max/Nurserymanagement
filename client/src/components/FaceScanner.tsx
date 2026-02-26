@@ -113,22 +113,32 @@ export function FaceScanner({ onScanComplete, employeeName }: FaceScannerProps) 
       onScanComplete(capturedDescriptor);
       stopCamera();
       setCapturedDescriptor(null);
+      toast({
+        title: "Success",
+        description: "Face data saved successfully",
+      });
     }
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle className="text-center">
-          {employeeName ? `Register Face for ${employeeName}` : 'Face Scanner'}
+    <Card className="w-full max-w-md mx-auto shadow-lg border-primary/20">
+      <CardHeader className="pb-4">
+        <CardTitle className="text-xl font-bold text-center flex items-center justify-center gap-2">
+          <Camera className="w-5 h-5 text-primary" />
+          {employeeName ? `Register Face: ${employeeName}` : 'Face Registration'}
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="relative aspect-video bg-muted rounded-lg overflow-hidden flex items-center justify-center">
+      <CardContent className="space-y-6">
+        <div className="relative aspect-square max-w-[300px] mx-auto bg-black rounded-2xl overflow-hidden border-4 border-muted flex items-center justify-center shadow-inner">
           {!isCameraActive ? (
-            <div className="text-center p-6">
-              <Camera className="w-12 h-12 mx-auto mb-2 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">Camera is off</p>
+            <div className="text-center p-8 space-y-4">
+              <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto">
+                <Camera className="w-10 h-10 text-muted-foreground" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Camera is currently off</p>
+                <p className="text-xs text-muted-foreground/60 mt-1">Select an employee and start camera to begin</p>
+              </div>
             </div>
           ) : (
             <video
@@ -136,73 +146,95 @@ export function FaceScanner({ onScanComplete, employeeName }: FaceScannerProps) 
               autoPlay
               muted
               playsInline
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover mirror"
             />
           )}
           {isScanning && (
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-              <Loader2 className="w-8 h-8 text-white animate-spin" />
+            <div className="absolute inset-0 bg-primary/20 backdrop-blur-[2px] flex flex-col items-center justify-center space-y-3">
+              <div className="relative">
+                <Loader2 className="w-12 h-12 text-white animate-spin" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-2 h-2 bg-white rounded-full animate-ping" />
+                </div>
+              </div>
+              <p className="text-white font-bold text-sm drop-shadow-md">Analyzing Face...</p>
+            </div>
+          )}
+          {capturedDescriptor && !isScanning && (
+            <div className="absolute inset-0 bg-emerald-500/10 border-4 border-emerald-500 rounded-2xl flex items-center justify-center pointer-events-none">
+              <div className="bg-emerald-500 text-white px-4 py-1 rounded-full text-xs font-bold animate-bounce">
+                Face Detected!
+              </div>
             </div>
           )}
         </div>
 
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-3">
           {!isCameraActive ? (
             <Button 
               onClick={startCamera} 
               disabled={!isModelsLoaded || !employeeName}
               data-testid="button-start-camera"
-              className="w-full"
+              className="w-full h-12 text-base font-semibold rounded-xl transition-all active:scale-[0.98]"
             >
               {!isModelsLoaded ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Loading Models...
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Initializing AI Models...
                 </>
               ) : (
                 <>
-                  <Camera className="mr-2 h-4 w-4" />
+                  <Camera className="mr-2 h-5 w-5" />
                   Start Camera
                 </>
               )}
             </Button>
           ) : (
-            <div className="grid grid-cols-2 gap-2 w-full">
-              <Button 
-                variant="outline" 
-                onClick={stopCamera}
-                data-testid="button-stop-camera"
-              >
-                Stop
-              </Button>
-              {!capturedDescriptor ? (
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
                 <Button 
-                  onClick={handleScan} 
-                  disabled={isScanning}
-                  data-testid="button-scan-face"
+                  variant="outline" 
+                  onClick={stopCamera}
+                  data-testid="button-stop-camera"
+                  className="h-11 rounded-xl border-2"
                 >
-                  {isScanning ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Scanning...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 className="mr-2 h-4 w-4" />
-                      Capture Photo
-                    </>
-                  )}
+                  Cancel
                 </Button>
-              ) : (
-                <Button 
-                  onClick={handleSave}
-                  className="bg-emerald-600 hover:bg-emerald-700"
-                  data-testid="button-save-face"
-                >
-                  <CheckCircle2 className="mr-2 h-4 w-4" />
-                  Save Face Data
-                </Button>
-              )}
+                {!capturedDescriptor ? (
+                  <Button 
+                    onClick={handleScan} 
+                    disabled={isScanning}
+                    data-testid="button-scan-face"
+                    className="h-11 rounded-xl shadow-md"
+                  >
+                    {isScanning ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Scanning...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="mr-2 h-4 w-4" />
+                        Capture Photo
+                      </>
+                    )}
+                  </Button>
+                ) : (
+                  <Button 
+                    onClick={handleSave}
+                    className="h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-200 dark:shadow-none animate-in zoom-in-95 duration-200"
+                    data-testid="button-save-face"
+                  >
+                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                    Save Face Data
+                  </Button>
+                )}
+              </div>
+              <p className="text-[11px] text-center text-muted-foreground font-medium">
+                {capturedDescriptor 
+                  ? "✓ Face captured successfully! Click Save to register." 
+                  : "Position your face clearly in the frame and click Capture."}
+              </p>
             </div>
           )}
         </div>

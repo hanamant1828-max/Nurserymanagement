@@ -1,0 +1,153 @@
+The "Start Camera" button in Employee Face Registration is not working.
+
+I want proper working flow like this:
+
+Click "Start Camera"
+
+Camera should open
+
+Show live preview
+
+Show "Capture Photo" button
+
+Detect single face
+
+After capture, show "Save Face Data"
+
+Save face descriptor to database
+
+Stop camera after save
+
+Please implement full working logic using face-api.js.
+
+🔹 1️⃣ Fix Start Camera Button
+
+Ensure button has proper onClick handler:
+
+const startCamera = async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: true
+    });
+
+    videoRef.current.srcObject = stream;
+    setCameraOn(true);
+  } catch (error) {
+    console.error("Camera error:", error);
+    alert("Camera permission denied or not available");
+  }
+};
+
+Attach to button:
+
+<button onClick={startCamera}>Start Camera</button>
+🔹 2️⃣ Show Video Element
+
+Ensure video element exists:
+
+<video
+  ref={videoRef}
+  autoPlay
+  muted
+  width="100%"
+  height="300"
+/>
+🔹 3️⃣ Add Capture Photo Logic
+const capturePhoto = async () => {
+  if (!videoRef.current) return;
+
+  const detection = await faceapi
+    .detectSingleFace(
+      videoRef.current,
+      new faceapi.TinyFaceDetectorOptions()
+    )
+    .withFaceLandmarks()
+    .withFaceDescriptor();
+
+  if (!detection) {
+    alert("No face detected. Please try again.");
+    return;
+  }
+
+  setCapturedDescriptor(Array.from(detection.descriptor));
+  alert("Face captured successfully");
+};
+🔹 4️⃣ Save Face Data to Backend
+const saveFaceData = async () => {
+  if (!capturedDescriptor || !selectedEmployee) {
+    alert("Missing data");
+    return;
+  }
+
+  await fetch("/api/employees/save-face", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      employeeId: selectedEmployee.id,
+      faceDescriptor: capturedDescriptor
+    })
+  });
+
+  stopCamera();
+  alert("Face saved successfully");
+};
+🔹 5️⃣ Stop Camera Properly
+const stopCamera = () => {
+  const stream = videoRef.current.srcObject;
+  const tracks = stream.getTracks();
+
+  tracks.forEach(track => track.stop());
+  videoRef.current.srcObject = null;
+  setCameraOn(false);
+};
+🔹 6️⃣ Backend Route
+
+Ensure backend route exists:
+
+app.post("/api/employees/save-face", async (req, res) => {
+  const { employeeId, faceDescriptor } = req.body;
+
+  await db.query(
+    "UPDATE employees SET face_descriptor = ? WHERE id = ?",
+    [JSON.stringify(faceDescriptor), employeeId]
+  );
+
+  res.json({ success: true });
+});
+🔹 7️⃣ UI Flow Conditions
+
+Show "Capture Photo" only if cameraOn = true
+
+Show "Save Face Data" only if descriptor captured
+
+Disable Start Camera if no employee selected
+
+🔹 8️⃣ Error Handling
+
+Handle:
+
+Camera permission denied
+
+No face detected
+
+Multiple faces detected
+
+Models not loaded
+
+After fixing:
+
+Start Camera should open webcam
+
+Capture should detect face
+
+Save should store descriptor
+
+Camera should stop
+
+🎯 What This Will Fix
+
+✔ Start Camera not responding
+✔ No video preview
+✔ No capture button
+✔ No save logic
+✔ No camera stop
