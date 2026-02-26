@@ -68,8 +68,11 @@ app.use((req, res, next) => {
 (async () => {
   await registerRoutes(httpServer, app);
 
-  // Serve face-api models from public directory
-  app.use('/models', express.static(path.join(__dirname, '..', 'public', 'models')));
+  // Serve face-api models from public directory BEFORE setupVite/serveStatic
+  // Use absolute path to ensure correct resolution
+  const publicPath = path.resolve(__dirname, "..", "public");
+  app.use(express.static(publicPath));
+  app.use('/models', express.static(path.join(publicPath, 'models')));
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     console.error("Global error handler:", err);
