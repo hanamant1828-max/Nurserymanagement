@@ -21,7 +21,7 @@ export function FaceScanner({ onScanComplete, employeeName }: FaceScannerProps) 
   useEffect(() => {
     const loadModels = async () => {
       try {
-        const MODEL_URL = 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js-models/master';
+        const MODEL_URL = '/models';
         await Promise.all([
           faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
           faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
