@@ -32,11 +32,23 @@ export function useLogin() {
         credentials: "include",
       });
       
+      const responseText = await res.text();
+      console.log("Login response:", responseText);
+
       if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || "Login failed");
+        try {
+          const error = JSON.parse(responseText);
+          throw new Error(error.message || "Login failed");
+        } catch (e) {
+          throw new Error(`Login failed: ${res.status} ${res.statusText}`);
+        }
       }
-      return await res.json() as User;
+      
+      try {
+        return JSON.parse(responseText) as User;
+      } catch (e) {
+        throw new Error("Invalid JSON response from server");
+      }
     },
     onSuccess: (user) => {
       queryClient.setQueryData([api.auth.me.path], user);
