@@ -70,9 +70,9 @@ app.use((req, res, next) => {
 
   // Serve face-api models from public directory BEFORE setupVite/serveStatic
   // Use absolute path to ensure correct resolution
-  const publicPath = path.resolve(__dirname, "..", "public");
+  const publicPath = path.resolve(__dirname, "..", "client", "public");
   app.use(express.static(publicPath));
-  app.use('/models', express.static(path.join(publicPath, 'models')));
+  // Models are inside client/public/models, so they will be accessible at /models
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     console.error("Global error handler:", err);
