@@ -785,7 +785,7 @@ export default function LotsPage() {
                     )}
                   />
 
-                  <Button type="submit" className="w-full" disabled={creating || updating}>
+                  <Button type="submit" data-testid="button-save-lot" className="w-full" disabled={creating || updating}>
                     {editingLot ? "Update Lot Entry" : "Save Lot Entry"}
                   </Button>
                 </form>

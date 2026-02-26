@@ -283,7 +283,7 @@ export default function UserManagementPage() {
                   <Button type="button" variant="outline" onClick={() => setIsUserModalOpen(false)}>
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={createUserMutation.isPending}>
+                  <Button type="submit" data-testid="button-create-user" disabled={createUserMutation.isPending}>
                     {createUserMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Create User
                   </Button>
@@ -366,7 +366,7 @@ export default function UserManagementPage() {
                   <Button type="button" variant="outline" onClick={() => setIsRoleModalOpen(false)}>
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={createRoleMutation.isPending}>
+                  <Button type="submit" data-testid="button-create-role" disabled={createRoleMutation.isPending}>
                     {createRoleMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Create Role
                   </Button>
@@ -577,7 +577,7 @@ export default function UserManagementPage() {
               </div>
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setEditingUser(null)}>Cancel</Button>
-                <Button type="submit" disabled={updateUserMutation.isPending}>
+                <Button type="submit" data-testid="button-update-user" disabled={updateUserMutation.isPending}>
                   {updateUserMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Save Changes
                 </Button>

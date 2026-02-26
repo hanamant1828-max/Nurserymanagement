@@ -350,6 +350,7 @@ export default function SeedInwardPage() {
                     </Button>
                     <Button 
                       type="submit" 
+                      data-testid="button-save-seed-inward"
                       className="h-11 sm:w-32 shadow-sm"
                       disabled={createMutation.isPending || updateMutation.isPending}
                     >

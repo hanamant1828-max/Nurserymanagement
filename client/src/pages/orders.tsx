@@ -2106,7 +2106,7 @@ export default function Orders() {
 
                 <div className="flex gap-4">
                   <Button variant="outline" type="button" className="flex-1 h-11" onClick={() => setOpen(false)}>Cancel</Button>
-                  <Button type="submit" disabled={createLoading || updateLoading} className="flex-1 h-11 bg-green-600 hover:bg-green-700">
+                  <Button type="submit" data-testid="button-save-order" disabled={createLoading || updateLoading} className="flex-1 h-11 bg-green-600 hover:bg-green-700">
                     {(createLoading || updateLoading) ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-2 h-4 w-4" />}
                     {editingOrder ? "Update Order" : "Confirm Booking"}
                   </Button>
@@ -2134,7 +2134,7 @@ export default function Orders() {
                 <FormField control={deliveryForm.control} name="driverName" render={({ field }) => (<FormItem><FormLabel>Driver Name</FormLabel><FormControl><Input placeholder="Name" {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={deliveryForm.control} name="driverPhone" render={({ field }) => (<FormItem><FormLabel>Driver Phone</FormLabel><FormControl><Input placeholder="Phone" {...field} /></FormControl><FormMessage /></FormItem>)} />
               </div>
-              <Button type="submit" className="w-full h-11 bg-green-600 hover:bg-green-700">Confirm Delivery</Button>
+              <Button type="submit" data-testid="button-confirm-delivery" className="w-full h-11 bg-green-600 hover:bg-green-700">Confirm Delivery</Button>
             </form>
           </Form>
         </DialogContent>

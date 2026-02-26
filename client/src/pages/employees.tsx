@@ -302,7 +302,7 @@ export default function EmployeesPage() {
                   />
                   <div className="flex gap-3 pt-2">
                     <Button type="button" variant="ghost" onClick={() => setOpen(false)} className="flex-1 h-11 rounded-xl">Cancel</Button>
-                    <Button type="submit" className="flex-[2] h-11 rounded-xl font-bold" disabled={creating || updating}>
+                    <Button type="submit" data-testid="button-save-employee" className="flex-[2] h-11 rounded-xl font-bold" disabled={creating || updating}>
                       {editingId ? "Update Employee" : "Save Employee"}
                     </Button>
                   </div>
