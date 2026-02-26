@@ -125,6 +125,7 @@ export default function LoginPage() {
                           <Input 
                             placeholder="Enter username" 
                             {...field} 
+                            data-testid="input-username"
                             className="h-12 pl-10 bg-white/50 border-green-100 focus:border-green-500 focus:ring-green-500/20 transition-all rounded-xl" 
                           />
                         </div>
@@ -146,6 +147,7 @@ export default function LoginPage() {
                             type="password" 
                             placeholder="Enter password" 
                             {...field} 
+                            data-testid="input-password"
                             className="h-12 pl-10 bg-white/50 border-green-100 focus:border-green-500 focus:ring-green-500/20 transition-all rounded-xl" 
                           />
                         </div>
@@ -156,6 +158,7 @@ export default function LoginPage() {
                 />
                 <Button 
                   type="submit" 
+                  data-testid="button-signin"
                   className="w-full h-12 text-lg font-semibold bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/20 hover:shadow-green-600/30 transition-all rounded-xl active:scale-[0.98]"
                   disabled={isPending}
                 >
