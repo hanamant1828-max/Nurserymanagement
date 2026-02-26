@@ -18,6 +18,8 @@ export function FaceScanner({ onScanComplete, employeeName }: FaceScannerProps) 
   const [isScanning, setIsScanning] = useState(false);
   const { toast } = useToast();
 
+  const [capturedDescriptor, setCapturedDescriptor] = useState<Float32Array | null>(null);
+
   useEffect(() => {
     const loadModels = async () => {
       try {
@@ -50,6 +52,7 @@ export function FaceScanner({ onScanComplete, employeeName }: FaceScannerProps) 
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         setIsCameraActive(true);
+        setCapturedDescriptor(null);
       }
     } catch (err) {
       console.error('Error accessing camera:', err);
@@ -65,6 +68,7 @@ export function FaceScanner({ onScanComplete, employeeName }: FaceScannerProps) 
     if (videoRef.current && videoRef.current.srcObject) {
       const stream = videoRef.current.srcObject as MediaStream;
       stream.getTracks().forEach(track => track.stop());
+      videoRef.current.srcObject = null;
       setIsCameraActive(false);
     }
   };
@@ -80,12 +84,11 @@ export function FaceScanner({ onScanComplete, employeeName }: FaceScannerProps) 
         .withFaceDescriptor();
 
       if (detection) {
-        onScanComplete(detection.descriptor);
+        setCapturedDescriptor(detection.descriptor);
         toast({
           title: "Success",
-          description: "Face scanned successfully!",
+          description: "Face captured successfully! Click Save to register.",
         });
-        stopCamera();
       } else {
         toast({
           title: "No face detected",
@@ -102,6 +105,14 @@ export function FaceScanner({ onScanComplete, employeeName }: FaceScannerProps) 
       });
     } finally {
       setIsScanning(false);
+    }
+  };
+
+  const handleSave = () => {
+    if (capturedDescriptor) {
+      onScanComplete(capturedDescriptor);
+      stopCamera();
+      setCapturedDescriptor(null);
     }
   };
 
@@ -135,12 +146,13 @@ export function FaceScanner({ onScanComplete, employeeName }: FaceScannerProps) 
           )}
         </div>
 
-        <div className="flex justify-center gap-2">
+        <div className="flex flex-col gap-2">
           {!isCameraActive ? (
             <Button 
               onClick={startCamera} 
-              disabled={!isModelsLoaded}
+              disabled={!isModelsLoaded || !employeeName}
               data-testid="button-start-camera"
+              className="w-full"
             >
               {!isModelsLoaded ? (
                 <>
@@ -155,7 +167,7 @@ export function FaceScanner({ onScanComplete, employeeName }: FaceScannerProps) 
               )}
             </Button>
           ) : (
-            <>
+            <div className="grid grid-cols-2 gap-2 w-full">
               <Button 
                 variant="outline" 
                 onClick={stopCamera}
@@ -163,24 +175,35 @@ export function FaceScanner({ onScanComplete, employeeName }: FaceScannerProps) 
               >
                 Stop
               </Button>
-              <Button 
-                onClick={handleScan} 
-                disabled={isScanning}
-                data-testid="button-scan-face"
-              >
-                {isScanning ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Scanning...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2 className="mr-2 h-4 w-4" />
-                    Capture Face
-                  </>
-                )}
-              </Button>
-            </>
+              {!capturedDescriptor ? (
+                <Button 
+                  onClick={handleScan} 
+                  disabled={isScanning}
+                  data-testid="button-scan-face"
+                >
+                  {isScanning ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Scanning...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="mr-2 h-4 w-4" />
+                      Capture Photo
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <Button 
+                  onClick={handleSave}
+                  className="bg-emerald-600 hover:bg-emerald-700"
+                  data-testid="button-save-face"
+                >
+                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                  Save Face Data
+                </Button>
+              )}
+            </div>
           )}
         </div>
       </CardContent>
