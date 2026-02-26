@@ -25,7 +25,7 @@ export function FaceScanner({ onScanComplete, employeeName }: FaceScannerProps) 
         console.log('Loading face-api models from:', MODEL_URL);
         
         await Promise.all([
-          faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
+          faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
           faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
           faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
         ]);
@@ -46,7 +46,7 @@ export function FaceScanner({ onScanComplete, employeeName }: FaceScannerProps) 
 
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: {} });
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         setIsCameraActive(true);
@@ -75,7 +75,7 @@ export function FaceScanner({ onScanComplete, employeeName }: FaceScannerProps) 
     setIsScanning(true);
     try {
       const detection = await faceapi
-        .detectSingleFace(videoRef.current)
+        .detectSingleFace(videoRef.current, new faceapi.TinyFaceDetectorOptions())
         .withFaceLandmarks()
         .withFaceDescriptor();
 

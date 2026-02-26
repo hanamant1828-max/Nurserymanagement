@@ -1,0 +1,132 @@
+Prompt:
+
+I want the Employee Face Registration page to work exactly like the Face Recognition Management module (customer version).
+
+Please implement full face registration functionality using face-api.js with proper model loading, camera handling, and descriptor storage.
+
+Requirements:
+1️⃣ Model Loading
+
+Ensure required face-api.js models are loaded:
+
+await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
+await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
+await faceapi.nets.faceRecognitionNet.loadFromUri('/models');
+
+Create /models directory if missing.
+
+Ensure Express serves models:
+
+app.use('/models', express.static(path.join(__dirname, 'models')));
+
+Show proper loading state.
+
+Show error if models fail to load.
+
+2️⃣ Camera Activation
+
+When employee is selected, enable "Start Camera" button.
+
+On clicking "Start Camera":
+
+Activate webcam using:
+
+navigator.mediaDevices.getUserMedia({ video: true });
+
+Display live video in preview area.
+
+Detect face in real time.
+
+3️⃣ Face Detection & Descriptor
+
+Use TinyFaceDetector.
+
+Detect only one face.
+
+Generate descriptor:
+
+const detection = await faceapi
+  .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+  .withFaceLandmarks()
+  .withFaceDescriptor();
+4️⃣ Save Face Data
+
+Convert descriptor (Float32Array) to normal array:
+
+Array.from(detection.descriptor)
+
+Save descriptor to database linked with selected employee ID.
+
+Prevent saving if:
+
+No face detected
+
+Multiple faces detected
+
+No employee selected
+
+5️⃣ UI Behavior
+
+Show:
+
+"Camera is off" initially
+
+"Loading models..." while loading
+
+"Face detected" indicator
+
+Disable capture if face not detected.
+
+Stop camera after successful save.
+
+6️⃣ Error Handling
+
+Add proper error handling for:
+
+Camera permission denied
+
+Models not found
+
+No face detected
+
+Multiple faces detected
+
+7️⃣ Database
+
+Add column if missing:
+
+face_descriptor (JSON or TEXT)
+
+Ensure descriptor is stored per employee.
+
+Allow updating existing face.
+
+8️⃣ Attendance Ready
+
+Structure it so that later we can:
+
+Use live scan
+
+Compare descriptor using:
+
+faceapi.euclideanDistance()
+
+Mark attendance automatically if match < 0.6
+
+After implementation:
+
+Verify models load successfully.
+
+Verify face descriptor is stored correctly.
+
+Verify camera stops after saving.
+
+🎯 What This Will Do
+
+After Replit fixes this:
+
+✔ Employee select
+✔ Start camera
+✔ Detect face
+✔ Save descriptor
+✔ Ready for attendance system
