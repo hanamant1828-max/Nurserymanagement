@@ -617,10 +617,17 @@ export class DatabaseStorage implements IStorage {
       // If it's a face detection auto-update, we might want to only set outTime if inTime exists
       const updateData: any = { ...insertAttendance };
       
-      // If we are recording attendance and it already exists, 
-      // and we don't have an outTime yet, this might be the outTime
-      if (existing.inTime && !existing.outTime && !insertAttendance.outTime) {
+      // The user wants: first scan = in time, second scan = out time.
+      // If we already have a record for today and it has an inTime but no outTime,
+      // this second scan should be the outTime.
+      if (existing.inTime && !existing.outTime) {
         updateData.outTime = new Date().toLocaleTimeString('en-GB'); // HH:mm:ss
+        // Ensure we don't overwrite inTime if it's already there
+        updateData.inTime = existing.inTime;
+      } else if (existing.inTime && existing.outTime) {
+        // If both exist, we might not want to do anything or just update the last outTime
+        // For now, let's keep the existing logic or just return the existing record
+        return existing;
       }
 
       const [updated] = await db.update(attendance)
