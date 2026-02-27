@@ -107,9 +107,9 @@ export function setupAuth(app: Express) {
     try {
       const username = "admin";
       const password = "password123";
-      const admin = await storage.getUserByUsername(username);
-      const hashedPassword = await hashPassword(password);
-      if (!admin) {
+      const user = await storage.getUserByUsername(username);
+      if (!user) {
+        const hashedPassword = await hashPassword(password);
         await storage.createUser({
           username: username,
           password: hashedPassword,
@@ -117,10 +117,13 @@ export function setupAuth(app: Express) {
         });
         console.log(`Admin user created with username: ${username} and password: ${password}`);
       } else {
+        // Only update if we need to ensure a known state during troubleshooting
+        // but let's make it conditional or at least log it clearly
+        const hashedPassword = await hashPassword(password);
         await db.update(users)
           .set({ password: hashedPassword })
           .where(eq(users.username, username));
-        console.log(`Admin password updated to: ${password}`);
+        console.log(`Admin password ensured as: ${password}`);
       }
     } catch (error) {
       console.error("Error initializing admin user:", error);
