@@ -87,6 +87,7 @@ export interface IStorage {
   getAttendance(date: string): Promise<(Attendance & { employee: Employee })[]>;
   recordAttendance(attendance: InsertAttendance): Promise<Attendance>;
   getEmployeeAttendance(employeeId: number, startDate: string, endDate: string): Promise<Attendance[]>;
+  getAttendanceRange(startDate: string, endDate: string): Promise<Attendance[]>;
 
   // Audit Logs
   createAuditLog(log: z.infer<typeof insertAuditLogSchema>): Promise<AuditLog>;
@@ -657,6 +658,15 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(attendance).where(
       and(
         eq(attendance.employeeId, employeeId),
+        sql`${attendance.date} >= ${startDate}`,
+        sql`${attendance.date} <= ${endDate}`
+      )
+    ).orderBy(attendance.date);
+  }
+
+  async getAttendanceRange(startDate: string, endDate: string): Promise<Attendance[]> {
+    return await db.select().from(attendance).where(
+      and(
         sql`${attendance.date} >= ${startDate}`,
         sql`${attendance.date} <= ${endDate}`
       )
