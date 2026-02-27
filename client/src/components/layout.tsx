@@ -14,6 +14,7 @@ import {
   Menu,
   RefreshCw,
   Camera,
+  UserCheck,
   X
 } from "lucide-react";
 import { useState } from "react";
@@ -47,8 +48,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/today-deliveries", label: "Today's Deliveries", icon: CalendarCheck },
     { href: "/customers", label: "Customers", icon: Users },
     { href: "/employees", label: "Employee Master", icon: Users },
-    { href: "/face-registration", label: "Face Registration", icon: Camera },
     { href: "/attendance", label: "Attendance", icon: CalendarCheck },
+    { href: "/face-attendance", label: "Face Detection", icon: UserCheck },
+    { href: "/face-registration", label: "Face Registration", icon: Camera },
     { href: "/delivery-reports", label: "Delivery Reports", icon: Truck },
     { href: "/pending-lot-reports", label: "Pending Lot Reports", icon: Layers },
     { href: "/reports?view=standard", label: "Reports", icon: BarChart3 },

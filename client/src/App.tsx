@@ -25,6 +25,7 @@ import PendingLotReportsPage from "@/pages/pending-lot-reports";
 import EmployeesPage from "@/pages/employees";
 import AttendancePage from "@/pages/attendance";
 import FaceRegistrationPage from "@/pages/face-registration";
+import FaceAttendancePage from "@/pages/face-attendance";
 import UserManagementPage from "@/pages/users";
 import NotFound from "@/pages/not-found";
 
@@ -142,6 +143,9 @@ function Router() {
       </Route>
       <Route path="/attendance">
         {() => <ProtectedRoute component={AttendancePage} path="/attendance" />}
+      </Route>
+      <Route path="/face-attendance">
+        {() => <ProtectedRoute component={FaceAttendancePage} path="/face-attendance" />}
       </Route>
       <Route path="/face-registration">
         {() => <ProtectedRoute component={FaceRegistrationPage} path="/face-registration" />}
