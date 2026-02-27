@@ -57,18 +57,14 @@ export function FaceScanner({ onScanComplete, employeeName, selectedEmployeeId }
         videoRef.current.srcObject = stream;
         videoRef.current.onloadedmetadata = () => {
           videoRef.current?.play();
+          setIsCameraActive(true);
         };
-        setIsCameraActive(true);
         setCapturedDescriptor(null);
         setCapturedImage(null);
       }
     } catch (err) {
       console.error('Error accessing camera:', err);
-      toast({
-        title: "Camera Error",
-        description: "Could not access camera. Please check permissions.",
-        variant: "destructive",
-      });
+      alert("Unable to access camera. Please allow permission.");
     }
   };
 
@@ -82,7 +78,10 @@ export function FaceScanner({ onScanComplete, employeeName, selectedEmployeeId }
   };
 
   const handleScan = async () => {
-    if (!videoRef.current) return;
+    if (!videoRef.current || videoRef.current.readyState !== 4) {
+      alert("Camera not ready");
+      return;
+    }
 
     setIsScanning(true);
     try {
@@ -92,7 +91,7 @@ export function FaceScanner({ onScanComplete, employeeName, selectedEmployeeId }
       canvas.height = videoRef.current.videoHeight;
       const ctx = canvas.getContext('2d');
       if (ctx) {
-        ctx.drawImage(videoRef.current, 0, 0);
+        ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
         const imageData = canvas.toDataURL('image/png');
         setCapturedImage(imageData);
       }
@@ -107,36 +106,19 @@ export function FaceScanner({ onScanComplete, employeeName, selectedEmployeeId }
 
           if (detection) {
             setCapturedDescriptor(detection.descriptor);
-            toast({
-              title: "Success",
-              description: "Face captured successfully! Click Save to register.",
-            });
           } else {
-            toast({
-              title: "Warning",
-              description: "No face detected in capture, but image was saved. You can try again for better accuracy.",
-              variant: "destructive",
-            });
+            alert("No face detected. Try again.");
           }
         } catch (e) {
           console.error("Face detection error:", e);
         }
-      } else {
-        toast({
-          title: "Captured",
-          description: "Photo captured successfully.",
-        });
       }
       
       // Stop the camera stream after capture as requested
       stopCamera();
     } catch (error) {
       console.error('Scanning error:', error);
-      toast({
-        title: "Scanning failed",
-        description: "An error occurred while scanning.",
-        variant: "destructive",
-      });
+      alert("An error occurred while scanning.");
     } finally {
       setIsScanning(false);
     }
@@ -229,9 +211,11 @@ export function FaceScanner({ onScanComplete, employeeName, selectedEmployeeId }
           {/* 1. Start Camera Button */}
           <Button 
             onClick={startCamera} 
-            disabled={!employeeName}
+            disabled={!employeeName || isCameraActive}
             data-testid="button-start-camera"
-            className="w-full h-12 text-base font-semibold rounded-xl bg-primary hover:bg-primary/90 shadow-md transition-all active:scale-[0.98]"
+            className={`w-full h-12 text-base font-semibold rounded-xl shadow-md transition-all active:scale-[0.98] ${
+              isCameraActive ? "bg-muted text-muted-foreground cursor-not-allowed" : "bg-primary hover:bg-primary/90"
+            }`}
           >
             <Camera className="mr-2 h-5 w-5" />
             Start Camera

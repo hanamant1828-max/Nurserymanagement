@@ -1,0 +1,105 @@
+The Start Camera button is not capturing the face.
+Camera preview may show OR may not show, but Capture Face is not working properly.
+
+Fix the entire camera + capture logic properly.
+
+🔴 Current Issue
+
+Clicking Start Camera does not properly initialize webcam stream.
+
+Video element is not binding stream correctly.
+
+Capture Face button is not capturing the current frame.
+
+Canvas is either missing or not drawing image.
+
+✅ FIX REQUIREMENTS
+1️⃣ Proper Webcam Initialization
+
+When clicking Start Camera:
+
+Use:
+
+navigator.mediaDevices.getUserMedia({ video: true })
+
+Store stream in state (React) or variable.
+
+Assign stream properly:
+
+videoRef.current.srcObject = stream;
+
+Ensure video tag has:
+
+autoPlay
+playsInline
+muted
+
+Wait for video.onloadedmetadata before enabling Capture button.
+
+2️⃣ Fix Capture Face Button (This is likely the main issue)
+
+When clicking Capture Face:
+
+Ensure video is ready:
+
+if (!videoRef.current || videoRef.current.readyState !== 4) {
+  alert("Camera not ready");
+  return;
+}
+
+Create canvas dynamically OR use hidden canvas.
+
+Draw image properly:
+
+const canvas = canvasRef.current;
+canvas.width = video.videoWidth;
+canvas.height = video.videoHeight;
+
+const ctx = canvas.getContext("2d");
+ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+
+Convert to Base64:
+
+const imageData = canvas.toDataURL("image/png");
+setCapturedImage(imageData);
+
+Stop camera after capture:
+
+stream.getTracks().forEach(track => track.stop());
+3️⃣ UI Button State Fix
+
+Capture Face button should only enable AFTER camera starts.
+
+Save Face Data should enable ONLY after image is captured.
+
+Disable Start Camera after camera starts.
+
+4️⃣ Add Proper Error Handling
+
+Add:
+
+try {
+  const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+} catch (err) {
+  console.error("Camera Error:", err);
+  alert("Unable to access camera. Please allow permission.");
+}
+5️⃣ Important Browser Requirement
+
+Ensure:
+
+App runs on HTTPS or localhost
+
+Camera permission allowed in browser
+
+No other app using webcam
+
+✅ Expected Working Flow
+
+Select employee
+
+Click Start Camera → Webcam opens
+
+Click Capture Face → Face captured and preview shown
+
+Click Save Face Data → Face saved successfully
