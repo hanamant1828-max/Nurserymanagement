@@ -589,6 +589,13 @@ export class DatabaseStorage implements IStorage {
     if (cleanUpdate.joiningDate === "") cleanUpdate.joiningDate = null;
     if (cleanUpdate.salary === "") cleanUpdate.salary = null;
 
+    // Check if there are any values to update to avoid Drizzle "No values to set" error
+    if (Object.keys(cleanUpdate).length === 0) {
+      const [employee] = await db.select().from(employees).where(eq(employees.id, id));
+      if (!employee) throw new Error("Employee not found");
+      return employee;
+    }
+
     const [employee] = await db.update(employees).set(cleanUpdate).where(eq(employees.id, id)).returning();
     return employee;
   }

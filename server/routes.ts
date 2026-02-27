@@ -459,10 +459,12 @@ export async function registerRoutes(
     const { employeeId, faceImage, faceDescriptor } = req.body;
     const id = Number(employeeId);
     
-    const updateData: any = {};
-    if (faceDescriptor) {
-      updateData.faceDescriptor = JSON.stringify(faceDescriptor);
+    if (!faceDescriptor) {
+      return res.status(400).json({ message: "No face detected. Please try again." });
     }
+
+    const updateData: any = {};
+    updateData.faceDescriptor = JSON.stringify(faceDescriptor);
 
     const result = await storage.updateEmployee(id, updateData);
     await storage.createAuditLog({
