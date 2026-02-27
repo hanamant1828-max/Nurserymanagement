@@ -13,7 +13,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Loader2, DollarSign, Calendar as CalendarIcon, Download } from "lucide-react";
+import { Loader2, DollarSign, Calendar as CalendarIcon, Download, FileText } from "lucide-react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, parseISO } from "date-fns";
 import { Attendance, Employee } from "@shared/schema";
 
@@ -173,7 +173,8 @@ export default function SalaryPage() {
               <TableHead className="py-4 font-bold text-xs uppercase tracking-wider text-right">Total Days</TableHead>
               <TableHead className="py-4 font-bold text-xs uppercase tracking-wider text-right">Days Worked</TableHead>
               <TableHead className="py-4 font-bold text-xs uppercase tracking-wider text-center">Calculation</TableHead>
-              <TableHead className="py-4 pr-6 font-bold text-xs uppercase tracking-wider text-right">Net Salary</TableHead>
+              <TableHead className="py-4 font-bold text-xs uppercase tracking-wider text-right">Net Salary</TableHead>
+              <TableHead className="py-4 pr-6 font-bold text-xs uppercase tracking-wider text-center">Salary Slip</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -194,15 +195,25 @@ export default function SalaryPage() {
                   <TableCell className="py-4 text-center text-xs font-mono text-muted-foreground">
                     ₹{item.dailyRate} × {item.presentDays}
                   </TableCell>
-                  <TableCell className="py-4 pr-6 text-right font-bold text-primary">₹{item.totalSalary.toFixed(2)}</TableCell>
+                  <TableCell className="py-4 text-right font-bold text-primary">₹{item.totalSalary.toFixed(2)}</TableCell>
+                  <TableCell className="py-4 pr-6 text-center">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0 text-primary hover:text-primary hover:bg-primary/10"
+                      data-testid={`button-view-slip-${item.id}`}
+                    >
+                      <FileText className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))
             )}
           </TableBody>
           <TableFooter>
             <TableRow className="bg-muted/50">
-              <TableCell colSpan={6} className="pl-6 py-6 font-bold text-lg">Grand Total Monthly Payout</TableCell>
-              <TableCell className="pr-6 py-6 text-right font-bold text-2xl text-primary">₹{grandTotal.toFixed(2)}</TableCell>
+              <TableCell colSpan={7} className="pl-6 py-6 font-bold text-lg">Grand Total Monthly Payout</TableCell>
+              <TableCell colSpan={1} className="pr-6 py-6 text-right font-bold text-2xl text-primary">₹{grandTotal.toFixed(2)}</TableCell>
             </TableRow>
           </TableFooter>
         </Table>
