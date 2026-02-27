@@ -1,15 +1,155 @@
 import { forwardRef } from "react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { Employee, Attendance } from "@shared/schema";
 
 interface InvoicePrintProps {
-  order: any;
+  order?: any;
+  employee?: Employee;
+  attendance?: Attendance[];
+  startDate?: string;
+  endDate?: string;
 }
 
-export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({ order }, ref) => {
-  if (!order) return null;
+export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({ 
+  order, 
+  employee, 
+  attendance, 
+  startDate, 
+  endDate 
+}, ref) => {
+  if (!order && !employee) return null;
 
   const today = format(new Date(), "dd/MM/yyyy");
+  
+  if (employee) {
+    const presentDays = attendance?.filter(a => a.status === "PRESENT").length || 0;
+    const dailyRate = parseFloat(employee.salary || "0");
+    const totalSalary = presentDays * dailyRate;
+    const period = startDate && endDate ? `${format(new Date(startDate), "dd/MM/yyyy")} to ${format(new Date(endDate), "dd/MM/yyyy")}` : today;
+
+    return (
+      <div ref={ref} id="invoice-print" className="p-0 bg-white text-black font-sans print:p-0 print:m-0 print:static" style={{ width: "210mm", minHeight: "297mm", margin: "0 auto", overflow: "visible", color: "black" }}>
+        <div className="p-8">
+          {/* Header */}
+          <div className="border-2 border-black p-4 mb-0 relative">
+            <div className="flex justify-between items-start">
+              <div className="text-[12px] font-bold">ಪ್ರೋ: ಕುಂದನವರ ಬ್ರದರ್ಸ್</div>
+              <div className="text-center flex-1">
+                <div className="text-[10px] font-bold">|| ಶ್ರೀ ಆಂಜನೇಯ ಪ್ರಸನ್ನ ||</div>
+                <h1 className="text-3xl font-black mt-1 text-[#1a4d3a]">ಕಿಸಾನ ಹೈಟೆಕ್ ನರ್ಸರಿ</h1>
+                <div className="text-[12px] font-bold mt-1">ಕಲ್ಲೋಳಿ - 591 224</div>
+              </div>
+              <div className="text-right text-[12px] font-bold leading-tight">
+                <div>Mob: 9986589865</div>
+                <div className="mt-1">9663777255</div>
+                <div className="mt-1">7348998635</div>
+              </div>
+            </div>
+            
+            <div className="flex justify-between text-[14px] font-bold border-t border-black pt-1 mt-4">
+              <div>ತಾ|| ಮೂಡಲಗಿ</div>
+              <div>ಜಿ|| ಬೆಳಗಾವಿ</div>
+            </div>
+          </div>
+
+          <div className="text-center my-4">
+            <h2 className="text-xl font-bold border-b-2 border-black inline-block px-4">SALARY SLIP</h2>
+          </div>
+
+          {/* Employee Details Section */}
+          <div className="border-x-2 border-b-2 border-black grid grid-cols-[1fr_200px] mb-4">
+            <div className="p-4 space-y-3 border-r-2 border-black">
+              <div className="flex items-baseline gap-2">
+                <span className="font-bold text-[14px] whitespace-nowrap">ನೌಕರರ ಹೆಸರು (Name):</span>
+                <span className="flex-1 border-b border-dotted border-black text-[14px] font-medium">{employee.name}</span>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="font-bold text-[14px] whitespace-nowrap">ಹುದ್ದೆ (Designation):</span>
+                <span className="flex-1 border-b border-dotted border-black text-[14px] font-medium">{employee.designation}</span>
+              </div>
+            </div>
+            <div className="p-4 space-y-3">
+              <div className="flex items-baseline gap-2">
+                <span className="font-bold text-[14px] whitespace-nowrap">ದಿನಾಂಕ:</span>
+                <span className="flex-1 border-b border-dotted border-black text-[14px] font-medium">{today}</span>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="font-bold text-[14px] whitespace-nowrap">ಅವಧಿ:</span>
+                <span className="flex-1 border-b border-dotted border-black text-[10px] font-medium">{period}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Salary Table */}
+          <table className="w-full border-collapse border-2 border-black mb-4">
+            <thead>
+              <tr className="border-b-2 border-black bg-gray-50/50">
+                <th className="border-r-2 border-black p-2 w-16 text-center text-[14px] font-bold">ಅ. ಸಂ.</th>
+                <th className="border-r-2 border-black p-2 text-left text-[14px] font-bold">ವಿವರ (Description)</th>
+                <th className="border-r-2 border-black p-2 w-24 text-center text-[14px] font-bold">ದಿನಗಳು</th>
+                <th className="border-r-2 border-black p-2 w-24 text-center text-[14px] font-bold">ದರ</th>
+                <th className="p-2 w-32 text-center text-[14px] font-bold">ಮೊತ್ತ (Amount)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-black">
+                <td className="border-r-2 border-black p-3 text-center text-[14px]">1</td>
+                <td className="border-r-2 border-black p-3 text-[14px] font-medium">ಮಾಸಿಕ ವೇತನ (Monthly Salary)</td>
+                <td className="border-r-2 border-black p-3 text-center text-[14px] font-medium">{presentDays}</td>
+                <td className="border-r-2 border-black p-3 text-center text-[14px] font-medium">{dailyRate.toFixed(2)}</td>
+                <td className="border-r-2 border-black p-3 text-right text-[14px] font-bold">{totalSalary.toFixed(2)}</td>
+              </tr>
+              {[...Array(8)].map((_, i) => (
+                <tr key={i} className="h-10 border-b border-black/10 last:border-b-0">
+                  <td className="border-r-2 border-black"></td>
+                  <td className="border-r-2 border-black"></td>
+                  <td className="border-r-2 border-black"></td>
+                  <td className="border-r-2 border-black"></td>
+                  <td></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {/* Summary */}
+          <div className="flex justify-end">
+            <div className="w-1/2 border-2 border-black divide-y-2 divide-black">
+              <div className="flex justify-between items-center p-3">
+                <span className="font-bold text-[15px]">ಒಟ್ಟು ವೇತನ (Total Salary):</span>
+                <span className="font-bold text-[18px] border-b-4 border-double border-black min-w-[100px] text-right">
+                  {totalSalary.toFixed(2)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Signatures */}
+          <div className="mt-20 flex justify-between items-end">
+            <div className="text-center">
+              <div className="font-bold text-[15px] mb-12">ನೌಕರರ ಸಹಿ</div>
+              <div className="inline-block w-32 border-b border-black"></div>
+            </div>
+            <div className="text-right">
+              <div className="font-bold text-[15px] mb-12">ಫಾರ್, ಕಿಸಾನ ಹೈಟೆಕ್ ನರ್ಸರಿ</div>
+              <div className="font-bold text-[15px] flex items-center justify-end gap-2">
+                ಸಹಿ. <span className="inline-block w-32 border-b border-black"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <style dangerouslySetInnerHTML={{ __html: `
+          @media print {
+            body { margin: 0; padding: 0; background: white !important; }
+            #invoice-print { position: fixed; left: 0; top: 0; width: 210mm !important; height: 297mm !important; background: white !important; z-index: 9999; }
+            header, nav, aside, footer, .no-print, button, [role="button"] { display: none !important; }
+            @page { size: A4; margin: 0; }
+          }
+        `}} />
+      </div>
+    );
+  }
+
   const deliveryDate = order.deliveryDate ? format(new Date(order.deliveryDate), "dd/MM/yyyy") : today;
 
   return (

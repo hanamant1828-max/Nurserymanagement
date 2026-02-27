@@ -13,9 +13,11 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Loader2, DollarSign, Calendar as CalendarIcon, Download, FileText } from "lucide-react";
+import { Loader2, DollarSign, Calendar as CalendarIcon, Download, FileText, Printer } from "lucide-react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, parseISO } from "date-fns";
 import { Attendance, Employee } from "@shared/schema";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { InvoicePrint } from "@/components/invoice-print";
 
 export default function SalaryPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -197,14 +199,36 @@ export default function SalaryPage() {
                   </TableCell>
                   <TableCell className="py-4 text-right font-bold text-primary">₹{item.totalSalary.toFixed(2)}</TableCell>
                   <TableCell className="py-4 pr-6 text-center">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-8 w-8 p-0 text-primary hover:text-primary hover:bg-primary/10"
-                      data-testid={`button-view-slip-${item.id}`}
-                    >
-                      <FileText className="h-4 w-4" />
-                    </Button>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 w-8 p-0 text-primary hover:text-primary hover:bg-primary/10"
+                          data-testid={`button-view-slip-${item.id}`}
+                        >
+                          <FileText className="h-4 w-4" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle>Salary Slip - {item.name}</DialogTitle>
+                        </DialogHeader>
+                        <div className="mt-4">
+                          <InvoicePrint 
+                            employee={{
+                              id: item.id,
+                              name: item.name,
+                              designation: item.designation,
+                              salary: item.dailyRate.toString()
+                            } as Employee}
+                            attendance={allAttendance?.filter(a => a.employeeId === item.id) || []}
+                            startDate={startDate}
+                            endDate={endDate}
+                          />
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </TableCell>
                 </TableRow>
               ))
