@@ -40,7 +40,7 @@ export default function AttendancePage() {
   const { mutate: recordAttendance } = useRecordAttendance();
   const { toast } = useToast();
 
-  const handleFaceVerify = async (descriptor: Float32Array) => {
+    const handleFaceVerify = async (descriptor: Float32Array) => {
     if (!verifyingEmployee || !verifyingEmployee.faceDescriptor) return;
 
     try {
@@ -49,11 +49,29 @@ export default function AttendancePage() {
       
       // Threshold for face matching (usually 0.6 is good for SSD MobileNet)
       if (distance < 0.6) {
-        handleStatusChange(verifyingEmployee.id, "PRESENT");
-        setScannerOpen(false);
-        toast({
-          title: "Verification Successful",
-          description: `Attendance marked for ${verifyingEmployee.name}`,
+        const now = new Date();
+        const currentTime = now.getHours().toString().padStart(2, '0') + ":" + 
+                          now.getMinutes().toString().padStart(2, '0') + ":" + 
+                          now.getSeconds().toString().padStart(2, '0');
+        
+        const existingAttendance = attendanceData?.find(a => a.employeeId === verifyingEmployee.id);
+        const newStatus = "PRESENT";
+        
+        recordAttendance({
+          employeeId: verifyingEmployee.id,
+          date,
+          status: newStatus,
+          inTime: existingAttendance?.inTime || currentTime,
+          outTime: existingAttendance?.inTime ? currentTime : existingAttendance?.outTime || null,
+          remarks: ""
+        }, {
+          onSuccess: () => {
+            setScannerOpen(false);
+            toast({
+              title: "Verification Successful",
+              description: `Attendance marked for ${verifyingEmployee.name}`,
+            });
+          }
         });
       } else {
         toast({
@@ -82,10 +100,30 @@ export default function AttendancePage() {
   };
 
   const handleStatusChange = (employeeId: number, status: string) => {
+    const now = new Date();
+    const currentTime = now.getHours().toString().padStart(2, '0') + ":" + 
+                      now.getMinutes().toString().padStart(2, '0') + ":" + 
+                      now.getSeconds().toString().padStart(2, '0');
+    
+    const existingAttendance = attendanceData?.find(a => a.employeeId === employeeId);
+    
+    let inTime = existingAttendance?.inTime || null;
+    let outTime = existingAttendance?.outTime || null;
+
+    if (status === "PRESENT") {
+      if (!inTime) {
+        inTime = currentTime;
+      } else if (!outTime) {
+        outTime = currentTime;
+      }
+    }
+
     recordAttendance({
       employeeId,
       date,
       status,
+      inTime,
+      outTime,
       remarks: ""
     }, {
       onSuccess: () => {

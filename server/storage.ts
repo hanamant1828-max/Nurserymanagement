@@ -620,8 +620,8 @@ export class DatabaseStorage implements IStorage {
       // The user wants: first scan = in time, second scan = out time.
       // If we already have a record for today and it has an inTime but no outTime,
       // this second scan should be the outTime.
-      if (existing.inTime && !existing.outTime) {
-        updateData.outTime = new Date().toLocaleTimeString('en-GB', { timeZone: 'Asia/Kolkata' }); // HH:mm:ss in IST
+      if (existing.inTime && !existing.outTime && insertAttendance.status === "PRESENT") {
+        updateData.outTime = insertAttendance.outTime || new Date().toLocaleTimeString('en-GB', { timeZone: 'Asia/Kolkata' }); // HH:mm:ss in IST
         // Ensure we don't overwrite inTime if it's already there
         updateData.inTime = existing.inTime;
       } else if (existing.inTime && existing.outTime) {
