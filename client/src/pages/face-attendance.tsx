@@ -220,8 +220,8 @@ export default function FaceAttendancePage() {
   return (
     <div className="p-4 md:p-8 space-y-6 max-w-4xl mx-auto">
       <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">AI Face Attendance</h1>
-        <p className="text-muted-foreground">Automatic employee check-in using facial recognition.</p>
+        <h1 className="text-3xl font-bold tracking-tight">Facial Recognition Check-in</h1>
+        <p className="text-muted-foreground">Automated employee check-in using secure facial recognition technology.</p>
       </div>
 
       <div className="grid md:grid-cols-2 gap-8">

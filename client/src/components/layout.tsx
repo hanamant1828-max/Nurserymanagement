@@ -49,7 +49,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/customers", label: "Customers", icon: Users },
     { href: "/employees", label: "Employee Master", icon: Users },
     { href: "/attendance", label: "Attendance", icon: CalendarCheck },
-    { href: "/face-attendance", label: "Face Detection", icon: UserCheck },
+    { href: "/face-attendance", label: "Facial Check-in", icon: UserCheck },
     { href: "/face-registration", label: "Face Registration", icon: Camera },
     { href: "/delivery-reports", label: "Delivery Reports", icon: Truck },
     { href: "/pending-lot-reports", label: "Pending Lot Reports", icon: Layers },
