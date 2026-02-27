@@ -290,8 +290,8 @@ export default function FaceAttendancePage() {
                   <p className="text-muted-foreground font-medium">{detectedEmployee.designation}</p>
                 </div>
                 <div className="flex flex-col items-center gap-2">
-                  <div className="px-4 py-1 bg-emerald-50 text-emerald-700 rounded-full text-sm font-bold border border-emerald-200">
-                    Confidence: {(matchScore! * 100).toFixed(1)}%
+                  <div className="px-6 py-2 bg-emerald-50 text-emerald-700 rounded-full text-lg font-bold border border-emerald-200 shadow-sm">
+                    Attendance Successful
                   </div>
                   {isSubmitting && (
                     <div className="flex items-center gap-2 text-sm text-primary font-medium">
