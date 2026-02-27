@@ -75,6 +75,11 @@ export default function FaceAttendancePage() {
 
   const startCamera = async () => {
     console.log('startCamera called');
+    // Reset detection states for a new scan
+    setDetectedEmployee(null);
+    setMatchScore(null);
+    setLastDetected(null);
+    
     try {
       if (!isModelsLoaded) {
         console.warn('Models not loaded yet');
@@ -161,11 +166,15 @@ export default function FaceAttendancePage() {
           const employee = employees?.find(e => e.id === employeeId);
           
           if (employee && employee.id.toString() !== lastDetected) {
+            setLastDetected(employee.id.toString());
             setDetectedEmployee(employee);
             setMatchScore(1 - bestMatch.distance);
             
             // Auto-mark attendance
             handleMarkAttendance(employee);
+            
+            // Stop scanning immediately after a match is found as requested
+            stopCamera();
           }
         } else {
           setDetectedEmployee(null);
@@ -200,13 +209,10 @@ export default function FaceAttendancePage() {
       remarks: "Automatic Face Detection"
     }, {
       onSuccess: () => {
-        setLastDetected(employee.id.toString());
         toast({
           title: "Attendance Marked",
           description: `Checked in: ${employee.name}`,
         });
-        // Clear detection after 5 seconds to allow next detection
-        setTimeout(() => setLastDetected(null), 5000);
       }
     });
   };
@@ -317,7 +323,7 @@ export default function FaceAttendancePage() {
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Automatic mode marks attendance for any recognized employee. The system will wait 5 seconds between same-person detections.
+                  Automatic mode marks attendance for any recognized employee. The system will stop scanning once a match is found.
                 </p>
               </div>
             </div>
