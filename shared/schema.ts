@@ -167,6 +167,8 @@ export const attendance = pgTable("attendance", {
   employeeId: integer("employee_id").notNull(),
   date: text("date").notNull(), // YYYY-MM-DD
   status: text("status").notNull(), // PRESENT, ABSENT, LEAVE
+  inTime: text("in_time"), // HH:mm:ss
+  outTime: text("out_time"), // HH:mm:ss
   remarks: text("remarks"),
 }, (table) => {
   return {

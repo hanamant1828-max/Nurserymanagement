@@ -614,8 +614,17 @@ export class DatabaseStorage implements IStorage {
     );
 
     if (existing) {
+      // If it's a face detection auto-update, we might want to only set outTime if inTime exists
+      const updateData: any = { ...insertAttendance };
+      
+      // If we are recording attendance and it already exists, 
+      // and we don't have an outTime yet, this might be the outTime
+      if (existing.inTime && !existing.outTime && !insertAttendance.outTime) {
+        updateData.outTime = new Date().toLocaleTimeString('en-GB'); // HH:mm:ss
+      }
+
       const [updated] = await db.update(attendance)
-        .set(insertAttendance)
+        .set(updateData)
         .where(eq(attendance.id, existing.id))
         .returning();
       return updated;
@@ -625,7 +634,9 @@ export class DatabaseStorage implements IStorage {
       employeeId: insertAttendance.employeeId,
       date: insertAttendance.date,
       status: insertAttendance.status,
-      remarks: insertAttendance.remarks ?? null
+      inTime: insertAttendance.inTime || new Date().toLocaleTimeString('en-GB'),
+      outTime: insertAttendance.outTime,
+      remarks: insertAttendance.remarks
     }).returning();
     return newRecord;
   }

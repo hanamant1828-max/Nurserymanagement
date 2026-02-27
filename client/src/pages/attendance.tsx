@@ -167,6 +167,8 @@ export default function AttendancePage() {
             <TableRow>
               <TableHead className="py-4 pl-6 font-bold text-xs uppercase tracking-wider">Employee</TableHead>
               <TableHead className="py-4 font-bold text-xs uppercase tracking-wider">Designation</TableHead>
+              <TableHead className="py-4 font-bold text-xs uppercase tracking-wider">In Time</TableHead>
+              <TableHead className="py-4 font-bold text-xs uppercase tracking-wider">Out Time</TableHead>
               <TableHead className="py-4 font-bold text-xs uppercase tracking-wider w-[200px]">Status</TableHead>
               <TableHead className="py-4 pr-6 text-right font-bold text-xs uppercase tracking-wider">Indicator</TableHead>
             </TableRow>
@@ -197,6 +199,12 @@ export default function AttendancePage() {
                       <div className="text-xs text-muted-foreground">{employee.phoneNumber}</div>
                     </TableCell>
                     <TableCell className="py-4 text-sm font-medium">{employee.designation}</TableCell>
+                    <TableCell className="py-4 text-sm font-medium">
+                      {attendanceData?.find(a => a.employeeId === employee.id)?.inTime || "-"}
+                    </TableCell>
+                    <TableCell className="py-4 text-sm font-medium">
+                      {attendanceData?.find(a => a.employeeId === employee.id)?.outTime || "-"}
+                    </TableCell>
                     <TableCell className="py-4">
                       <Select 
                         value={status} 

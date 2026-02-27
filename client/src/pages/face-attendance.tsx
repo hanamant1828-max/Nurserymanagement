@@ -200,7 +200,9 @@ export default function FaceAttendancePage() {
 
   const handleMarkAttendance = (employee: any) => {
     if (isSubmitting) return;
-    const today = new Date().toISOString().split('T')[0];
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    const time = now.toLocaleTimeString('en-GB');
     
     recordAttendance({
       employeeId: employee.id,
@@ -208,10 +210,11 @@ export default function FaceAttendancePage() {
       status: "PRESENT",
       remarks: "Automatic Face Detection"
     }, {
-      onSuccess: () => {
+      onSuccess: (data) => {
+        const isCheckOut = !!data.outTime;
         toast({
-          title: "Attendance Marked",
-          description: `Checked in: ${employee.name}`,
+          title: isCheckOut ? "Checked Out" : "Checked In",
+          description: `${isCheckOut ? "Out-time" : "In-time"} recorded for ${employee.name} at ${isCheckOut ? data.outTime : data.inTime}`,
         });
       }
     });
