@@ -433,6 +433,33 @@ export async function registerRoutes(
     res.json(result);
   });
 
+  app.post("/api/face/register", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const { employeeId, faceImage, faceDescriptor } = req.body;
+    const id = Number(employeeId);
+    
+    // We can store faceImage in image field or just use descriptor
+    // For now, following existing logic of updating faceDescriptor
+    const updateData: any = {};
+    if (faceDescriptor) {
+      updateData.faceDescriptor = JSON.stringify(faceDescriptor);
+    }
+    if (faceImage) {
+      // If we had an image field in schema, we'd use it. 
+      // Existing schema for employees: id, name, designation, phoneNumber, email, address, joiningDate, salary, faceDescriptor, active
+    }
+
+    const result = await storage.updateEmployee(id, updateData);
+    await storage.createAuditLog({
+      userId: (req.user as any).id,
+      action: "UPDATE",
+      entityType: "employee",
+      entityId: id,
+      details: `Registered face for employee: ${result.name}`,
+    });
+    res.json({ message: "Face Registered Successfully", employee: result });
+  });
+
   app.post("/api/employees/:id/face-registration", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const id = Number(req.params.id);

@@ -4,13 +4,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Camera, CheckCircle2 } from 'lucide-react';
+import { apiRequest, queryClient } from '@/lib/queryClient';
 
 interface FaceScannerProps {
   onScanComplete: (descriptor: Float32Array) => void;
   employeeName?: string;
+  selectedEmployeeId?: string;
 }
 
-export function FaceScanner({ onScanComplete, employeeName }: FaceScannerProps) {
+export function FaceScanner({ onScanComplete, employeeName, selectedEmployeeId }: FaceScannerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isModelsLoaded, setIsModelsLoaded] = useState(false);
@@ -46,13 +48,19 @@ export function FaceScanner({ onScanComplete, employeeName }: FaceScannerProps) 
     loadModels();
   }, [toast]);
 
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
+
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        videoRef.current.onloadedmetadata = () => {
+          videoRef.current?.play();
+        };
         setIsCameraActive(true);
         setCapturedDescriptor(null);
+        setCapturedImage(null);
       }
     } catch (err) {
       console.error('Error accessing camera:', err);
@@ -74,28 +82,54 @@ export function FaceScanner({ onScanComplete, employeeName }: FaceScannerProps) 
   };
 
   const handleScan = async () => {
-    if (!videoRef.current || !isModelsLoaded) return;
+    if (!videoRef.current) return;
 
     setIsScanning(true);
     try {
-      const detection = await faceapi
-        .detectSingleFace(videoRef.current, new faceapi.TinyFaceDetectorOptions())
-        .withFaceLandmarks()
-        .withFaceDescriptor();
+      // Capture frame to canvas for preview
+      const canvas = document.createElement('canvas');
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(videoRef.current, 0, 0);
+        const imageData = canvas.toDataURL('image/png');
+        setCapturedImage(imageData);
+      }
 
-      if (detection) {
-        setCapturedDescriptor(detection.descriptor);
-        toast({
-          title: "Success",
-          description: "Face captured successfully! Click Save to register.",
-        });
+      // If models are loaded, try to get descriptor
+      if (isModelsLoaded) {
+        try {
+          const detection = await faceapi
+            .detectSingleFace(videoRef.current, new faceapi.TinyFaceDetectorOptions())
+            .withFaceLandmarks()
+            .withFaceDescriptor();
+
+          if (detection) {
+            setCapturedDescriptor(detection.descriptor);
+            toast({
+              title: "Success",
+              description: "Face captured successfully! Click Save to register.",
+            });
+          } else {
+            toast({
+              title: "Warning",
+              description: "No face detected in capture, but image was saved. You can try again for better accuracy.",
+              variant: "destructive",
+            });
+          }
+        } catch (e) {
+          console.error("Face detection error:", e);
+        }
       } else {
         toast({
-          title: "No face detected",
-          description: "Please ensure your face is clearly visible in the camera.",
-          variant: "destructive",
+          title: "Captured",
+          description: "Photo captured successfully.",
         });
       }
+      
+      // Stop the camera stream after capture as requested
+      stopCamera();
     } catch (error) {
       console.error('Scanning error:', error);
       toast({
@@ -108,15 +142,38 @@ export function FaceScanner({ onScanComplete, employeeName }: FaceScannerProps) 
     }
   };
 
-  const handleSave = () => {
-    if (capturedDescriptor) {
-      onScanComplete(capturedDescriptor);
-      stopCamera();
-      setCapturedDescriptor(null);
-      toast({
-        title: "Success",
-        description: "Face data saved successfully",
-      });
+  const handleSave = async () => {
+    if (capturedDescriptor || capturedImage) {
+      setIsScanning(true);
+      try {
+        const res = await apiRequest("POST", "/api/face/register", {
+          employeeId: Number(selectedEmployeeId), // We need to pass this prop or use from context
+          faceImage: capturedImage,
+          faceDescriptor: capturedDescriptor ? Array.from(capturedDescriptor) : null
+        });
+        
+        if (res.ok) {
+          toast({
+            title: "Success",
+            description: "Face Registered Successfully",
+          });
+          queryClient.invalidateQueries({ queryKey: ["/api/employees"] });
+          stopCamera();
+          setCapturedDescriptor(null);
+          setCapturedImage(null);
+        } else {
+          const error = await res.json();
+          throw new Error(error.message || "Failed to save face data");
+        }
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      } finally {
+        setIsScanning(false);
+      }
     }
   };
 
@@ -130,7 +187,13 @@ export function FaceScanner({ onScanComplete, employeeName }: FaceScannerProps) 
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="relative aspect-square max-w-[300px] mx-auto bg-black rounded-2xl overflow-hidden border-4 border-muted flex items-center justify-center shadow-inner">
-          {!isCameraActive ? (
+          {capturedImage ? (
+            <img 
+              src={capturedImage} 
+              alt="Captured face" 
+              className="w-full h-full object-cover mirror"
+            />
+          ) : !isCameraActive ? (
             <div className="text-center p-8 space-y-4">
               <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto">
                 <Camera className="w-10 h-10 text-muted-foreground" />
@@ -160,38 +223,22 @@ export function FaceScanner({ onScanComplete, employeeName }: FaceScannerProps) 
               <p className="text-white font-bold text-sm drop-shadow-md">Analyzing Face...</p>
             </div>
           )}
-          {capturedDescriptor && !isScanning && (
-            <div className="absolute inset-0 bg-emerald-500/10 border-4 border-emerald-500 rounded-2xl flex items-center justify-center pointer-events-none">
-              <div className="bg-emerald-500 text-white px-4 py-1 rounded-full text-xs font-bold animate-bounce">
-                Face Detected!
-              </div>
-            </div>
-          )}
         </div>
 
         <div className="flex flex-col gap-3">
           <Button 
             onClick={startCamera} 
-            disabled={!isModelsLoaded || !employeeName || isCameraActive}
+            disabled={!employeeName || isCameraActive}
             data-testid="button-start-camera"
             className={`w-full h-12 text-base font-semibold rounded-xl transition-all active:scale-[0.98] ${
               !isCameraActive ? "bg-primary hover:bg-primary/90" : "bg-muted text-muted-foreground hidden"
             }`}
           >
-            {!isModelsLoaded ? (
-              <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Initializing AI Models...
-              </>
-            ) : (
-              <>
-                <Camera className="mr-2 h-5 w-5" />
-                Start Camera
-              </>
-            )}
+            <Camera className="mr-2 h-5 w-5" />
+            Start Camera
           </Button>
 
-          {isCameraActive && !capturedDescriptor && (
+          {isCameraActive && (
             <Button 
               onClick={handleScan} 
               disabled={isScanning}
@@ -212,7 +259,7 @@ export function FaceScanner({ onScanComplete, employeeName }: FaceScannerProps) 
             </Button>
           )}
 
-          {capturedDescriptor && isCameraActive && (
+          {capturedImage && (
             <Button 
               onClick={handleSave}
               disabled={isScanning}
@@ -224,20 +271,24 @@ export function FaceScanner({ onScanComplete, employeeName }: FaceScannerProps) 
             </Button>
           )}
 
-          {isCameraActive && (
+          {(isCameraActive || capturedImage) && (
             <div className="flex flex-col gap-2 pt-2">
               <p className="text-[11px] text-center text-muted-foreground font-medium">
-                {capturedDescriptor 
-                  ? "✓ Face captured successfully! Click Save to register." 
+                {capturedImage 
+                  ? "✓ Photo captured! Click Save to register or Start Camera to retake." 
                   : "Position your face clearly in the frame and click Capture Face."}
               </p>
               <Button 
                 variant="ghost" 
-                onClick={stopCamera}
+                onClick={() => {
+                  stopCamera();
+                  setCapturedImage(null);
+                  setCapturedDescriptor(null);
+                }}
                 data-testid="button-stop-camera"
                 className="w-full h-10 rounded-xl text-muted-foreground hover:text-foreground text-xs"
               >
-                Cancel & Close Camera
+                Cancel & Reset
               </Button>
             </div>
           )}

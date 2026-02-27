@@ -105,6 +105,7 @@ export default function FaceRegistrationPage() {
         <div className={!selectedEmployee ? "opacity-50 pointer-events-none grayscale transition-all duration-300" : "transition-all duration-300"}>
           <FaceScanner 
             employeeName={selectedEmployee?.name}
+            selectedEmployeeId={selectedEmployeeId}
             onScanComplete={handleFaceScan}
           />
         </div>
