@@ -146,8 +146,8 @@ export function FaceScanner({ onScanComplete, employeeName, selectedEmployeeId }
     if (capturedDescriptor || capturedImage) {
       setIsScanning(true);
       try {
-        const res = await apiRequest("POST", "/api/face/register", {
-          employeeId: Number(selectedEmployeeId), // We need to pass this prop or use from context
+        const res = await apiRequest("POST", "/api/employees/save-face", {
+          employeeId: Number(selectedEmployeeId),
           faceImage: capturedImage,
           faceDescriptor: capturedDescriptor ? Array.from(capturedDescriptor) : null
         });
@@ -158,9 +158,9 @@ export function FaceScanner({ onScanComplete, employeeName, selectedEmployeeId }
             description: "Face Registered Successfully",
           });
           queryClient.invalidateQueries({ queryKey: ["/api/employees"] });
-          stopCamera();
           setCapturedDescriptor(null);
           setCapturedImage(null);
+          setIsCameraActive(false);
         } else {
           const error = await res.json();
           throw new Error(error.message || "Failed to save face data");
@@ -226,51 +226,62 @@ export function FaceScanner({ onScanComplete, employeeName, selectedEmployeeId }
         </div>
 
         <div className="flex flex-col gap-3">
+          {/* 1. Start Camera Button */}
           <Button 
             onClick={startCamera} 
-            disabled={!employeeName || isCameraActive}
+            disabled={!employeeName}
             data-testid="button-start-camera"
-            className={`w-full h-12 text-base font-semibold rounded-xl transition-all active:scale-[0.98] ${
-              !isCameraActive ? "bg-primary hover:bg-primary/90" : "bg-muted text-muted-foreground hidden"
-            }`}
+            className="w-full h-12 text-base font-semibold rounded-xl bg-primary hover:bg-primary/90 shadow-md transition-all active:scale-[0.98]"
           >
             <Camera className="mr-2 h-5 w-5" />
             Start Camera
           </Button>
 
-          {isCameraActive && (
-            <Button 
-              onClick={handleScan} 
-              disabled={isScanning}
-              data-testid="button-scan-face"
-              className="w-full h-12 text-base font-semibold rounded-xl shadow-md bg-primary hover:bg-primary/90 transition-all active:scale-[0.98]"
-            >
-              {isScanning ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Scanning...
-                </>
-              ) : (
-                <>
-                  <Camera className="mr-2 h-5 w-5" />
-                  Capture Face
-                </>
-              )}
-            </Button>
-          )}
+          {/* 2. Capture Face Button */}
+          <Button 
+            onClick={handleScan} 
+            disabled={!isCameraActive || isScanning}
+            data-testid="button-scan-face"
+            className="w-full h-12 text-base font-semibold rounded-xl shadow-md bg-primary hover:bg-primary/90 transition-all active:scale-[0.98]"
+          >
+            {isScanning ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Capturing...
+              </>
+            ) : (
+              <>
+                <Camera className="mr-2 h-5 w-5" />
+                Capture Face
+              </>
+            )}
+          </Button>
 
-          {capturedImage && (
-            <Button 
-              onClick={handleSave}
-              disabled={isScanning}
-              className="w-full h-12 text-base font-semibold rounded-xl shadow-lg transition-all active:scale-[0.98] bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200 dark:shadow-none"
-              data-testid="button-save-face"
-            >
-              <CheckCircle2 className="mr-2 h-5 w-5" />
-              Save Face Data
-            </Button>
-          )}
+          {/* 3. Save Face Data Button */}
+          <Button 
+            onClick={handleSave}
+            disabled={!capturedImage || isScanning}
+            className={`w-full h-12 text-base font-semibold rounded-xl shadow-lg transition-all active:scale-[0.98] ${
+              capturedImage 
+                ? "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200 dark:shadow-none" 
+                : "bg-muted text-muted-foreground grayscale cursor-not-allowed"
+            }`}
+            data-testid="button-save-face"
+          >
+            {isScanning ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <CheckCircle2 className="mr-2 h-5 w-5" />
+                Save Face Data
+              </>
+            )}
+          </Button>
 
+          {/* Status Message & Reset */}
           {(isCameraActive || capturedImage) && (
             <div className="flex flex-col gap-2 pt-2">
               <p className="text-[11px] text-center text-muted-foreground font-medium">
