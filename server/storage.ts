@@ -605,7 +605,7 @@ export class DatabaseStorage implements IStorage {
     }) as any;
   }
 
-  async recordAttendance(insertAttendance: InsertAttendance): Promise<Attendance> {
+    async recordAttendance(insertAttendance: InsertAttendance): Promise<Attendance> {
     const [existing] = await db.select().from(attendance).where(
       and(
         eq(attendance.employeeId, insertAttendance.employeeId),
@@ -613,22 +613,23 @@ export class DatabaseStorage implements IStorage {
       )
     );
 
+    const currentTime = new Date().toLocaleTimeString("en-GB", { timeZone: "Asia/Kolkata", hour12: false });
+
     if (existing) {
-      // If it's a face detection auto-update, we might want to only set outTime if inTime exists
-      const updateData: any = { ...insertAttendance };
+      const updateData = { ...insertAttendance };
       
-      // The user wants: first scan = in time, second scan = out time.
-      // If we already have a record for today and it has an inTime but no outTime,
-      // this second scan should be the outTime.
-      if (existing.inTime && !existing.outTime && insertAttendance.status === "PRESENT") {
-        updateData.outTime = insertAttendance.outTime || new Date().toLocaleTimeString('en-GB', { timeZone: 'Asia/Kolkata' }); // HH:mm:ss in IST
-        // Ensure we don't overwrite inTime if it's already there
-        updateData.inTime = existing.inTime;
-      } else if (existing.inTime && existing.outTime) {
-        // If both exist, we might not want to do anything or just update the last outTime
-        // For now, let's keep the existing logic or just return the existing record
-        return existing;
+      if (insertAttendance.status === "PRESENT") {
+        if (!updateData.inTime || updateData.inTime === "-") {
+          updateData.inTime = (existing.inTime && existing.inTime !== "-") ? existing.inTime : currentTime;
+        }
+        if (!updateData.outTime || updateData.outTime === "-") {
+          if (existing.inTime && existing.inTime !== "-" && (!existing.outTime || existing.outTime === "-")) {
+            updateData.outTime = currentTime;
+          }
+        }
       }
+
+      console.log("Updating attendance:", updateData);
 
       const [updated] = await db.update(attendance)
         .set(updateData)
@@ -637,13 +638,17 @@ export class DatabaseStorage implements IStorage {
       return updated;
     }
 
+    const inTime = insertAttendance.inTime || (insertAttendance.status === "PRESENT" ? currentTime : null);
+    
+    console.log("Creating attendance:", { employeeId: insertAttendance.employeeId, inTime });
+
     const [newRecord] = await db.insert(attendance).values({
       employeeId: insertAttendance.employeeId,
       date: insertAttendance.date,
       status: insertAttendance.status,
-      inTime: insertAttendance.inTime || new Date().toLocaleTimeString('en-GB', { timeZone: 'Asia/Kolkata' }),
-      outTime: insertAttendance.outTime,
-      remarks: insertAttendance.remarks
+      inTime: inTime,
+      outTime: insertAttendance.outTime || null,
+      remarks: insertAttendance.remarks || ""
     }).returning();
     return newRecord;
   }

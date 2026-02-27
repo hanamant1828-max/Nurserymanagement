@@ -546,6 +546,13 @@ export async function registerRoutes(
     res.json(result);
   });
 
+  app.get("/api/attendance/:date", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const date = req.params.date;
+    const result = await storage.getAttendance(date);
+    res.json(result);
+  });
+
   app.post("/api/attendance", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const result = await storage.recordAttendance(req.body);

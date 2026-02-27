@@ -50,9 +50,7 @@ export default function AttendancePage() {
       // Threshold for face matching (usually 0.6 is good for SSD MobileNet)
       if (distance < 0.6) {
         const now = new Date();
-        const currentTime = now.getHours().toString().padStart(2, '0') + ":" + 
-                          now.getMinutes().toString().padStart(2, '0') + ":" + 
-                          now.getSeconds().toString().padStart(2, '0');
+        const currentTime = now.toLocaleTimeString("en-GB", { hour12: false });
         
         const existingAttendance = attendanceData?.find(a => a.employeeId === verifyingEmployee.id);
         const newStatus = "PRESENT";
@@ -99,7 +97,7 @@ export default function AttendancePage() {
     return attendanceData?.find(a => a.employeeId === employeeId)?.status || "PENDING";
   };
 
-  const handleStatusChange = (employeeId: number, status: string) => {
+    const handleStatusChange = (employeeId: number, status: string) => {
     const now = new Date();
     const currentTime = now.getHours().toString().padStart(2, '0') + ":" + 
                       now.getMinutes().toString().padStart(2, '0') + ":" + 
@@ -111,9 +109,9 @@ export default function AttendancePage() {
     let outTime = existingAttendance?.outTime || null;
 
     if (status === "PRESENT") {
-      if (!inTime) {
+      if (!inTime || inTime === "-") {
         inTime = currentTime;
-      } else if (!outTime) {
+      } else if (!outTime || outTime === "-") {
         outTime = currentTime;
       }
     }
