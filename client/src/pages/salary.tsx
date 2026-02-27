@@ -43,6 +43,11 @@ export default function SalaryPage() {
   const salaryData = useMemo(() => {
     if (!employees || !allAttendance) return [];
 
+    const daysInMonth = eachDayOfInterval({
+      start: startOfMonth(selectedDate),
+      end: endOfMonth(selectedDate)
+    }).length;
+
     return employees.map(employee => {
       const employeeAttendance = allAttendance.filter(a => a.employeeId === employee.id);
       const presentDays = employeeAttendance.filter(a => a.status === "PRESENT").length;
@@ -55,10 +60,11 @@ export default function SalaryPage() {
         designation: employee.designation,
         dailyRate,
         presentDays,
+        daysInMonth,
         totalSalary
       };
     });
-  }, [employees, allAttendance]);
+  }, [employees, allAttendance, selectedDate]);
 
   const grandTotal = useMemo(() => {
     return salaryData.reduce((sum, item) => sum + item.totalSalary, 0);
@@ -145,6 +151,16 @@ export default function SalaryPage() {
             <p className="text-xs text-muted-foreground mt-1">For {format(selectedDate, "MMMM yyyy")}</p>
           </CardContent>
         </Card>
+        
+        <Card className="bg-amber-50/50 border-amber-100">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-amber-700 uppercase tracking-wider">Policy Note</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm font-medium text-amber-900">Daily Wage Basis</p>
+            <p className="text-xs text-amber-600 mt-1">No PF or ESI deductions applicable for this nursery staff.</p>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="rounded-2xl border bg-card shadow-sm overflow-hidden">
@@ -154,14 +170,16 @@ export default function SalaryPage() {
               <TableHead className="py-4 pl-6 font-bold text-xs uppercase tracking-wider">Employee Name</TableHead>
               <TableHead className="py-4 font-bold text-xs uppercase tracking-wider">Designation</TableHead>
               <TableHead className="py-4 font-bold text-xs uppercase tracking-wider text-right">Daily Rate</TableHead>
-              <TableHead className="py-4 font-bold text-xs uppercase tracking-wider text-right">Present Days</TableHead>
-              <TableHead className="py-4 pr-6 font-bold text-xs uppercase tracking-wider text-right">Total Salary</TableHead>
+              <TableHead className="py-4 font-bold text-xs uppercase tracking-wider text-right">Total Days</TableHead>
+              <TableHead className="py-4 font-bold text-xs uppercase tracking-wider text-right">Days Worked</TableHead>
+              <TableHead className="py-4 font-bold text-xs uppercase tracking-wider text-center">Calculation</TableHead>
+              <TableHead className="py-4 pr-6 font-bold text-xs uppercase tracking-wider text-right">Net Salary</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {salaryData.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
+                <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
                   No employee records found.
                 </TableCell>
               </TableRow>
@@ -171,7 +189,11 @@ export default function SalaryPage() {
                   <TableCell className="pl-6 py-4 font-medium">{item.name}</TableCell>
                   <TableCell className="py-4 text-muted-foreground">{item.designation}</TableCell>
                   <TableCell className="py-4 text-right">₹{item.dailyRate.toFixed(2)}</TableCell>
-                  <TableCell className="py-4 text-right font-semibold">{item.presentDays}</TableCell>
+                  <TableCell className="py-4 text-right text-muted-foreground">{item.daysInMonth}</TableCell>
+                  <TableCell className="py-4 text-right font-semibold text-emerald-600">{item.presentDays}</TableCell>
+                  <TableCell className="py-4 text-center text-xs font-mono text-muted-foreground">
+                    ₹{item.dailyRate} × {item.presentDays}
+                  </TableCell>
                   <TableCell className="py-4 pr-6 text-right font-bold text-primary">₹{item.totalSalary.toFixed(2)}</TableCell>
                 </TableRow>
               ))
@@ -179,11 +201,15 @@ export default function SalaryPage() {
           </TableBody>
           <TableFooter>
             <TableRow className="bg-muted/50">
-              <TableCell colSpan={4} className="pl-6 py-6 font-bold text-lg">Grand Total</TableCell>
+              <TableCell colSpan={6} className="pl-6 py-6 font-bold text-lg">Grand Total Monthly Payout</TableCell>
               <TableCell className="pr-6 py-6 text-right font-bold text-2xl text-primary">₹{grandTotal.toFixed(2)}</TableCell>
             </TableRow>
           </TableFooter>
         </Table>
+      </div>
+
+      <div className="flex justify-end p-2">
+        <p className="text-[10px] text-muted-foreground italic">* This is a computer-generated salary report. No PF/ESI deductions have been made.</p>
       </div>
     </div>
   );

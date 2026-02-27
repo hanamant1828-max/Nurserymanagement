@@ -270,9 +270,9 @@ export default function EmployeesPage() {
                       name="salary"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="font-semibold">Salary / Day Rate</FormLabel>
+                          <FormLabel className="font-semibold">Daily Wage (₹)</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g. 500" className="h-11 rounded-lg" {...field} value={field.value || ""} />
+                            <Input placeholder="e.g. 100" className="h-11 rounded-lg" {...field} value={field.value || ""} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
