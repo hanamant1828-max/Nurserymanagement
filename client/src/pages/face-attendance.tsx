@@ -312,21 +312,6 @@ export default function FaceAttendancePage() {
                 </p>
               </div>
             )}
-            
-            <div className="w-full pt-8 mt-auto border-t">
-              <div className="bg-muted/50 p-4 rounded-xl space-y-3">
-                <div className="flex justify-between items-center text-sm font-bold">
-                  <span>System Status</span>
-                  <span className={cn("flex items-center gap-1.5", isModelsLoaded ? "text-emerald-600" : "text-amber-500")}>
-                    <div className={cn("w-2 h-2 rounded-full animate-pulse", isModelsLoaded ? "bg-emerald-500" : "bg-amber-500")} />
-                    {isModelsLoaded ? "AI Models Active" : "Initializing..."}
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Automatic mode marks attendance for any recognized employee. The system will stop scanning once a match is found.
-                </p>
-              </div>
-            </div>
           </CardContent>
         </Card>
       </div>
