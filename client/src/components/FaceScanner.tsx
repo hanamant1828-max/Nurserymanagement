@@ -52,19 +52,43 @@ export function FaceScanner({ onScanComplete, employeeName, selectedEmployeeId }
 
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      console.log('Requesting camera access...');
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: "user",
+          width: { ideal: 640 },
+          height: { ideal: 480 }
+        } 
+      });
+      
+      console.log('Camera stream obtained:', stream.id);
+      
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        videoRef.current.onloadedmetadata = () => {
-          videoRef.current?.play();
+        // Ensure play is called and state is updated
+        try {
+          await videoRef.current.play();
+          console.log('Video playing');
           setIsCameraActive(true);
-        };
-        setCapturedDescriptor(null);
-        setCapturedImage(null);
+          setCapturedDescriptor(null);
+          setCapturedImage(null);
+        } catch (playError) {
+          console.error('Error playing video:', playError);
+          // Fallback if play() fails immediately
+          setIsCameraActive(true);
+        }
+      } else {
+        console.error('videoRef.current is null');
+        // If ref is null, we might need to wait for render or force it
+        setIsCameraActive(true);
       }
     } catch (err) {
       console.error('Error accessing camera:', err);
-      alert("Unable to access camera. Please allow permission.");
+      if (err instanceof DOMException && err.name === 'NotAllowedError') {
+        alert("Camera access denied. Please enable camera permissions in your browser settings and refresh the page.");
+      } else {
+        alert("Unable to access camera. Please ensure you are using a secure connection (HTTPS) and have a camera connected.");
+      }
     }
   };
 
