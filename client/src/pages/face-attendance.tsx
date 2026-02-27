@@ -80,6 +80,10 @@ export default function FaceAttendancePage() {
         console.warn('Models not loaded yet');
         return;
       }
+      
+      // First, set camera active to mount the video element
+      setIsCameraActive(true);
+      
       console.log('Requesting camera access...');
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { 
@@ -89,25 +93,39 @@ export default function FaceAttendancePage() {
         } 
       });
       console.log('Camera stream obtained:', stream.id);
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.onloadedmetadata = () => {
-          console.log('Video metadata loaded');
-          videoRef.current?.play();
-          setIsCameraActive(true);
-        };
-      } else {
-        // Fallback if ref is not available immediately
+
+      // Function to attach stream to video element
+      const attachStream = () => {
+        if (videoRef.current) {
+          console.log('Video element found, setting srcObject');
+          videoRef.current.srcObject = stream;
+          // Use oncanplay instead of onloadedmetadata for better reliability
+          videoRef.current.oncanplay = () => {
+            console.log('Video can play, starting playback');
+            videoRef.current?.play().catch(e => console.error("Error playing video:", e));
+          };
+          // Also try playing immediately
+          videoRef.current.play().catch(e => console.error("Immediate play error:", e));
+          return true;
+        }
+        return false;
+      };
+
+      // Wait for the video element to be available in the DOM
+      if (!attachStream()) {
+        let attempts = 0;
+        const maxAttempts = 30; // 3 seconds
         const checkRef = setInterval(() => {
-          if (videoRef.current) {
-            videoRef.current.srcObject = stream;
-            setIsCameraActive(true);
+          attempts++;
+          if (attachStream() || attempts >= maxAttempts) {
+            if (attempts >= maxAttempts) console.error('Failed to find video element after 3s');
             clearInterval(checkRef);
           }
         }, 100);
       }
     } catch (err) {
       console.error('Error accessing camera:', err);
+      setIsCameraActive(false);
       toast({
         title: "Camera Error",
         description: "Could not access camera. Please check permissions and ensure you are using HTTPS.",
