@@ -28,14 +28,21 @@ export default function FaceAttendancePage() {
     const loadModels = async () => {
       try {
         const MODEL_URL = '/models';
+        console.log('Loading face-api models from:', MODEL_URL);
         await Promise.all([
           faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
           faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
           faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
         ]);
+        console.log('Face-api models loaded successfully');
         setIsModelsLoaded(true);
       } catch (error) {
         console.error('Error loading face-api models:', error);
+        toast({
+          title: "Model Loading Error",
+          description: "Failed to load facial recognition models.",
+          variant: "destructive",
+        });
       }
     };
     loadModels();
@@ -43,6 +50,7 @@ export default function FaceAttendancePage() {
 
   useEffect(() => {
     if (employees && isModelsLoaded) {
+      console.log(`Creating FaceMatcher with ${employees.filter(e => e.faceDescriptor && e.active).length} employees`);
       const labeledDescriptors = employees
         .filter(e => e.faceDescriptor && e.active)
         .map(e => {
@@ -58,24 +66,51 @@ export default function FaceAttendancePage() {
 
       if (labeledDescriptors.length > 0) {
         faceMatcherRef.current = new faceapi.FaceMatcher(labeledDescriptors, 0.55);
+        console.log('FaceMatcher initialized successfully');
+      } else {
+        console.warn('No valid face descriptors found to initialize FaceMatcher');
       }
     }
   }, [employees, isModelsLoaded]);
 
   const startCamera = async () => {
+    console.log('startCamera called');
     try {
+      if (!isModelsLoaded) {
+        console.warn('Models not loaded yet');
+        return;
+      }
+      console.log('Requesting camera access...');
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: "user" } 
+        video: { 
+          facingMode: "user",
+          width: { ideal: 640 },
+          height: { ideal: 480 }
+        } 
       });
+      console.log('Camera stream obtained:', stream.id);
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        setIsCameraActive(true);
+        videoRef.current.onloadedmetadata = () => {
+          console.log('Video metadata loaded');
+          videoRef.current?.play();
+          setIsCameraActive(true);
+        };
+      } else {
+        // Fallback if ref is not available immediately
+        const checkRef = setInterval(() => {
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+            setIsCameraActive(true);
+            clearInterval(checkRef);
+          }
+        }, 100);
       }
     } catch (err) {
       console.error('Error accessing camera:', err);
       toast({
         title: "Camera Error",
-        description: "Could not access camera. Please check permissions.",
+        description: "Could not access camera. Please check permissions and ensure you are using HTTPS.",
         variant: "destructive",
       });
     }
@@ -96,11 +131,11 @@ export default function FaceAttendancePage() {
     setIsProcessing(true);
     try {
       const detection = await faceapi
-        .detectSingleFace(videoRef.current, new faceapi.TinyFaceDetectorOptions())
+        .detectSingleFace(videoRef.current, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.5 }))
         .withFaceLandmarks()
         .withFaceDescriptor();
 
-      if (detection) {
+      if (detection && faceMatcherRef.current) {
         const bestMatch = faceMatcherRef.current.findBestMatch(detection.descriptor);
         
         if (bestMatch.label !== 'unknown') {
@@ -131,12 +166,13 @@ export default function FaceAttendancePage() {
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isCameraActive && !isSubmitting) {
-      interval = setInterval(processFrame, 1000);
+      interval = setInterval(processFrame, 500);
     }
     return () => clearInterval(interval);
-  }, [isCameraActive, isSubmitting, lastDetected]);
+  }, [isCameraActive, isSubmitting, lastDetected, employees, isModelsLoaded]);
 
   const handleMarkAttendance = (employee: any) => {
+    if (isSubmitting) return;
     const today = new Date().toISOString().split('T')[0];
     
     recordAttendance({
@@ -179,6 +215,7 @@ export default function FaceAttendancePage() {
                 autoPlay
                 muted
                 playsInline
+                onPlay={() => console.log('Video playing')}
                 className="w-full h-full object-cover mirror"
               />
             ) : (
