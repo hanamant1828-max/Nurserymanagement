@@ -63,25 +63,25 @@ export function FaceScanner({ onScanComplete, employeeName, selectedEmployeeId }
       
       console.log('Camera stream obtained:', stream.id);
       
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        // Ensure play is called and state is updated
-        try {
-          await videoRef.current.play();
-          console.log('Video playing');
-          setIsCameraActive(true);
-          setCapturedDescriptor(null);
-          setCapturedImage(null);
-        } catch (playError) {
-          console.error('Error playing video:', playError);
-          // Fallback if play() fails immediately
-          setIsCameraActive(true);
+      // Update state first to ensure video element is rendered
+      setIsCameraActive(true);
+      setCapturedDescriptor(null);
+      setCapturedImage(null);
+
+      // Wait a bit for the video element to be available in the DOM
+      setTimeout(async () => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          try {
+            await videoRef.current.play();
+            console.log('Video playing');
+          } catch (playError) {
+            console.error('Error playing video:', playError);
+          }
+        } else {
+          console.error('videoRef.current is still null after timeout');
         }
-      } else {
-        console.error('videoRef.current is null');
-        // If ref is null, we might need to wait for render or force it
-        setIsCameraActive(true);
-      }
+      }, 100);
     } catch (err) {
       console.error('Error accessing camera:', err);
       if (err instanceof DOMException && err.name === 'NotAllowedError') {
