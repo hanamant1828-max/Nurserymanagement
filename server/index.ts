@@ -6,8 +6,21 @@ import { createServer } from "http";
 import path from "path";
 import { fileURLToPath } from "url";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const isProduction = process.env.NODE_ENV === "production";
+
+// In CJS (esbuild bundle), import.meta.url is undefined.
+// We provide a fallback for production where we know the bundle is in dist/index.cjs
+let __filename: string;
+let __dirname: string;
+
+try {
+  __filename = fileURLToPath(import.meta.url);
+  __dirname = path.dirname(__filename);
+} catch (e) {
+  // Fallback for CommonJS/bundled environment
+  __filename = __filename || (typeof filename !== 'undefined' ? filename : "");
+  __dirname = __dirname || (typeof dirname !== 'undefined' ? dirname : process.cwd());
+}
 
 const app = express();
 const httpServer = createServer(app);
@@ -71,7 +84,10 @@ app.use((req, res, next) => {
 
   // Serve face-api models from public directory BEFORE setupVite/serveStatic
   // Use absolute path to ensure correct resolution
-  const publicPath = path.resolve(__dirname, "..", "client", "public");
+  const publicPath = isProduction 
+    ? path.resolve(__dirname, "public") 
+    : path.resolve(__dirname, "..", "client", "public");
+  
   if (publicPath) {
     log(`Serving public assets from: ${publicPath}`);
     app.use(express.static(publicPath));
