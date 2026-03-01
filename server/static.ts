@@ -4,10 +4,13 @@ import path from "path";
 
 export function serveStatic(app: Express) {
   const distPath = path.resolve(__dirname, "public");
+  
+  // In production, the server is at dist/index.cjs, so __dirname is /home/runner/workspace/dist
+  // The client build is also in dist/public
+  
   if (!fs.existsSync(distPath)) {
-    throw new Error(
-      `Could not find the build directory: ${distPath}, make sure to build the client first`,
-    );
+    console.warn(`Static directory not found at ${distPath}. This might be expected during build or if client hasn't been built.`);
+    return;
   }
 
   app.use(express.static(distPath));

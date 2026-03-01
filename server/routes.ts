@@ -23,6 +23,10 @@ export async function registerRoutes(
     next();
   });
 
+  app.get("/api/health", (_req, res) => {
+    res.status(200).json({ status: "ok" });
+  });
+
   // Categories
   app.get(api.categories.list.path, async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
