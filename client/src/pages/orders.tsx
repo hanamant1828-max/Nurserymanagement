@@ -1331,10 +1331,6 @@ export default function Orders() {
           <p className="text-sm text-muted-foreground">Book new orders and manage deliveries.</p>
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <Button variant="outline" size="sm" onClick={() => window.location.reload()} className="flex-1 sm:flex-none">
-            <Loader2 className="mr-2 h-4 w-4" />
-            Refresh
-          </Button>
           <Button onClick={() => setOpen(true)} className="bg-green-600 hover:bg-green-700 flex-1 sm:flex-none">
             <Plus className="mr-2 h-4 w-4" /> 
             Book Order
