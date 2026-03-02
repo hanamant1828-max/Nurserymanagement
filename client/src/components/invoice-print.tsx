@@ -140,9 +140,25 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
         </div>
         <style dangerouslySetInnerHTML={{ __html: `
           @media print {
-            body { margin: 0; padding: 0; background: white !important; }
-            #invoice-print { position: fixed; left: 0; top: 0; width: 210mm !important; height: 297mm !important; background: white !important; z-index: 9999; }
-            header, nav, aside, footer, .no-print, button, [role="button"] { display: none !important; }
+            body { 
+              margin: 0; 
+              padding: 0; 
+              background: white !important; 
+              visibility: hidden;
+            }
+            #invoice-print { 
+              visibility: visible;
+              position: fixed; 
+              left: 0; 
+              top: 0; 
+              width: 210mm !important; 
+              height: 297mm !important; 
+              background: white !important; 
+              z-index: 9999; 
+            }
+            header, nav, aside, footer, .no-print, button, [role="button"], .sidebar, .main-content { 
+              display: none !important; 
+            }
             @page { size: A4; margin: 0; }
           }
         `}} />
@@ -308,8 +324,10 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
               padding: 0;
               background: white !important;
               -webkit-print-color-adjust: exact;
+              visibility: hidden;
             }
             #invoice-print { 
+              visibility: visible;
               position: static !important;
               margin: 0 !important;
               padding: 10px !important;
@@ -322,7 +340,7 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
               page-break-before: avoid !important;
               page-break-inside: avoid !important;
             }
-            header, nav, aside, footer, .no-print, button, [role="button"], .sidebar { 
+            header, nav, aside, footer, .no-print, button, [role="button"], .sidebar, .main-content { 
               display: none !important; 
             }
             @page {
