@@ -173,11 +173,32 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <NavContent isMobile={true} />
           </SheetContent>
         </Sheet>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="text-muted-foreground"
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+        >
+          <RefreshCw className={cn("w-5 h-5", isRefreshing && "animate-spin")} />
+        </Button>
       </header>
 
       {/* Main Content */}
       <main className="flex-1 overflow-auto w-full pb-20 md:pb-0">
         <div className="pt-16 lg:pt-8 min-h-screen animate-in fade-in duration-500">
+          <div className="hidden lg:flex justify-end px-8 mb-4">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="gap-2"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+            >
+              <RefreshCw className={cn("w-4 h-4", isRefreshing && "animate-spin")} />
+              Refresh Data
+            </Button>
+          </div>
           {children}
         </div>
       </main>
