@@ -86,8 +86,13 @@ export default function SeedInwardPage() {
 
   useEffect(() => {
     const currentVarietyId = form.getValues("varietyId");
-    if (currentVarietyId !== 0 && !filteredVarieties.some(v => v.id === currentVarietyId)) {
-      form.setValue("varietyId", 0);
+    // Only reset if we have a category selected, and the current variety doesn't belong to it,
+    // AND we are not in the middle of setting up an edit (where varietyId might be valid but filteredVarieties not yet updated)
+    if (selectedCategoryId !== 0 && currentVarietyId !== 0 && filteredVarieties.length > 0) {
+      const isVarietyValid = filteredVarieties.some(v => v.id === currentVarietyId);
+      if (!isVarietyValid) {
+        form.setValue("varietyId", 0);
+      }
     }
   }, [selectedCategoryId, filteredVarieties, form]);
 
@@ -151,17 +156,16 @@ export default function SeedInwardPage() {
 
   useEffect(() => {
     if (editingItem) {
-      form.reset({
-        categoryId: editingItem.categoryId,
-        varietyId: editingItem.varietyId,
-        lotNo: editingItem.lotNo,
-        expiryDate: editingItem.expiryDate,
-        numberOfPackets: editingItem.numberOfPackets,
-        totalQuantity: editingItem.totalQuantity,
-        availableQuantity: editingItem.availableQuantity,
-        typeOfPackage: editingItem.typeOfPackage,
-        receivedFrom: editingItem.receivedFrom,
-      });
+      // Use setValue for individual fields instead of reset to avoid timing issues with watched fields
+      form.setValue("categoryId", editingItem.categoryId);
+      form.setValue("varietyId", editingItem.varietyId);
+      form.setValue("lotNo", editingItem.lotNo);
+      form.setValue("expiryDate", editingItem.expiryDate);
+      form.setValue("numberOfPackets", editingItem.numberOfPackets);
+      form.setValue("totalQuantity", editingItem.totalQuantity);
+      form.setValue("availableQuantity", editingItem.availableQuantity);
+      form.setValue("typeOfPackage", editingItem.typeOfPackage);
+      form.setValue("receivedFrom", editingItem.receivedFrom);
     }
   }, [editingItem, form]);
 
@@ -242,7 +246,10 @@ export default function SeedInwardPage() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Category</FormLabel>
-                          <Select onValueChange={(v) => field.onChange(Number(v))} value={field.value?.toString()}>
+                          <Select 
+                            onValueChange={(v) => field.onChange(Number(v))} 
+                            value={field.value === 0 ? "" : field.value?.toString()}
+                          >
                             <FormControl>
                               <SelectTrigger className="h-11">
                                 <SelectValue placeholder="Select Category" />
@@ -265,7 +272,10 @@ export default function SeedInwardPage() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Variety</FormLabel>
-                          <Select onValueChange={(v) => field.onChange(Number(v))} value={field.value?.toString()}>
+                          <Select 
+                            onValueChange={(v) => field.onChange(Number(v))} 
+                            value={field.value === 0 ? "" : field.value?.toString()}
+                          >
                             <FormControl>
                               <SelectTrigger className="h-11">
                                 <SelectValue placeholder="Select Variety" />
