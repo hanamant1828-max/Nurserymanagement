@@ -92,8 +92,8 @@ export default function LoginPage() {
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-500 via-emerald-400 to-green-500" />
           
           <CardHeader className="space-y-1 pb-4">
-            <CardTitle className="text-2xl font-bold text-green-900">Welcome Back</CardTitle>
-            <CardDescription className="text-green-700/60">Enter your credentials to manage your nursery</CardDescription>
+            <CardTitle className="text-2xl font-bold text-green-900">Sign In</CardTitle>
+            <CardDescription className="text-green-700/60">Enter your username and password to access the system</CardDescription>
           </CardHeader>
 
           <CardContent>
@@ -103,10 +103,13 @@ export default function LoginPage() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="mb-4 p-3 rounded-lg bg-red-50 border border-red-100 flex items-center gap-3 text-red-600 text-sm"
+                  className="mb-4 p-4 rounded-xl bg-red-50 border border-red-100 flex items-start gap-3 text-red-700 text-sm shadow-sm"
                 >
-                  <AlertCircle className="w-4 h-4 shrink-0" />
-                  <p>{error.message || "Invalid username or password"}</p>
+                  <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+                  <div className="flex flex-col gap-1">
+                    <p className="font-semibold">Login Issue</p>
+                    <p className="opacity-90">{error.message || "Invalid username or password"}</p>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>

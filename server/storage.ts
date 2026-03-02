@@ -624,14 +624,21 @@ export class DatabaseStorage implements IStorage {
     const currentTime = new Date().toLocaleTimeString("en-GB", { timeZone: "Asia/Kolkata", hour12: false });
 
     if (existing) {
-      const updateData = { ...insertAttendance };
+      // Create a copy of existing data and merge with new data
+      const updateData = {
+        ...existing,
+        ...insertAttendance,
+      };
       
       if (insertAttendance.status === "PRESENT") {
-        if (!updateData.inTime || updateData.inTime === "-") {
-          updateData.inTime = (existing.inTime && existing.inTime !== "-") ? existing.inTime : currentTime;
+        // Auto-fill IN time only if it's currently missing/dash AND not provided in this update
+        if ((!insertAttendance.inTime || insertAttendance.inTime === "-") && (!existing.inTime || existing.inTime === "-")) {
+          updateData.inTime = currentTime;
         }
-        if (!updateData.outTime || updateData.outTime === "-") {
-          if (existing.inTime && existing.inTime !== "-" && (!existing.outTime || existing.outTime === "-")) {
+        // Auto-fill OUT time only if it's currently missing/dash AND not provided in this update
+        // and we have an IN time.
+        if ((!insertAttendance.outTime || insertAttendance.outTime === "-") && (!existing.outTime || existing.outTime === "-")) {
+          if (updateData.inTime && updateData.inTime !== "-") {
             updateData.outTime = currentTime;
           }
         }
@@ -640,7 +647,12 @@ export class DatabaseStorage implements IStorage {
       console.log("Updating attendance:", updateData);
 
       const [updated] = await db.update(attendance)
-        .set(updateData)
+        .set({
+          status: updateData.status,
+          inTime: updateData.inTime,
+          outTime: updateData.outTime,
+          remarks: updateData.remarks
+        })
         .where(eq(attendance.id, existing.id))
         .returning();
       return updated;

@@ -36,12 +36,24 @@ export function useLogin() {
       console.log("Login response:", responseText);
 
       if (!res.ok) {
+        let errorMessage = "Login failed";
         try {
+          // Attempt to parse structured error message from server
           const error = JSON.parse(responseText);
-          throw new Error(error.message || "Login failed");
+          errorMessage = error.message || errorMessage;
         } catch (e) {
-          throw new Error(`Login failed: ${res.status} ${res.statusText}`);
+          // Fallback for non-JSON or generic errors
+          if (res.status === 401) {
+            errorMessage = "Incorrect username or password. Please check your credentials and try again.";
+          } else if (res.status === 403) {
+            errorMessage = "Access denied. You do not have permission to log in.";
+          } else if (res.status >= 500) {
+            errorMessage = "The server is currently having trouble. Please try again in a moment.";
+          } else {
+            errorMessage = "Connection Error. Please check your internet and try again.";
+          }
         }
+        throw new Error(errorMessage);
       }
       
       try {

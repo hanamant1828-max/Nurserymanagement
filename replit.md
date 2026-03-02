@@ -1,89 +1,24 @@
-# Nursery Management System
+# Kisan Hi-Tech Nursery Management System
 
-## Overview
+Full-stack nursery management system for "Kisan Hi-Tech Nursery" (Kalloli, Belagavi).
 
-A full-stack nursery management application for tracking plant inventory, sowing lots, customer orders, and generating reports. The system allows nursery staff to manage seed categories, plant varieties, sowing lots with stock tracking, and customer order bookings with delivery scheduling.
+## Tech Stack
+- Frontend: React (Vite), Tailwind CSS, Shadcn UI, Wouter, Framer Motion, TanStack Query
+- Backend: Express, Drizzle ORM
+- Database: PostgreSQL
 
-## User Preferences
+## Features
+- Dashboard with live attendance and revenue metrics
+- Seed Inward management
+- Sowing Lots & Stock tracking
+- Customer Orders with advance payments
+- Employee management & Attendance
+- Salary Slip generation
+- Invoice printing with professional layout
 
-Preferred communication style: Simple, everyday language.
-
-## System Architecture
-
-### Frontend Architecture
-- **Framework**: React 18 with TypeScript
-- **Routing**: Wouter (lightweight React router)
-- **State Management**: TanStack React Query for server state caching and synchronization
-- **UI Components**: shadcn/ui component library built on Radix UI primitives
-- **Styling**: Tailwind CSS with custom green/nature-themed color palette
-- **Forms**: React Hook Form with Zod validation
-- **Charts**: Recharts for dashboard analytics
-- **Animations**: Framer Motion for page transitions
-
-### Backend Architecture
-- **Runtime**: Node.js with Express.js
-- **Language**: TypeScript with ES modules
-- **API Pattern**: REST endpoints defined in `shared/routes.ts` with type-safe route definitions
-- **Authentication**: Passport.js with local strategy, session-based auth using express-session
-- **Password Hashing**: Node.js crypto module with scrypt
-
-### Data Storage
-- **Database**: PostgreSQL (via node-postgres)
-- **ORM**: Drizzle ORM with drizzle-zod for schema validation
-- **Session Store**: In-memory (memorystore)
-- **Schema Location**: `shared/schema.ts` contains all table definitions
-
-### Project Structure
-```
-client/           # React frontend
-  src/
-    components/   # UI components (shadcn/ui)
-    hooks/        # Custom React hooks for API calls
-    pages/        # Page components
-    lib/          # Utilities and query client
-server/           # Express backend
-  auth.ts         # Passport authentication setup
-  db.ts           # Database connection
-  routes.ts       # API route handlers
-  storage.ts      # Data access layer
-shared/           # Shared code between client/server
-  schema.ts       # Drizzle database schema
-  routes.ts       # API route type definitions
-```
-
-### Key Design Patterns
-- **Shared Types**: Route definitions and database schemas are shared between frontend and backend
-- **Storage Interface**: `IStorage` interface abstracts database operations for testability
-- **Protected Routes**: React components check authentication state and redirect to login
-- **API Hooks**: Each entity (categories, varieties, lots, orders) has dedicated React Query hooks
-
-### Database Schema
-- **users**: Authentication with username/password
-- **categories**: Plant categories (e.g., vegetables, fruits)
-- **varieties**: Plant varieties linked to categories
-- **lots**: Sowing lots tracking seeds sown, damaged, and availability
-- **orders**: Customer order bookings with delivery dates and status
-- **employees**: Employee records with face descriptors for biometric auth
-- **attendance**: Attendance tracking for employees
-
-## External Dependencies
-
-### Database
-- PostgreSQL database (Production)
-- Drizzle Kit for schema migrations (`npm run db:push`)
-
-### Session Management
-- In-memory session store (memorystore)
-
-### Third-Party Services
-- No external APIs currently integrated
-- Report export functionality planned (CSV downloads)
-
-### Key NPM Packages
-- `drizzle-orm` / `drizzle-zod`: Database ORM and validation
-- `express-session` / `connect-pg-simple`: Session management
-- `passport` / `passport-local`: Authentication
-- `@tanstack/react-query`: Client-side data fetching
-- `recharts`: Dashboard charts
-- `date-fns`: Date formatting
-- `framer-motion`: Animations
+## Recent Changes
+- Redesigned Dashboard with live stats and popular varieties chart.
+- Fixed Seed Inward update logic.
+- Fixed Lot number formatting and selection.
+- Optimized Invoice printing to avoid blank pages.
+- Enhanced login error handling and UI.

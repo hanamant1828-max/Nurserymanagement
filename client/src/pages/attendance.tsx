@@ -97,7 +97,39 @@ export default function AttendancePage() {
     return attendanceData?.find(a => a.employeeId === employeeId)?.status || "PENDING";
   };
 
-    const handleStatusChange = (employeeId: number, status: string) => {
+    const handleTimeChange = (employeeId: number, field: 'inTime' | 'outTime', value: string) => {
+    const existingAttendance = attendanceData?.find(a => a.employeeId === employeeId);
+    
+    // If no attendance record exists, we create one as PRESENT by default when manually entering time
+    const status = existingAttendance?.status || "PRESENT";
+
+    // Format time to HH:mm:ss if it's just HH:mm
+    let formattedValue = value;
+    if (value && value.split(':').length === 2) {
+      formattedValue = `${value}:00`;
+    }
+
+    // Use null if value is empty string
+    const newValue = formattedValue || null;
+
+    recordAttendance({
+      employeeId,
+      date,
+      status,
+      inTime: field === 'inTime' ? newValue : (existingAttendance?.inTime || null),
+      outTime: field === 'outTime' ? newValue : (existingAttendance?.outTime || null),
+      remarks: existingAttendance?.remarks || ""
+    }, {
+      onSuccess: () => {
+        toast({
+          title: "Time Updated",
+          description: `Attendance time updated for ${date}`,
+        });
+      }
+    });
+  };
+
+  const handleStatusChange = (employeeId: number, status: string) => {
     const now = new Date();
     const currentTime = now.getHours().toString().padStart(2, '0') + ":" + 
                       now.getMinutes().toString().padStart(2, '0') + ":" + 
@@ -235,11 +267,23 @@ export default function AttendancePage() {
                       <div className="text-xs text-muted-foreground">{employee.phoneNumber}</div>
                     </TableCell>
                     <TableCell className="py-4 text-sm font-medium">{employee.designation}</TableCell>
-                    <TableCell className="py-4 text-sm font-medium">
-                      {attendanceData?.find(a => a.employeeId === employee.id)?.inTime || "-"}
+                    <TableCell className="py-4">
+                      <Input 
+                        type="time" 
+                        step="1"
+                        value={attendanceData?.find(a => a.employeeId === employee.id)?.inTime || ""} 
+                        onChange={(e) => handleTimeChange(employee.id, 'inTime', e.target.value)}
+                        className="h-9 w-[130px] text-xs font-bold bg-background/50 focus:bg-background transition-colors"
+                      />
                     </TableCell>
-                    <TableCell className="py-4 text-sm font-medium">
-                      {attendanceData?.find(a => a.employeeId === employee.id)?.outTime || "-"}
+                    <TableCell className="py-4">
+                      <Input 
+                        type="time" 
+                        step="1"
+                        value={attendanceData?.find(a => a.employeeId === employee.id)?.outTime || ""} 
+                        onChange={(e) => handleTimeChange(employee.id, 'outTime', e.target.value)}
+                        className="h-9 w-[130px] text-xs font-bold bg-background/50 focus:bg-background transition-colors"
+                      />
                     </TableCell>
                     <TableCell className="py-4">
                       <Select 

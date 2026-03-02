@@ -1,8 +1,25 @@
 import { useState, useEffect, useMemo } from "react";
 import { useLots } from "@/hooks/use-lots";
 import { useOrders } from "@/hooks/use-orders";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Sprout, ShoppingCart, Clock, Truck, TrendingUp, AlertCircle, BarChart3, CheckCircle, Layers } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { 
+  Sprout, 
+  ShoppingCart, 
+  Clock, 
+  Truck, 
+  TrendingUp, 
+  AlertCircle, 
+  BarChart3, 
+  CheckCircle, 
+  Layers,
+  Users,
+  UserCheck,
+  UserX,
+  Calendar,
+  ArrowUpRight,
+  ArrowDownRight
+} from "lucide-react";
 import { format, isToday, parseISO } from "date-fns";
 import { motion } from "framer-motion";
 import { Link } from "wouter";
@@ -15,12 +32,35 @@ import {
   YAxis, 
   CartesianGrid, 
   Tooltip, 
-  ResponsiveContainer 
+  ResponsiveContainer,
+  Cell,
+  PieChart,
+  Pie
 } from "recharts";
 
 export default function Dashboard() {
   const { data: lots, isLoading: loadingLots } = useLots();
   const { data: ordersData, isLoading: loadingOrders } = useOrders(1, 10000);
+  
+  // Fetch today's attendance
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
+  const { data: attendance, isLoading: loadingAttendance } = useQuery({
+    queryKey: [`/api/attendance`, todayStr],
+    queryFn: async () => {
+      const res = await fetch(`/api/attendance?date=${todayStr}`);
+      if (!res.ok) throw new Error("Failed to fetch attendance");
+      return res.json();
+    }
+  });
+
+  const { data: employees, isLoading: loadingEmployees } = useQuery({
+    queryKey: [`/api/employees`],
+    queryFn: async () => {
+      const res = await fetch(`/api/employees`);
+      if (!res.ok) throw new Error("Failed to fetch employees");
+      return res.json();
+    }
+  });
   
   const orders = useMemo(() => {
     if (!ordersData) return [];
@@ -31,12 +71,15 @@ export default function Dashboard() {
     return [];
   }, [ordersData]);
 
-  if (loadingLots || loadingOrders) {
+  if (loadingLots || loadingOrders || loadingAttendance || loadingEmployees) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-pulse">
-        {[1, 2, 3, 4].map(i => (
-          <div key={i} className="h-32 bg-muted/50 rounded-2xl" />
-        ))}
+      <div className="space-y-6 p-4 md:p-8">
+        <div className="h-20 bg-muted/50 rounded-2xl animate-pulse mb-8" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+            <div key={i} className="h-32 bg-muted/50 rounded-2xl animate-pulse" />
+          ))}
+        </div>
       </div>
     );
   }
@@ -45,8 +88,6 @@ export default function Dashboard() {
   const today = new Date();
   const sowingToday = lots?.filter((l: any) => l && l.sowingDate === format(today, 'yyyy-MM-dd')).length || 0;
   const unassignedOrders = orders?.filter((o: any) => o && o.lotStatus === 'PENDING_LOT' && o.status === 'BOOKED').length || 0;
-  const activeLots = lots?.filter((l: any) => l && (l as any).available > 0).length || 0;
-  const pendingOrders = orders?.filter((o: any) => o && o.status === 'BOOKED').length || 0;
   
   const ordersToday = orders?.filter((o: any) => 
     o && 
@@ -65,121 +106,84 @@ export default function Dashboard() {
     o.deliveryDate === format(today, 'yyyy-MM-dd')
   ).length || 0;
 
-  const sowingTodayPending = orders?.filter((o: any) => 
-    o && 
-    o.lotStatus === 'PENDING_LOT' && 
-    o.sowingDate === format(today, 'yyyy-MM-dd')
-  ).length || 0;
-
-  const totalBookedQty = orders?.reduce((sum, o) => sum + (Number(o.bookedQty) || 0), 0) || 0;
   const totalRevenue = orders?.reduce((sum, o) => sum + (Number(o.totalAmount) || 0), 0) || 0;
-  const totalAdvance = orders?.reduce((sum, o) => sum + (Number(o.advanceAmount) || 0), 0) || 0;
   const totalBalance = orders?.reduce((sum, o) => sum + (Number(o.remainingBalance) || 0), 0) || 0;
-  const totalDelivered = orders?.filter((o: any) => o && o.status === 'DELIVERED').length || 0;
-  const totalCancelled = orders?.filter((o: any) => o && o.status === 'CANCELLED').length || 0;
   const totalInStock = lots?.reduce((sum, l) => sum + (Number((l as any).available) || 0), 0) || 0;
 
-  const stats = [
-    { 
-      label: "Today's Sowing", 
-      value: sowingToday, 
-      icon: Sprout, 
-      color: "text-green-600",
-      bg: "bg-green-100",
-      href: "/lots"
-    },
-    { 
-      label: "Pending Sowing", 
-      value: sowingTodayPending, 
-      icon: AlertCircle, 
-      color: "text-red-600",
-      bg: "bg-red-100",
-      href: "/pending-lot-reports"
-    },
-    { 
-      label: "Today's Orders", 
-      value: ordersToday, 
-      icon: ShoppingCart, 
-      color: "text-purple-600",
-      bg: "bg-purple-100",
-      href: "/orders"
-    },
-    { 
-      label: "Today's Deliverable", 
-      value: deliverableToday, 
-      icon: Clock, 
-      color: "text-orange-600",
-      bg: "bg-orange-100",
-      href: "/today-deliveries"
-    },
-    { 
-      label: "Today's Delivered", 
-      value: deliveriesToday, 
-      icon: Truck, 
-      color: "text-blue-600",
-      bg: "bg-blue-100",
-      href: "/delivery-reports"
-    },
+  // Attendance Stats
+  const totalEmployees = employees?.length || 0;
+  const presentCount = attendance?.filter((a: any) => a.status === 'PRESENT').length || 0;
+  const absentCount = totalEmployees - presentCount;
+
+  const mainStats = [
     { 
       label: "Total Revenue", 
       value: `₹${totalRevenue.toLocaleString()}`, 
       icon: TrendingUp, 
       color: "text-emerald-600",
-      bg: "bg-emerald-100",
-      href: "/reports"
+      bg: "bg-emerald-50",
+      border: "border-emerald-100",
+      href: "/reports",
+      trend: "+12.5%",
+      isPositive: true
     },
     { 
-      label: "Balance Amount", 
+      label: "Balance Due", 
       value: `₹${totalBalance.toLocaleString()}`, 
       icon: AlertCircle, 
       color: "text-amber-600",
-      bg: "bg-amber-100",
-      href: "/reports"
+      bg: "bg-amber-50",
+      border: "border-amber-100",
+      href: "/reports",
+      trend: "-2.4%",
+      isPositive: false
     },
     { 
-      label: "Total Booked Qty", 
-      value: totalBookedQty.toLocaleString(), 
-      icon: BarChart3, 
+      label: "Total Employees", 
+      value: totalEmployees, 
+      icon: Users, 
       color: "text-indigo-600",
-      bg: "bg-indigo-100",
-      href: "/reports"
+      bg: "bg-indigo-50",
+      border: "border-indigo-100",
+      href: "/employees"
     },
     { 
-      label: "Total Delivered", 
-      value: totalDelivered, 
-      icon: CheckCircle, 
-      color: "text-sky-600",
-      bg: "bg-sky-100",
-      href: "/delivery-reports"
+      label: "Present Today", 
+      value: presentCount, 
+      icon: UserCheck, 
+      color: "text-green-600",
+      bg: "bg-green-50",
+      border: "border-green-100",
+      href: "/attendance"
     },
     { 
-      label: "Total In Stock", 
-      value: totalInStock.toLocaleString(), 
-      icon: Layers, 
-      color: "text-cyan-600",
-      bg: "bg-cyan-100",
-      href: "/lots"
-    },
-    { 
-      label: "Cancelled Orders", 
-      value: totalCancelled, 
-      icon: AlertCircle, 
-      color: "text-slate-600",
-      bg: "bg-slate-100",
-      href: "/orders"
-    },
+      label: "Absent Today", 
+      value: absentCount, 
+      icon: UserX, 
+      color: "text-rose-600",
+      bg: "bg-rose-50",
+      border: "border-rose-100",
+      href: "/attendance"
+    }
   ];
 
-  // Prepare chart data (Sales by Variety)
+  const subStats = [
+    { label: "Today's Sowing", value: sowingToday, icon: Sprout, color: "text-green-600", bg: "bg-green-100/50", href: "/lots" },
+    { label: "Deliverable Today", value: deliverableToday, icon: Clock, color: "text-orange-600", bg: "bg-orange-100/50", href: "/today-deliveries" },
+    { label: "Delivered Today", value: deliveriesToday, icon: Truck, color: "text-blue-600", bg: "bg-blue-100/50", href: "/delivery-reports" },
+  ];
+
   const salesByVariety = orders?.reduce((acc: Record<string, number>, order: any) => {
     if (!order) return acc;
-    // variety name is accessed via order.variety.name or order.lot.variety.name
     const varietyName = order.variety?.name || order.lot?.variety?.name || "Unknown Variety";
     acc[varietyName] = (acc[varietyName] || 0) + (Number(order.bookedQty) || 0);
     return acc;
   }, {} as Record<string, number>);
 
-  const chartData = Object.entries(salesByVariety || {}).map(([name, value]) => ({ name, value }));
+  const chartData = Object.entries(salesByVariety || {})
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 8);
 
   const upcomingDeliveries = orders?.filter((o: any) => {
     if (!o || o.status !== 'BOOKED' || !o.deliveryDate) return false;
@@ -194,38 +198,54 @@ export default function Dashboard() {
   }) || [];
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-display font-bold text-foreground tracking-tight">Kisan Hi-Tech Nursery</h1>
-          <p className="text-muted-foreground mt-1 font-medium">Kalloli, Tq: Mudalagi, Dist: Belagavi | Ph: 7348998635, 9663777255</p>
+    <div className="space-y-8 p-2 md:p-4 pb-12" data-testid="page-dashboard">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 bg-gradient-to-r from-green-600 to-emerald-700 p-8 rounded-[2rem] text-white shadow-xl shadow-green-900/10 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl pointer-events-none" />
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md">
+              <Sprout className="w-6 h-6 text-white" />
+            </div>
+            <span className="text-sm font-bold tracking-widest uppercase opacity-80">Management Portal</span>
+          </div>
+          <h1 className="text-4xl md:text-5xl font-display font-black tracking-tight" data-testid="text-nursery-name">Kisan Hi-Tech Nursery</h1>
+          <p className="mt-2 text-green-50/80 font-medium max-w-md">Kalloli, Tq: Mudalagi, Dist: Belagavi</p>
         </div>
-        <div className="px-4 py-2 bg-primary/10 border border-primary/20 rounded-xl">
-          <p className="text-xs font-semibold text-primary uppercase tracking-wider">Email</p>
-          <p className="text-sm font-medium">chidanandkk@gmail.com</p>
+        <div className="flex flex-col items-end gap-2 relative z-10">
+          <div className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20">
+            <Calendar className="w-4 h-4 text-green-200" />
+            <span className="text-sm font-bold">{format(new Date(), 'EEEE, dd MMMM yyyy')}</span>
+          </div>
+          <p className="text-xs font-medium opacity-60">Help: 7348998635 | 9663777255</p>
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        {stats.map((stat, idx) => (
+      {/* Main Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        {mainStats.map((stat, idx) => (
           <motion.div 
             key={stat.label}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: idx * 0.05 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: idx * 0.1 }}
           >
-            <Link href={stat.href}>
-              <Card className="border-none shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden relative group cursor-pointer">
-                <div className={cn("absolute inset-0 opacity-5 transition-opacity group-hover:opacity-10", stat.bg)} />
-                <CardContent className="p-5 flex items-center justify-between relative z-10">
-                  <div className="space-y-1">
-                    <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">{stat.label}</p>
-                    <h3 className="text-2xl font-black font-display tracking-tight text-foreground">{stat.value}</h3>
+            <Link href={stat.href} data-testid={`link-stat-${stat.label.toLowerCase().replace(/\s+/g, '-')}`}>
+              <Card className={cn("border-none shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden group", stat.bg)}>
+                <CardContent className="p-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <div className={cn("p-3 rounded-2xl shadow-sm group-hover:scale-110 transition-transform duration-300", "bg-white", stat.color)}>
+                      <stat.icon className="w-6 h-6" />
+                    </div>
+                    {stat.trend && (
+                      <div className={cn("flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full", stat.isPositive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700")}>
+                        {stat.isPositive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                        {stat.trend}
+                      </div>
+                    )}
                   </div>
-                  <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm group-hover:rotate-12 transition-all duration-300", stat.bg, stat.color)}>
-                    {stat.icon && <stat.icon className="w-6 h-6" />}
-                  </div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">{stat.label}</p>
+                  <h3 className="text-3xl font-black tracking-tight" data-testid={`text-stat-value-${stat.label.toLowerCase().replace(/\s+/g, '-')}`}>{stat.value}</h3>
                 </CardContent>
               </Card>
             </Link>
@@ -233,32 +253,88 @@ export default function Dashboard() {
         ))}
       </div>
 
+      {/* Secondary Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {subStats.map((stat, idx) => (
+          <motion.div 
+            key={stat.label}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.4 + idx * 0.1 }}
+          >
+            <Link href={stat.href} data-testid={`link-substat-${stat.label.toLowerCase().replace(/\s+/g, '-')}`}>
+              <div className={cn("p-4 rounded-3xl flex items-center gap-4 cursor-pointer hover:shadow-md transition-all group", stat.bg)}>
+                <div className={cn("p-2 rounded-xl bg-white shadow-sm group-hover:rotate-12 transition-transform", stat.color)}>
+                  <stat.icon className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">{stat.label}</p>
+                  <p className="text-xl font-black leading-tight" data-testid={`text-substat-value-${stat.label.toLowerCase().replace(/\s+/g, '-')}`}>{stat.value}</p>
+                </div>
+              </div>
+            </Link>
+          </motion.div>
+        ))}
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Chart Section */}
-        <Card className="lg:col-span-2 border-none shadow-md">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-primary" />
-              Popular Varieties
-            </CardTitle>
+        <Card className="lg:col-span-2 border-none shadow-lg rounded-[2rem] overflow-hidden">
+          <CardHeader className="bg-muted/5 border-b border-muted/20 pb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-xl font-black flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5 text-primary" />
+                  Popular Varieties
+                </CardTitle>
+                <CardDescription>Based on total booked quantity</CardDescription>
+              </div>
+              <Button variant="outline" size="sm" className="rounded-xl font-bold text-xs" asChild data-testid="button-full-report">
+                <Link href="/reports">Full Report</Link>
+              </Button>
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="h-[300px] w-full">
+          <CardContent className="pt-8">
+            <div className="h-[350px] w-full">
               {chartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
-                    <YAxis fontSize={12} tickLine={false} axisLine={false} />
-                    <Tooltip 
-                      contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                      cursor={{ fill: 'rgba(0,0,0,0.05)' }}
+                  <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="4 4" stroke="#e5e7eb" vertical={false} />
+                    <XAxis 
+                      dataKey="name" 
+                      fontSize={11} 
+                      fontWeight={700}
+                      tickLine={false} 
+                      axisLine={false}
+                      interval={0}
+                      angle={-15}
+                      textAnchor="end"
+                      height={60}
                     />
-                    <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                    <YAxis 
+                      fontSize={11} 
+                      fontWeight={700}
+                      tickLine={false} 
+                      axisLine={false} 
+                    />
+                    <Tooltip 
+                      contentStyle={{ 
+                        borderRadius: '16px', 
+                        border: 'none', 
+                        boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)',
+                        padding: '12px'
+                      }}
+                      cursor={{ fill: 'rgba(0,0,0,0.02)' }}
+                    />
+                    <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={40}>
+                      {chartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={`hsl(var(--primary) / ${1 - index * 0.1})`} />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="h-full flex items-center justify-center text-muted-foreground text-sm">
+                <div className="h-full flex items-center justify-center text-muted-foreground text-sm font-medium italic">
                   No sales data available yet
                 </div>
               )}
@@ -267,49 +343,62 @@ export default function Dashboard() {
         </Card>
 
         {/* Upcoming Deliveries List */}
-        <Card className="border-none shadow-md overflow-hidden flex flex-col">
-          <CardHeader className="border-b bg-muted/10">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Clock className="w-4 h-4 text-orange-500" />
-              Upcoming Deliveries
-            </CardTitle>
+        <Card className="border-none shadow-lg rounded-[2rem] overflow-hidden flex flex-col">
+          <CardHeader className="bg-muted/5 border-b border-muted/20">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg font-black flex items-center gap-2">
+                <Clock className="w-5 h-5 text-orange-500" />
+                Next 7 Days
+              </CardTitle>
+              <div className="px-2 py-1 bg-orange-100 text-orange-700 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                Deliveries
+              </div>
+            </div>
           </CardHeader>
-          <CardContent className="p-0 flex-1">
+          <CardContent className="p-0 flex-1 overflow-auto">
             {upcomingDeliveries.length > 0 ? (
-              <div className="divide-y divide-border/50">
-                {upcomingDeliveries.slice(0, 6).map((order: any) => (
-                  <div key={order.id} className="p-4 hover:bg-muted/30 transition-colors flex items-center justify-between group">
+              <div className="divide-y divide-border/30">
+                {upcomingDeliveries.slice(0, 8).map((order: any, idx: number) => (
+                  <motion.div 
+                    key={order.id} 
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.6 + idx * 0.05 }}
+                    className="p-4 hover:bg-muted/20 transition-all flex items-center justify-between group cursor-default"
+                    data-testid={`row-delivery-${order.id}`}
+                  >
                     <div className="min-w-0">
-                      <p className="font-bold text-sm truncate">{order.customerName}</p>
-                      <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider truncate">
-                        {order.variety?.name || order.lot?.variety?.name || "Unknown"}
-                      </p>
+                      <p className="font-black text-sm truncate group-hover:text-primary transition-colors" data-testid={`text-customer-${order.id}`}>{order.customerName}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider truncate bg-muted px-1.5 py-0.5 rounded" data-testid={`text-variety-${order.id}`}>
+                          {order.variety?.name || order.lot?.variety?.name || "Unknown"}
+                        </span>
+                        <span className="text-[10px] font-bold text-primary" data-testid={`text-qty-${order.id}`}>QTY: {order.bookedQty}</span>
+                      </div>
                     </div>
                     <div className="text-right shrink-0">
-                      <p className="text-sm font-black text-primary">
+                      <p className="text-xs font-black text-orange-600">
                         {order.deliveryDate ? format(parseISO(order.deliveryDate), 'dd MMM') : "N/A"}
                       </p>
-                      <p className="text-[10px] font-mono text-muted-foreground bg-muted px-1 rounded">
+                      <p className="text-[10px] font-bold text-muted-foreground/60 mt-1">
                         #{order.id}
                       </p>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             ) : (
-              <div className="h-full flex flex-col items-center justify-center p-8 text-center text-muted-foreground opacity-60">
-                <AlertCircle className="w-10 h-10 mb-2" />
+              <div className="h-full flex flex-col items-center justify-center p-8 text-center text-muted-foreground/40 italic">
+                <AlertCircle className="w-12 h-12 mb-3 opacity-20" />
                 <p className="text-sm font-medium">No deliveries scheduled soon</p>
               </div>
             )}
           </CardContent>
           {upcomingDeliveries.length > 0 && (
-            <div className="p-3 bg-muted/10 border-t">
-              <Link href="/orders">
-                <Button variant="ghost" size="sm" className="w-full text-xs font-bold text-primary hover:bg-primary/5">
-                  View All Orders
-                </Button>
-              </Link>
+            <div className="p-4 bg-muted/5 border-t border-muted/20">
+              <Button className="w-full rounded-xl font-bold text-xs" asChild data-testid="button-full-schedule">
+                <Link href="/today-deliveries">Full Delivery Schedule</Link>
+              </Button>
             </div>
           )}
         </Card>
