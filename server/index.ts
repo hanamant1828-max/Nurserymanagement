@@ -86,7 +86,7 @@ app.use((req, res, next) => {
   // Use absolute path to ensure correct resolution
   const publicPath = isProduction 
     ? path.resolve(__dirname, "public") 
-    : path.resolve(__dirname, "..", "client", "public");
+    : path.resolve(process.cwd(), "client", "public");
   
   if (publicPath) {
     log(`Serving public assets from: ${publicPath}`);
