@@ -109,13 +109,29 @@ export default function SeedInwardPage() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, values }: { id: number; values: any }) => {
-      const res = await apiRequest(api.seedInward.update.method, buildUrl(api.seedInward.update.path, { id }), values);
+      // Remove id from values to avoid primary key update attempt
+      const { id: _, category, variety, timestamp, ...updateValues } = values;
+      const res = await apiRequest("PUT", `/api/seed-inward/${id}`, updateValues);
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to update entry");
+      }
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [api.seedInward.list.path] });
       toast({ title: "Success", description: "Seed inward entry updated successfully" });
-      form.reset();
+      form.reset({
+        categoryId: 0,
+        varietyId: 0,
+        lotNo: "",
+        expiryDate: "",
+        numberOfPackets: 0,
+        totalQuantity: 0,
+        availableQuantity: 0,
+        typeOfPackage: "",
+        receivedFrom: "",
+      });
       setEditingItem(null);
     },
     onError: (error: Error) => {

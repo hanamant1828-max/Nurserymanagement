@@ -301,35 +301,40 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
         </div>
       </div>
 
-      <style dangerouslySetInnerHTML={{ __html: `
-        @media print {
-          body { 
-            margin: 0; 
-            padding: 0;
-            background: white !important;
+        <style dangerouslySetInnerHTML={{ __html: `
+          @media print {
+            body { 
+              margin: 0; 
+              padding: 0;
+              background: white !important;
+              -webkit-print-color-adjust: exact;
+            }
+            #invoice-print { 
+              position: static !important;
+              margin: 0 !important;
+              padding: 20px !important;
+              width: 100% !important;
+              height: auto !important;
+              min-height: 0 !important;
+              background: white !important;
+              display: block !important;
+              page-break-after: avoid !important;
+              page-break-before: avoid !important;
+              page-break-inside: avoid !important;
+            }
+            header, nav, aside, footer, .no-print, button, [role="button"], .sidebar { 
+              display: none !important; 
+            }
+            @page {
+              size: A4;
+              margin: 5mm;
+            }
+            * {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
           }
-          #invoice-print { 
-            position: fixed; 
-            left: 0; 
-            top: 0; 
-            width: 210mm !important;
-            height: 297mm !important;
-            background: white !important;
-            z-index: 9999;
-          }
-          header, nav, aside, footer, .no-print, button, [role="button"] { 
-            display: none !important; 
-          }
-          @page {
-            size: A4;
-            margin: 0;
-          }
-          * {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-        }
-      `}} />
+        `}} />
     </div>
   );
 });

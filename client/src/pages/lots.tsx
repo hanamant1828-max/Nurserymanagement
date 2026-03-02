@@ -280,10 +280,17 @@ export default function LotsPage() {
 
   const handleEdit = (lot: any) => {
     setEditingLot(lot);
+    // Parse the lot number and suffix from the combined string "NUMBER_SUFFIX"
+    const [num, suf] = lot.lotNumber.includes('_') 
+      ? lot.lotNumber.split('_') 
+      : [lot.lotNumber, ""];
+      
     form.reset({
       categoryId: lot.categoryId.toString(),
       varietyId: lot.varietyId.toString(),
-      lotNumber: lot.lotNumber,
+      selectedSeedInwardId: lot.seedInwardId?.toString() || "",
+      lotNumber: num,
+      lotSuffix: suf,
       seedsSown: lot.seedsSown,
       packetsSown: lot.packetsSown || 0,
       damagePercentage: lot.damagePercentage ? parseFloat(lot.damagePercentage) : 0,
@@ -291,6 +298,19 @@ export default function LotsPage() {
       expectedReadyDate: lot.expectedReadyDate ? new Date(lot.expectedReadyDate) : undefined,
       remarks: lot.remarks || "",
     });
+    
+    // Explicitly set the selectedSeedInwardId to trigger the effect that loads available packets
+    form.setValue("selectedSeedInwardId", lot.seedInwardId?.toString() || "");
+    
+    // Explicitly set varietyId to ensure the variety dropdown shows the correct value
+    // We use a small timeout to ensure the category selection effect has run and populated varieties
+    setTimeout(() => {
+      form.setValue("varietyId", lot.varietyId.toString());
+      form.setValue("selectedSeedInwardId", lot.seedInwardId?.toString() || "");
+      form.setValue("lotNumber", num);
+      form.setValue("lotSuffix", suf);
+    }, 200);
+    
     setOpen(true);
   };
 
