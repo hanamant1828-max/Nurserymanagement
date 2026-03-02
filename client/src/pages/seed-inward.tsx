@@ -157,6 +157,8 @@ export default function SeedInwardPage() {
         lotNo: editingItem.lotNo,
         expiryDate: editingItem.expiryDate,
         numberOfPackets: editingItem.numberOfPackets,
+        totalQuantity: editingItem.totalQuantity,
+        availableQuantity: editingItem.availableQuantity,
         typeOfPackage: editingItem.typeOfPackage,
         receivedFrom: editingItem.receivedFrom,
       });
