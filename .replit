@@ -49,4 +49,3 @@ integrations = ["javascript_database:1.0.0"]
 [userenv]
 
 [userenv.shared]
-NODE_ENV = "production"

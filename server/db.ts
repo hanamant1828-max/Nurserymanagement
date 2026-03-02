@@ -4,10 +4,12 @@ import * as schema from "@shared/schema";
 
 const { Pool } = pg;
 
-const connectionString = "postgresql://neondb_owner:npg_T5EAU4uJzctO@ep-dry-lake-a6wzec6x.us-west-2.aws.neon.tech/neondb?sslmode=require";
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL environment variable is required");
+}
 
 export const pool = new Pool({ 
-  connectionString,
-  ssl: true
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL.includes("sslmode=require") ? true : undefined,
 });
 export const db = drizzle(pool, { schema });
