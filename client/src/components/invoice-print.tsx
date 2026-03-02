@@ -29,7 +29,7 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
     const period = startDate && endDate ? `${format(new Date(startDate), "dd/MM/yyyy")} to ${format(new Date(endDate), "dd/MM/yyyy")}` : today;
 
     return (
-      <div ref={ref} id="invoice-print" className="p-0 bg-white text-black font-sans print:p-0 print:m-0 print:static" style={{ width: "210mm", height: "296mm", margin: "0 auto", overflow: "hidden", color: "black" }}>
+      <div ref={ref} id="invoice-print" className="p-0 bg-white text-black font-sans print:p-0 print:m-0 print:static" style={{ width: "210mm", height: "auto", minHeight: "296mm", margin: "0 auto", overflow: "hidden", color: "black" }}>
         <div className="p-8">
           {/* Header */}
           <div className="border-2 border-black p-4 mb-0 relative">
@@ -148,13 +148,18 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
             }
             #invoice-print { 
               visibility: visible;
-              position: fixed; 
-              left: 0; 
-              top: 0; 
+              position: static !important;
+              margin: 0 !important;
+              padding: 0 !important;
               width: 210mm !important; 
               height: 297mm !important; 
+              max-height: 297mm !important;
+              overflow: hidden !important;
               background: white !important; 
-              z-index: 9999; 
+              display: block !important;
+              page-break-after: avoid !important;
+              page-break-before: avoid !important;
+              page-break-inside: avoid !important;
             }
             header, nav, aside, footer, .no-print, button, [role="button"], .sidebar, .main-content { 
               display: none !important; 
@@ -169,7 +174,7 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
   const deliveryDate = order.deliveryDate ? format(new Date(order.deliveryDate), "dd/MM/yyyy") : today;
 
   return (
-    <div ref={ref} id="invoice-print" className="p-0 bg-white text-black font-sans print:p-0 print:m-0 print:static" style={{ width: "210mm", height: "296mm", margin: "0 auto", overflow: "hidden", color: "black" }}>
+    <div ref={ref} id="invoice-print" className="p-0 bg-white text-black font-sans print:p-0 print:m-0 print:static" style={{ width: "210mm", height: "auto", minHeight: "296mm", margin: "0 auto", overflow: "hidden", color: "black" }}>
       <div className="p-8">
         {/* Header */}
         <div className="border-2 border-black p-4 mb-0 relative">
@@ -330,10 +335,11 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
               visibility: visible;
               position: static !important;
               margin: 0 !important;
-              padding: 10px !important;
-              width: 100% !important;
-              height: auto !important;
-              min-height: 0 !important;
+              padding: 0 !important;
+              width: 210mm !important;
+              height: 297mm !important;
+              max-height: 297mm !important;
+              overflow: hidden !important;
               background: white !important;
               display: block !important;
               page-break-after: avoid !important;
