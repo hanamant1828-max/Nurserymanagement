@@ -29,7 +29,7 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
     const period = startDate && endDate ? `${format(new Date(startDate), "dd/MM/yyyy")} to ${format(new Date(endDate), "dd/MM/yyyy")}` : today;
 
     return (
-      <div ref={ref} id="invoice-print" className="p-0 bg-white text-black font-sans print:p-0 print:m-0 print:static" style={{ width: "210mm", minHeight: "297mm", margin: "0 auto", overflow: "visible", color: "black" }}>
+      <div ref={ref} id="invoice-print" className="p-0 bg-white text-black font-sans print:p-0 print:m-0 print:static" style={{ width: "210mm", height: "296mm", margin: "0 auto", overflow: "hidden", color: "black" }}>
         <div className="p-8">
           {/* Header */}
           <div className="border-2 border-black p-4 mb-0 relative">
@@ -169,7 +169,7 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
   const deliveryDate = order.deliveryDate ? format(new Date(order.deliveryDate), "dd/MM/yyyy") : today;
 
   return (
-    <div ref={ref} id="invoice-print" className="p-0 bg-white text-black font-sans print:p-0 print:m-0 print:static" style={{ width: "210mm", minHeight: "297mm", margin: "0 auto", overflow: "visible", color: "black" }}>
+    <div ref={ref} id="invoice-print" className="p-0 bg-white text-black font-sans print:p-0 print:m-0 print:static" style={{ width: "210mm", height: "296mm", margin: "0 auto", overflow: "hidden", color: "black" }}>
       <div className="p-8">
         {/* Header */}
         <div className="border-2 border-black p-4 mb-0 relative">

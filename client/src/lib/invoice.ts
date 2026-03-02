@@ -46,9 +46,9 @@ export const generateInvoice = async (data: any) => {
     const pdf = new jsPDF("p", "mm", "a4");
     const imgProps = pdf.getImageProperties(imgData);
     const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    const pdfHeight = pdf.internal.pageSize.getHeight();
 
-    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
     pdf.save(`Invoice_${data.invoiceNumber || `INV-${data.id.toString().padStart(3, '0')}`}.pdf`);
   } catch (error) {
     console.error("Error generating PDF:", error);
