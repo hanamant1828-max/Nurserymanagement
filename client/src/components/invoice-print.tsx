@@ -225,8 +225,8 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
               <td className="border-r-2 border-black p-3 text-right text-[14px] font-bold">{Number(order.totalAmount).toFixed(2)}</td>
             </tr>
             {/* Fill empty space with structured lines */}
-            {[...Array(6)].map((_, i) => (
-              <tr key={i} className="h-10 border-b border-black/10 last:border-b-0">
+            {[...Array(3)].map((_, i) => (
+              <tr key={i} className="h-8 border-b border-black/10 last:border-b-0">
                 <td className="border-r-2 border-black"></td>
                 <td className="border-r-2 border-black"></td>
                 <td className="border-r-2 border-black"></td>
@@ -235,7 +235,7 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
               </tr>
             ))}
             {/* Ensure minimum table height */}
-            <tr className="h-20">
+            <tr className="h-10">
               <td className="border-r-2 border-black"></td>
               <td className="border-r-2 border-black"></td>
               <td className="border-r-2 border-black"></td>
@@ -250,51 +250,51 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
           {/* Payment & Bank Details */}
           <div className="border-2 border-black p-4 flex flex-col justify-between">
             <div>
-              <div className="font-bold text-[16px]">G-Pay / Phone Pe</div>
-              <div className="font-bold text-2xl mt-1">9986589865</div>
+              <div className="font-bold text-[14px]">G-Pay / Phone Pe</div>
+              <div className="font-bold text-xl mt-1">9986589865</div>
             </div>
-            <div className="mt-6 space-y-1">
-              <div className="font-bold text-[11px] uppercase tracking-wider text-gray-600">Bank Details:</div>
-              <div className="text-[12px] font-bold">Kisan Hitech Nursery, Kalloli</div>
-              <div className="text-[12px]">A/c No. 918020082321165</div>
-              <div className="text-[12px]">IFSC: UTIB0000482, Axis Bank, Gokak</div>
+            <div className="mt-4 space-y-1">
+              <div className="font-bold text-[10px] uppercase tracking-wider text-gray-600">Bank Details:</div>
+              <div className="text-[11px] font-bold">Kisan Hitech Nursery, Kalloli</div>
+              <div className="text-[11px]">A/c No. 918020082321165</div>
+              <div className="text-[11px]">IFSC: UTIB0000482, Axis Bank, Gokak</div>
             </div>
           </div>
 
           {/* Totals & Vehicle */}
           <div className="border-2 border-black divide-y-2 divide-black">
-            <div className="flex justify-between items-center p-3">
-              <span className="font-bold text-[15px]">ಒಟ್ಟು :</span>
-              <span className="font-bold text-[18px] border-b-4 border-double border-black min-w-[100px] text-right">
+            <div className="flex justify-between items-center p-2">
+              <span className="font-bold text-[14px]">ಒಟ್ಟು :</span>
+              <span className="font-bold text-[16px] border-b-4 border-double border-black min-w-[100px] text-right">
                 {Number(order.totalAmount).toFixed(2)}
               </span>
             </div>
-            <div className="flex justify-between items-center p-3 bg-gray-50/30">
-              <span className="font-bold text-[15px]">ಮುಂಗಡ ಮೊತ್ತ :</span>
-              <span className="font-bold text-[16px] min-w-[100px] text-right">
+            <div className="flex justify-between items-center p-2 bg-gray-50/30">
+              <span className="font-bold text-[14px]">ಮುಂಗಡ ಮೊತ್ತ :</span>
+              <span className="font-bold text-[14px] min-w-[100px] text-right">
                 {Number(order.advanceAmount).toFixed(2)}
               </span>
             </div>
-            <div className="flex justify-between items-center p-3">
-              <span className="font-bold text-[15px]">ಬಾಕಿ ಮೊತ್ತ :</span>
-              <span className="font-bold text-[18px] border-b-4 border-double border-black min-w-[100px] text-right">
+            <div className="flex justify-between items-center p-2">
+              <span className="font-bold text-[14px]">ಬಾಕಿ ಮೊತ್ತ :</span>
+              <span className="font-bold text-[16px] border-b-4 border-double border-black min-w-[100px] text-right">
                 {Number(order.remainingBalance).toFixed(2)}
               </span>
             </div>
-            <div className="p-3 text-[13px] font-bold text-gray-700">
+            <div className="p-2 text-[12px] font-bold text-gray-700">
                Vehicle Details: <span className="ml-1 font-medium">{order.vehicleDetails || "_________________"}</span>
             </div>
           </div>
         </div>
 
         {/* Terms & Signatures */}
-        <div className="mt-10 flex justify-between items-end">
-          <div className="text-[11px] max-w-[55%] leading-relaxed text-gray-600 font-medium">
+        <div className="mt-6 flex justify-between items-end">
+          <div className="text-[10px] max-w-[60%] leading-tight text-gray-600 font-medium">
             ರೈತರು ಹೇಳಿದ ಸಸಿಗಳನ್ನು ತಯಾರಿಸಿ ಕೊಡಲಾಗುವುದು. ಆದರೆ ತಳಗಳಿಗೆ ಸಂಬಂಧಿಸಿದ ವ್ಯತ್ಯಾಸಗಳಿಗೆ ಮತ್ತು ಇಳುವರಿ, ರೋಗಬಾಧೆ, ಇತ್ಯಾದಿ ವಿಷಯಗಳಿಗೆ ನಾವು ಜವಾಬ್ದಾರರಲ್ಲ, ರೈತ ಬಾಂಧವರು ಸಹಕರಿಸಬೇಕಾಗಿ ಕೋರಿಕೆ.
           </div>
-          <div className="text-right pb-2">
-            <div className="font-bold text-[15px] mb-12">ಫಾರ್, ಕಿಸಾನ ಹೈಟೆಕ್ ನರ್ಸರಿ</div>
-            <div className="font-bold text-[15px] flex items-center justify-end gap-2">
+          <div className="text-right pb-1">
+            <div className="font-bold text-[13px] mb-8">ಫಾರ್, ಕಿಸಾನ ಹೈಟೆಕ್ ನರ್ಸರಿ</div>
+            <div className="font-bold text-[13px] flex items-center justify-end gap-2">
               ಸಹಿ. <span className="inline-block w-20 border-b border-black"></span>
             </div>
           </div>
@@ -312,7 +312,7 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
             #invoice-print { 
               position: static !important;
               margin: 0 !important;
-              padding: 20px !important;
+              padding: 10px !important;
               width: 100% !important;
               height: auto !important;
               min-height: 0 !important;
