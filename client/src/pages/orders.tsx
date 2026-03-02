@@ -1156,6 +1156,7 @@ export default function Orders() {
       advanceAmount: 0,
       paymentMode: "Cash",
       deliveryDate: new Date(),
+      sowingDate: undefined,
     },
   });
 
@@ -1535,7 +1536,8 @@ export default function Orders() {
                           categoryId: (order.categoryId || order.lot?.categoryId)?.toString() || "",
                           varietyId: (order.varietyId || order.lot?.varietyId)?.toString() || "",
                           lotId: order.lotId?.toString() || "none",
-                          deliveryDate: new Date(order.deliveryDate),
+                          deliveryDate: order.deliveryDate ? parseISO(order.deliveryDate) : new Date(),
+                          sowingDate: order.sowingDate ? parseISO(order.sowingDate) : undefined,
                           bookedQty: Number(order.bookedQty),
                           perUnitPrice: Number(order.perUnitPrice),
                           totalAmount: Number(order.totalAmount),
@@ -1642,7 +1644,8 @@ export default function Orders() {
                     categoryId: (order.categoryId || order.lot?.categoryId)?.toString() || "",
                     varietyId: (order.varietyId || order.lot?.varietyId)?.toString() || "",
                     lotId: order.lotId?.toString() || "none",
-                    deliveryDate: new Date(order.deliveryDate),
+                    deliveryDate: order.deliveryDate ? parseISO(order.deliveryDate) : new Date(),
+                    sowingDate: order.sowingDate ? parseISO(order.sowingDate) : undefined,
                     bookedQty: Number(order.bookedQty),
                     perUnitPrice: Number(order.perUnitPrice),
                     totalAmount: Number(order.totalAmount),
