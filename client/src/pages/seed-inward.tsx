@@ -37,7 +37,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Loader2, Plus, Trash2, Edit2, Calendar, Package, ArrowLeft, History } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 
@@ -74,7 +74,11 @@ export default function SeedInwardPage() {
   });
 
   const selectedCategoryId = form.watch("categoryId");
-  const filteredVarieties = varieties?.filter(v => v.categoryId === Number(selectedCategoryId)) || [];
+  
+
+  const filteredVarieties = useMemo(() => {
+    return varieties?.filter(v => v.categoryId === Number(selectedCategoryId)) || [];
+  }, [varieties, selectedCategoryId]);
 
   const numberOfPackets = form.watch("numberOfPackets");
   useEffect(() => {
@@ -84,17 +88,16 @@ export default function SeedInwardPage() {
     }
   }, [numberOfPackets, editingItem, form]);
 
-  useEffect(() => {
-    const currentVarietyId = form.getValues("varietyId");
-    // Only reset if we have a category selected, and the current variety doesn't belong to it,
-    // AND we are not in the middle of setting up an edit (where varietyId might be valid but filteredVarieties not yet updated)
-    if (selectedCategoryId !== 0 && currentVarietyId !== 0 && filteredVarieties.length > 0) {
-      const isVarietyValid = filteredVarieties.some(v => v.id === currentVarietyId);
-      if (!isVarietyValid) {
-        form.setValue("varietyId", 0);
+    useEffect(() => {
+      const currentVarietyId = form.getValues("varietyId");
+      // Only reset if we are NOT currently loading an editing item
+      if (!editingItem && selectedCategoryId !== 0 && currentVarietyId !== 0 && filteredVarieties.length > 0) {
+        const isVarietyValid = filteredVarieties.some(v => v.id === currentVarietyId);
+        if (!isVarietyValid) {
+          form.setValue("varietyId", 0);
+        }
       }
-    }
-  }, [selectedCategoryId, filteredVarieties, form]);
+    }, [selectedCategoryId, filteredVarieties, form, editingItem]);
 
   const createMutation = useMutation({
     mutationFn: async (values: any) => {
@@ -154,20 +157,25 @@ export default function SeedInwardPage() {
     },
   });
 
-  useEffect(() => {
-    if (editingItem) {
-      // Use setValue for individual fields instead of reset to avoid timing issues with watched fields
-      form.setValue("categoryId", editingItem.categoryId);
-      form.setValue("varietyId", editingItem.varietyId);
-      form.setValue("lotNo", editingItem.lotNo);
-      form.setValue("expiryDate", editingItem.expiryDate);
-      form.setValue("numberOfPackets", editingItem.numberOfPackets);
-      form.setValue("totalQuantity", editingItem.totalQuantity);
-      form.setValue("availableQuantity", editingItem.availableQuantity);
-      form.setValue("typeOfPackage", editingItem.typeOfPackage);
-      form.setValue("receivedFrom", editingItem.receivedFrom);
-    }
-  }, [editingItem, form]);
+    useEffect(() => {
+      if (editingItem) {
+        // Set all values except varietyId first to avoid race conditions with filteredVarieties
+        form.setValue("categoryId", editingItem.categoryId);
+        form.setValue("lotNo", editingItem.lotNo);
+        form.setValue("expiryDate", editingItem.expiryDate);
+        form.setValue("numberOfPackets", editingItem.numberOfPackets);
+        form.setValue("totalQuantity", editingItem.totalQuantity);
+        form.setValue("availableQuantity", editingItem.availableQuantity);
+        form.setValue("typeOfPackage", editingItem.typeOfPackage);
+        form.setValue("receivedFrom", editingItem.receivedFrom);
+        
+        // Use a small timeout to ensure the category change has triggered the filteredVarieties update
+        const timer = setTimeout(() => {
+          form.setValue("varietyId", editingItem.varietyId);
+        }, 150);
+        return () => clearTimeout(timer);
+      }
+    }, [editingItem, form]);
 
   if (isLoadingInwards) {
     return (

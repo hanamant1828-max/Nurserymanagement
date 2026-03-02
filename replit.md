@@ -17,8 +17,8 @@ Full-stack nursery management system for "Kisan Hi-Tech Nursery" (Kalloli, Belag
 - Invoice printing with professional layout
 
 ## Recent Changes
-- Redesigned Dashboard with live stats and popular varieties chart.
-- Fixed Seed Inward update logic.
-- Fixed Lot number formatting and selection.
-- Optimized Invoice printing to avoid blank pages.
-- Enhanced login error handling and UI.
+- Fixed "Seed Inward" Edit Entry bug where the Variety dropdown was not auto-selecting the saved value.
+- Implemented a safety guard in the variety reset `useEffect` and added a 150ms delay to ensure `filteredVarieties` are populated first.
+- Fixed a duplicate `varieties` query declaration in `seed-inward.tsx` that caused a syntax error.
+- Ensured all `Select` components in Seed Inward handle number-to-string conversion correctly.
+- Successfully migrated and synced database schema.
