@@ -842,7 +842,9 @@ export default function LotsPage() {
                   <span className="font-medium">All Categories</span>
                 </div>
               </SelectItem>
-              {categories?.filter(c => c.active).map(c => (
+              {categories?.filter(c => c.active)
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map(c => (
                 <SelectItem key={c.id} value={c.id.toString()}>
                   <div className="flex items-center gap-2 py-1">
                     {c.image ? (
@@ -867,7 +869,9 @@ export default function LotsPage() {
             </SelectTrigger>
             <SelectContent className="z-[100]">
               <SelectItem value="all">All Varieties</SelectItem>
-              {varieties?.filter(v => (selectedCategory === "all" || v.categoryId.toString() === selectedCategory) && v.active).map(v => (
+              {varieties?.filter(v => (selectedCategory === "all" || v.categoryId.toString() === selectedCategory) && v.active)
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map(v => (
                 <SelectItem key={v.id} value={v.id.toString()}>{v.name}</SelectItem>
               ))}
             </SelectContent>
@@ -885,7 +889,9 @@ export default function LotsPage() {
                 const matchesCategory = selectedCategory === "all" || l.categoryId.toString() === selectedCategory;
                 const matchesVariety = selectedVariety === "all" || l.varietyId.toString() === selectedVariety;
                 return matchesCategory && matchesVariety;
-              }).map(l => (
+              })
+              .sort((a, b) => a.lotNumber.localeCompare(b.lotNumber))
+              .map(l => (
                 <SelectItem key={l.id} value={l.lotNumber}>{l.lotNumber}</SelectItem>
               ))}
             </SelectContent>
