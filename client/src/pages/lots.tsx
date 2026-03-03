@@ -493,7 +493,9 @@ export default function LotsPage() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {categories?.filter(c => c.active).map(c => (
+                              {categories?.filter(c => c.active)
+                                .sort((a, b) => a.name.localeCompare(b.name))
+                                .map(c => (
                                 <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
                               ))}
                             </SelectContent>
@@ -524,7 +526,7 @@ export default function LotsPage() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {filteredVarieties?.map(v => (
+                              {filteredVarieties?.sort((a, b) => a.name.localeCompare(b.name)).map(v => (
                                 <SelectItem key={v.id} value={v.id.toString()}>{v.name}</SelectItem>
                               ))}
                             </SelectContent>
@@ -559,7 +561,7 @@ export default function LotsPage() {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                {availableSeedLots.map(lot => (
+                                {availableSeedLots.sort((a, b) => a.lotNumber.localeCompare(b.lotNumber)).map(lot => (
                                   <SelectItem key={lot.id} value={lot.id.toString()}>
                                     Lot {lot.lotNumber} ({lot.availableQuantity} available)
                                   </SelectItem>
