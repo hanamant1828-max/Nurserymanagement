@@ -1092,13 +1092,14 @@ export default function Orders() {
   const filteredOrdersList = useMemo(() => {
     if (!orders) return [];
     return orders.filter((o: any) => {
-      const deliveryDate = new Date(o.deliveryDate);
+      const readyDateStr = o.lot?.expectedReadyDate || o.deliveryDate;
+      const readyDate = new Date(readyDateStr);
       const fromDate = new Date(dateRange.from);
       fromDate.setHours(0, 0, 0, 0);
       const toDate = new Date(dateRange.to);
       toDate.setHours(23, 59, 59, 999);
       
-      const isWithinDateRange = deliveryDate >= fromDate && deliveryDate <= toDate;
+      const isWithinDateRange = readyDate >= fromDate && readyDate <= toDate;
       if (!isWithinDateRange) return false;
 
       const matchesCategory = pageCategoryId === "all" || o.lot?.categoryId?.toString() === pageCategoryId;
@@ -1126,11 +1127,14 @@ export default function Orders() {
   const sortedOrders = useMemo(() => {
     const list = [...filteredOrdersList];
     return list.sort((a, b) => {
+      const dateA = a.lot?.expectedReadyDate || a.deliveryDate;
+      const dateB = b.lot?.expectedReadyDate || b.deliveryDate;
+      
       if (sortOption === "ready-newest") {
-        return new Date(b.deliveryDate).getTime() - new Date(a.deliveryDate).getTime();
+        return new Date(dateB).getTime() - new Date(dateA).getTime();
       }
       if (sortOption === "ready-oldest") {
-        return new Date(a.deliveryDate).getTime() - new Date(b.deliveryDate).getTime();
+        return new Date(dateA).getTime() - new Date(dateB).getTime();
       }
       if (sortOption === "delivery-newest") {
         return new Date(b.deliveryDate).getTime() - new Date(a.deliveryDate).getTime();
