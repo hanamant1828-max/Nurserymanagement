@@ -1212,6 +1212,9 @@ export default function Orders() {
     }
   };
 
+  const [editingOrder, setEditingOrder] = useState<any>(null);
+  const [isSearchingPhone, setIsSearchingPhone] = useState(false);
+
   const selectedLotId = form.watch("lotId");
   const selectedLot = lots?.find((l) => l.id.toString() === selectedLotId);
   
@@ -1232,9 +1235,6 @@ export default function Orders() {
   const advanceAmountValue = form.watch("advanceAmount") || 0;
   const remainingBalance = totalAmountValue - advanceAmountValue;
   const paymentStatus = advanceAmountValue === 0 ? "Pending" : advanceAmountValue < totalAmountValue ? "Partially Paid" : "Paid";
-
-  const [editingOrder, setEditingOrder] = useState<any>(null);
-  const [isSearchingPhone, setIsSearchingPhone] = useState(false);
 
   const checkPhone = async (phone: string) => {
     if (phone.length < 10) return;
