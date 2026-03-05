@@ -1480,7 +1480,7 @@ export default function Orders() {
                         <Badge variant="outline" className="text-[10px] h-5">
                           {order.lot?.lotNumber}
                         </Badge>
-                      ) : order.status !== "DELIVERED" ? (
+                      ) : (order.status !== "DELIVERED" && order.lotStatus === "PENDING_LOT") ? (
                         <Badge variant="destructive" className="bg-red-500 hover:bg-red-600 text-[10px] h-5">
                           Lot Pending
                         </Badge>
@@ -1586,7 +1586,7 @@ export default function Orders() {
                       </Badge>
                       <span className="text-xs font-medium truncate">{order.lot?.variety?.name}</span>
                     </div>
-                  ) : order.status !== "DELIVERED" ? (
+                  ) : (order.status !== "DELIVERED" && order.lotStatus === "PENDING_LOT") ? (
                     <Badge variant="destructive" className="bg-red-500/10 text-red-600 border-red-200 dark:border-red-900 py-0 h-5 mt-1">
                       Lot Pending
                     </Badge>

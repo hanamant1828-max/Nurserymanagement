@@ -228,9 +228,11 @@ export default function PendingLotReportsPage() {
                         </span>
                       </TableCell>
                       <TableCell className="text-center">
-                        <Badge variant="destructive" className="font-black text-[10px] uppercase py-0.5">
-                          Lot Pending
-                        </Badge>
+                        {order.lotStatus === 'PENDING_LOT' && (
+                          <Badge variant="destructive" className="font-black text-[10px] uppercase py-0.5">
+                            Lot Pending
+                          </Badge>
+                        )}
                       </TableCell>
                       <TableCell>
                         <div className="text-sm font-medium">

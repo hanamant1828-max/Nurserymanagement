@@ -722,7 +722,15 @@ export default function TodayDeliveriesPage() {
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
+                      <div className="flex justify-end gap-2 items-center">
+                        {order.status !== "DELIVERED" && order.lotStatus === "PENDING_LOT" && (
+                          <Badge
+                            variant="destructive"
+                            className="font-black text-[10px] uppercase py-0.5 whitespace-nowrap"
+                          >
+                            Lot Pending
+                          </Badge>
+                        )}
                         <Button
                           variant="outline"
                           size="icon"
@@ -830,15 +838,23 @@ export default function TodayDeliveriesPage() {
                         </p>
                       </div>
                     </div>
-                    <div className="pt-2 border-t flex items-center justify-between">
-                      <div className="flex flex-col">
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase">
-                          Balance
-                        </span>
-                        <span className="text-sm font-black text-orange-600">
-                          ₹{Number(order.remainingBalance).toLocaleString()}
-                        </span>
-                      </div>
+                      <div className="pt-2 border-t flex items-center justify-between">
+                        <div className="flex flex-col">
+                          <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                            Balance
+                          </span>
+                          <span className="text-sm font-black text-orange-600">
+                            ₹{Number(order.remainingBalance).toLocaleString()}
+                          </span>
+                          {order.status !== "DELIVERED" && order.lotStatus === "PENDING_LOT" && (
+                            <Badge
+                              variant="destructive"
+                              className="font-black text-[10px] uppercase py-0.5 mt-1 w-fit"
+                            >
+                              Lot Pending
+                            </Badge>
+                          )}
+                        </div>
                       {order.status === "DELIVERED" ? (
                         <div className="flex items-center gap-2">
                           <Badge className="bg-green-100 text-green-700 border-green-200">
