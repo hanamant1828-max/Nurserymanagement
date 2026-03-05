@@ -1482,11 +1482,11 @@ export default function Orders() {
                       <Badge variant="outline">
                         {order.lot?.lotNumber}
                       </Badge>
-                    ) : (
+                    ) : order.status !== "DELIVERED" ? (
                       <Badge variant="destructive" className="bg-red-500 hover:bg-red-600">
                         Lot Pending
                       </Badge>
-                    )}
+                    ) : null}
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col">
@@ -1587,11 +1587,11 @@ export default function Orders() {
                       </Badge>
                       <span className="text-xs font-medium truncate">{order.lot?.variety?.name}</span>
                     </div>
-                  ) : (
+                  ) : order.status !== "DELIVERED" ? (
                     <Badge variant="destructive" className="bg-red-500/10 text-red-600 border-red-200 dark:border-red-900 py-0 h-5 mt-1">
                       Lot Pending
                     </Badge>
-                  )}
+                  ) : null}
                 </div>
                 <div className="text-right">
                   <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">Quantity</p>
