@@ -94,6 +94,7 @@ const formSchema = z
     vehicleDetails: z.string().optional(),
     driverName: z.string().optional(),
     driverPhone: z.string().optional(),
+    remarks: z.string().optional(),
   })
   .refine((data) => data.advanceAmount <= data.totalAmount, {
     message: "Advance cannot be greater than Total Amount",
@@ -1157,6 +1158,7 @@ export default function Orders() {
       paymentMode: "Cash",
       deliveryDate: new Date(),
       sowingDate: undefined,
+      remarks: "",
     },
   });
 
@@ -1266,6 +1268,7 @@ export default function Orders() {
       status: "BOOKED",
       paymentStatus,
       sowingDate: data.sowingDate ? format(data.sowingDate, "yyyy-MM-dd") : null,
+      remarks: data.remarks || null,
       vehicleDetails: data.vehicleDetails || null,
       driverName: data.driverName || null,
       driverPhone: data.driverPhone || null,
@@ -1483,6 +1486,11 @@ export default function Orders() {
                       </div>
                     )}
                     <div className="text-xs text-muted-foreground">{order.phone}</div>
+                    {order.remarks && (
+                      <div className="text-[10px] text-amber-600 mt-1 italic line-clamp-1" title={order.remarks}>
+                        "{order.remarks}"
+                      </div>
+                    )}
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col">
@@ -2095,6 +2103,9 @@ export default function Orders() {
                           <FormItem><FormLabel>Advance Paid (₹)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                       </div>
+                      <FormField control={form.control} name="remarks" render={({ field }) => (
+                        <FormItem><FormLabel>Comments / Remarks</FormLabel><FormControl><Input placeholder="Add any special instructions or notes here..." {...field} /></FormControl><FormMessage /></FormItem>
+                      )} />
                       <div className="flex justify-between items-center p-3 bg-white rounded border border-green-100">
                         <div className="text-sm"><span className="text-muted-foreground">Balance:</span><span className="ml-2 font-bold text-red-600">₹{remainingBalance}</span></div>
                         <Badge variant={paymentStatus === "Paid" ? "default" : "outline"}>{paymentStatus}</Badge>

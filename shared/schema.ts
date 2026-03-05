@@ -104,6 +104,7 @@ export const orders = pgTable("orders", {
   vehicleDetails: text("vehicle_details"),
   driverName: text("driver_name"),
   driverPhone: text("driver_phone"),
+  remarks: text("remarks"),
   createdBy: integer("created_by"),
 }, (table) => {
   return {
