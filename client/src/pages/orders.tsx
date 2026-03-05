@@ -1201,6 +1201,7 @@ export default function Orders() {
       const { queryClient } = await import("@/lib/queryClient");
       await apiRequest("POST", `/api/orders/${selectedOrderForDelivery.id}/deliver`, {
         ...data,
+        deliveredQty: data.deliveredQty.toString(),
         actualDeliveryDate: format(data.actualDeliveryDate, "yyyy-MM-dd"),
       });
       queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
@@ -1547,7 +1548,7 @@ export default function Orders() {
                             deliveryForm.reset({
                               actualDeliveryDate: new Date(),
                               actualDeliveryTime: format(new Date(), "HH:mm"),
-                              deliveredQty: Number(order.bookedQty),
+                              deliveredQty: order.bookedQty,
                               vehicleDetails: order.vehicleDetails || "",
                               driverName: order.driverName || "",
                               driverPhone: order.driverPhone || "",
@@ -1661,7 +1662,7 @@ export default function Orders() {
                       deliveryForm.reset({
                         actualDeliveryDate: new Date(),
                         actualDeliveryTime: format(new Date(), "HH:mm"),
-                        deliveredQty: Number(order.bookedQty),
+                        deliveredQty: order.bookedQty,
                         vehicleDetails: order.vehicleDetails || "",
                         driverName: order.driverName || "",
                         driverPhone: order.driverPhone || "",

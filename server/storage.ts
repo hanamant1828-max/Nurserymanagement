@@ -483,7 +483,7 @@ export class DatabaseStorage implements IStorage {
     const [order] = await db.update(orders)
       .set({
         ...rest,
-        deliveredQty: deliveredQty,
+        deliveredQty: deliveredQty.toString(),
         status: "DELIVERED",
       })
       .where(eq(orders.id, id))
