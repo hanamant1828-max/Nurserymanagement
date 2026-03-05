@@ -456,6 +456,10 @@ export class DatabaseStorage implements IStorage {
         const ordersForLot = await db.select().from(orders).where(eq(orders.lotId, lotId));
         const totalBooked = ordersForLot.reduce((sum, o) => sum + (Number(o.bookedQty) || 0), 0);
         const availableStock = (Number(lot.seedsSown) || 0) - (Number(lot.damaged) || 0) - totalBooked;
+
+        if (availableStock < Number(insertOrder.bookedQty)) {
+          throw new Error(`Insufficient Stock. Available: ${availableStock.toLocaleString()}, Requested: ${Number(insertOrder.bookedQty).toLocaleString()}`);
+        }
         
         const allocation = Math.min(Number(insertOrder.bookedQty), availableStock);
         allocatedQuantity = allocation.toString();

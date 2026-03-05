@@ -1214,6 +1214,10 @@ export default function Orders() {
 
   const selectedLotId = form.watch("lotId");
   const selectedLot = lots?.find((l) => l.id.toString() === selectedLotId);
+  const availableStock = selectedLot ? selectedLot.available : 0;
+  const bookedQtyValue = form.watch("bookedQty") || 0;
+  const isInsufficientStock = selectedLot && bookedQtyValue > availableStock;
+
   const totalAmountValue = form.watch("totalAmount") || 0;
   const advanceAmountValue = form.watch("advanceAmount") || 0;
   const remainingBalance = totalAmountValue - advanceAmountValue;
@@ -1912,7 +1916,21 @@ export default function Orders() {
 
           {step === 4 && (
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (isInsufficientStock) {
+                    toast({
+                      title: "Insufficient Stock",
+                      description: `Cannot book order. Available stock is ${availableStock.toLocaleString()}`,
+                      variant: "destructive"
+                    });
+                    return;
+                  }
+                  form.handleSubmit(onSubmit)(e);
+                }} 
+                className="space-y-6"
+              >
                 <div className="flex items-center gap-2">
                   {!editingOrder && (
                     <Button variant="ghost" size="icon" type="button" onClick={prevStep}>
@@ -2120,7 +2138,30 @@ export default function Orders() {
                       </h4>
                       <div className="grid grid-cols-2 gap-4">
                         <FormField control={form.control} name="bookedQty" render={({ field }) => (
-                          <FormItem><FormLabel>Quantity</FormLabel><FormControl><Input type="number" {...field} onChange={(e) => { const qty = parseFloat(e.target.value) || 0; field.onChange(qty); form.setValue("totalAmount", qty * (form.getValues("perUnitPrice") || 0)); }} /></FormControl><FormMessage /></FormItem>
+                          <FormItem>
+                            <FormLabel>Quantity</FormLabel>
+                            <FormControl>
+                              <div className="space-y-1">
+                                <Input 
+                                  type="number" 
+                                  {...field} 
+                                  className={cn(isInsufficientStock && "border-destructive focus-visible:ring-destructive")}
+                                  onChange={(e) => { 
+                                    const qty = parseFloat(e.target.value) || 0; 
+                                    field.onChange(qty); 
+                                    form.setValue("totalAmount", qty * (form.getValues("perUnitPrice") || 0)); 
+                                  }} 
+                                />
+                                {selectedLot && (
+                                  <div className={cn("text-[10px] font-medium", isInsufficientStock ? "text-destructive" : "text-muted-foreground")}>
+                                    Available Stock: {availableStock.toLocaleString()}
+                                    {isInsufficientStock && " (Insufficient)"}
+                                  </div>
+                                )}
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
                         )} />
                         <FormField control={form.control} name="perUnitPrice" render={({ field }) => (
                           <FormItem><FormLabel>Unit Price (₹)</FormLabel><FormControl><Input type="number" {...field} onChange={(e) => { const price = parseFloat(e.target.value) || 0; field.onChange(price); form.setValue("totalAmount", (form.getValues("bookedQty") || 0) * price); }} /></FormControl><FormMessage /></FormItem>
