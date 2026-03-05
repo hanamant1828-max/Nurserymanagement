@@ -1470,6 +1470,7 @@ export default function Orders() {
                 <TableHead>Quantity</TableHead>
                 <TableHead>Advance</TableHead>
                 <TableHead>Amount</TableHead>
+                <TableHead>Comment</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -1486,11 +1487,6 @@ export default function Orders() {
                       </div>
                     )}
                     <div className="text-xs text-muted-foreground">{order.phone}</div>
-                    {order.remarks && (
-                      <div className="text-[10px] text-amber-600 mt-1 italic line-clamp-1" title={order.remarks}>
-                        "{order.remarks}"
-                      </div>
-                    )}
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col">
@@ -1516,6 +1512,11 @@ export default function Orders() {
                       <span className="text-[10px] text-muted-foreground font-medium text-red-500">
                         Bal: ₹{Number(order.remainingBalance).toLocaleString()}
                       </span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="max-w-[150px] truncate text-xs text-muted-foreground" title={order.remarks || ""}>
+                      {order.remarks || "-"}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -1639,6 +1640,13 @@ export default function Orders() {
                   <p className="text-xs font-medium">{format(new Date(order.deliveryDate), "MMM d, yyyy")}</p>
                 </div>
               </div>
+
+              {order.remarks && (
+                <div className="bg-muted/50 p-2 rounded text-xs italic text-muted-foreground">
+                  <p className="text-[10px] uppercase font-bold tracking-wider mb-1">Comment</p>
+                  {order.remarks}
+                </div>
+              )}
 
               <div className="flex justify-end gap-2 pt-2 border-t">
                 <Button variant="outline" size="sm" onClick={() => handlePrint(order)} className="flex-1 h-9">
