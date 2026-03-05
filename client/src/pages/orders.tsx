@@ -2288,7 +2288,15 @@ export default function Orders() {
                 )} />
                 <FormField control={deliveryForm.control} name="actualDeliveryTime" render={({ field }) => (<FormItem><FormLabel>Delivery Time</FormLabel><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)} />
               </div>
-              <FormField control={deliveryForm.control} name="deliveredQty" render={({ field }) => (<FormItem><FormLabel>Delivered Quantity</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={deliveryForm.control} name="deliveredQty" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Delivered Quantity</FormLabel>
+                  <FormControl>
+                    <Input type="number" {...field} readOnly className="bg-muted" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
               <FormField control={deliveryForm.control} name="vehicleDetails" render={({ field }) => (<FormItem><FormLabel>Vehicle Number</FormLabel><FormControl><Input placeholder="e.g. MH 12 AB 1234" {...field} /></FormControl><FormMessage /></FormItem>)} />
               <div className="grid grid-cols-2 gap-4">
                 <FormField control={deliveryForm.control} name="driverName" render={({ field }) => (<FormItem><FormLabel>Driver Name</FormLabel><FormControl><Input placeholder="Name" {...field} /></FormControl><FormMessage /></FormItem>)} />
