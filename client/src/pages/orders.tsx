@@ -1465,6 +1465,7 @@ export default function Orders() {
               <TableRow>
                 <TableHead>Customer / Village</TableHead>
                 <TableHead>Quantity</TableHead>
+                <TableHead>Advance</TableHead>
                 <TableHead>Amount</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -1495,9 +1496,17 @@ export default function Orders() {
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col">
-                      <span className="font-medium text-primary">₹{Number(order.totalAmount).toLocaleString()}</span>
+                      <span className="font-medium text-amber-600">₹{Number(order.advanceAmount).toLocaleString()}</span>
                       <span className="text-[10px] text-muted-foreground">
-                        Adv: ₹{Number(order.advanceAmount).toLocaleString()}
+                        {order.paymentMode}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col">
+                      <span className="font-medium text-primary">₹{Number(order.totalAmount).toLocaleString()}</span>
+                      <span className="text-[10px] text-muted-foreground font-medium text-red-500">
+                        Bal: ₹{Number(order.remainingBalance).toLocaleString()}
                       </span>
                     </div>
                   </TableCell>
