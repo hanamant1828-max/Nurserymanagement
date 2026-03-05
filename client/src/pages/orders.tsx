@@ -1214,9 +1214,19 @@ export default function Orders() {
 
   const selectedLotId = form.watch("lotId");
   const selectedLot = lots?.find((l) => l.id.toString() === selectedLotId);
-  const availableStock = selectedLot ? selectedLot.available : 0;
+  
+  const availableStock = useMemo(() => {
+    if (!selectedLot) return 0;
+    let available = Number(selectedLot.available);
+    // If editing, add current order's quantity back to available stock if it belongs to this lot
+    if (editingOrder && editingOrder.lotId === selectedLot.id) {
+      available += Number(editingOrder.bookedQty);
+    }
+    return available;
+  }, [selectedLot, editingOrder]);
+
   const bookedQtyValue = form.watch("bookedQty") || 0;
-  const isInsufficientStock = selectedLot && bookedQtyValue > availableStock;
+  const isInsufficientStock = selectedLot && Number(bookedQtyValue) > availableStock;
 
   const totalAmountValue = form.watch("totalAmount") || 0;
   const advanceAmountValue = form.watch("advanceAmount") || 0;

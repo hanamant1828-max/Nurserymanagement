@@ -478,6 +478,46 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateOrder(id: number, update: Partial<InsertOrder>): Promise<Order> {
+    const existingOrder = await db.query.orders.findFirst({
+      where: eq(orders.id, id),
+      with: { lot: true }
+    });
+    
+    if (!existingOrder) throw new Error("Order not found");
+
+    if (update.bookedQty !== undefined && Number(update.bookedQty) !== Number(existingOrder.bookedQty)) {
+      const lotId = update.lotId || existingOrder.lotId;
+      if (lotId) {
+        const lot = await this.getLot(lotId);
+        if (lot) {
+          const ordersForLot = await db.select().from(orders).where(eq(orders.lotId, lotId));
+          const totalBooked = ordersForLot.reduce((sum, o) => {
+            // Exclude the current order's quantity from the sum if we're updating the same lot
+            if (o.id === id) return sum;
+            return sum + (Number(o.bookedQty) || 0);
+          }, 0);
+          
+          const availableStock = (Number(lot.seedsSown) || 0) - (Number(lot.damaged) || 0) - totalBooked;
+
+          if (availableStock < Number(update.bookedQty)) {
+            throw new Error(`Insufficient Stock. Available: ${availableStock.toLocaleString()}, Requested: ${Number(update.bookedQty).toLocaleString()}`);
+          }
+
+          // Update allocation/pending quantities
+          const allocation = Math.min(Number(update.bookedQty), availableStock);
+          const pendingQuantity = (Number(update.bookedQty) - allocation).toString();
+          const allocatedQuantity = allocation.toString();
+          const lotStatus = Number(pendingQuantity) === 0 ? "ALLOCATED" : (allocation > 0 ? "PARTIAL" : "PENDING_LOT");
+
+          Object.assign(update, {
+            lotStatus,
+            allocatedQuantity,
+            pendingQuantity
+          });
+        }
+      }
+    }
+
     const [order] = await db.update(orders).set(update).where(eq(orders.id, id)).returning();
     return order;
   }
