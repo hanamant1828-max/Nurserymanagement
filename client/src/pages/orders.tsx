@@ -1324,6 +1324,20 @@ export default function Orders() {
   const nextStep = () => setStep((s) => s + 1);
   const prevStep = () => setStep((s) => s - 1);
 
+  const clearFilters = () => {
+    setPageCategoryId("all");
+    setPageVarietyId("all");
+    setPageLotId("all");
+    setSearch("");
+    const from = new Date();
+    from.setDate(from.getDate() - 30);
+    const to = new Date();
+    to.setDate(to.getDate() + 30);
+    setDateRange({ from, to });
+    setCurrentPage(1);
+    setSortOption("delivery-newest");
+  };
+
   if (isLoading) return <Skeleton className="h-screen w-full" />;
 
   return (
@@ -1460,6 +1474,14 @@ export default function Orders() {
             <SelectItem value="ready-oldest">Ready Date (Oldest)</SelectItem>
           </SelectContent>
         </Select>
+        <Button 
+          variant="outline" 
+          onClick={clearFilters}
+          className="h-10 px-4 flex items-center gap-2 text-muted-foreground hover:text-foreground"
+        >
+          <Search className="h-4 w-4" />
+          Clear Filters
+        </Button>
       </div>
 
       <div className="bg-card rounded-lg border shadow-sm overflow-hidden">
