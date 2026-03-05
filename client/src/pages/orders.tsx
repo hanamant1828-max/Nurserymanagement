@@ -1463,7 +1463,7 @@ export default function Orders() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Customer</TableHead>
+                <TableHead>Customer / Village</TableHead>
                 <TableHead>Amount</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -1474,6 +1474,12 @@ export default function Orders() {
                 <TableRow key={order.id}>
                   <TableCell>
                     <div className="font-bold">{order.customerName}</div>
+                    {order.village && (
+                      <div className="text-[10px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                        <MapPin className="h-2.5 w-2.5" />
+                        {order.village}
+                      </div>
+                    )}
                     <div className="text-xs text-muted-foreground">{order.phone}</div>
                   </TableCell>
                   <TableCell>
