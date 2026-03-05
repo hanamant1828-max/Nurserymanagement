@@ -1464,7 +1464,6 @@ export default function Orders() {
             <TableHeader>
               <TableRow>
                 <TableHead>Customer</TableHead>
-                <TableHead>Details</TableHead>
                 <TableHead>Amount</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -1476,17 +1475,17 @@ export default function Orders() {
                   <TableCell>
                     <div className="font-bold">{order.customerName}</div>
                     <div className="text-xs text-muted-foreground">{order.phone}</div>
-                  </TableCell>
-                  <TableCell>
-                    {order.lotId ? (
-                      <Badge variant="outline">
-                        {order.lot?.lotNumber}
-                      </Badge>
-                    ) : order.status !== "DELIVERED" ? (
-                      <Badge variant="destructive" className="bg-red-500 hover:bg-red-600">
-                        Lot Pending
-                      </Badge>
-                    ) : null}
+                    <div className="mt-1">
+                      {order.lotId ? (
+                        <Badge variant="outline" className="text-[10px] h-5">
+                          {order.lot?.lotNumber}
+                        </Badge>
+                      ) : order.status !== "DELIVERED" ? (
+                        <Badge variant="destructive" className="bg-red-500 hover:bg-red-600 text-[10px] h-5">
+                          Lot Pending
+                        </Badge>
+                      ) : null}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col">
