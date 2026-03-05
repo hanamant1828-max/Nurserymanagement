@@ -1892,34 +1892,58 @@ export default function Orders() {
                 </Card>
                 {lots
                   ?.filter((l: any) => l.varietyId.toString() === selectedVarietyId)
-                  .map((l: any) => (
-                    <Card 
-                      key={l.id} 
-                      className={cn(
-                        "cursor-pointer hover-elevate transition-all border-2",
-                        form.watch("lotId") === l.id.toString() ? "border-green-600 bg-green-50/50" : "border-transparent"
-                      )}
-                      onClick={() => {
-                        form.setValue("lotId", l.id.toString());
-                        setStep(4);
-                      }}
-                    >
-                      <CardContent className="p-4 space-y-1">
-                        <div className="flex justify-between items-start">
-                          <span className="font-bold text-lg">Lot {l.lotNumber}</span>
-                          <Badge variant="outline">Stock: {l.seedsSown - l.damaged}</Badge>
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          Sown: {format(parseISO(l.sowingDate), "dd MMM yyyy")}
-                        </div>
-                        {l.expectedReadyDate && (
-                          <div className="text-sm text-green-600 font-medium">
-                            Expected Ready: {format(parseISO(l.expectedReadyDate), "dd MMM yyyy")}
-                          </div>
+                  .map((l: any) => {
+                    const totalBooked = (l.orders || []).reduce((sum: number, o: any) => sum + (Number(o.bookedQty) || 0), 0);
+                    const availableStock = (Number(l.seedsSown) || 0) - (Number(l.damaged) || 0) - totalBooked;
+                    const isOutOfStock = availableStock <= 0;
+                    const isSelected = form.watch("lotId") === l.id.toString();
+
+                    return (
+                      <Card 
+                        key={l.id} 
+                        className={cn(
+                          "cursor-pointer hover-elevate transition-all border-2 relative overflow-hidden",
+                          isSelected ? "border-green-600 bg-green-50/50" : isOutOfStock ? "border-red-200 bg-red-50/30 opacity-80" : "border-transparent"
                         )}
-                      </CardContent>
-                    </Card>
-                  ))}
+                        onClick={() => {
+                          if (isOutOfStock) return;
+                          form.setValue("lotId", l.id.toString());
+                          setStep(4);
+                        }}
+                      >
+                        <CardContent className="p-4 space-y-1">
+                          <div className="flex justify-between items-start">
+                            <span className="font-bold text-lg">Lot {l.lotNumber}</span>
+                            <Badge 
+                              variant="outline"
+                              className={cn(
+                                "font-semibold whitespace-nowrap",
+                                isOutOfStock ? "bg-red-100 text-red-700 border-red-200" : "bg-secondary/50"
+                              )}
+                            >
+                              Stock: {Math.max(0, availableStock)}
+                            </Badge>
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            Sown: {format(parseISO(l.sowingDate), "dd MMM yyyy")}
+                          </div>
+                          {l.expectedReadyDate && (
+                            <div className={cn(
+                              "text-sm font-medium",
+                              isOutOfStock ? "text-red-500" : "text-green-600"
+                            )}>
+                              Expected Ready: {format(parseISO(l.expectedReadyDate), "dd MMM yyyy")}
+                            </div>
+                          )}
+                          {isOutOfStock && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-background/20 backdrop-blur-[1px] pointer-events-none">
+                              <Badge variant="destructive" className="uppercase font-bold tracking-wider">Out of Stock</Badge>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
               </div>
             </div>
           )}
@@ -2037,11 +2061,15 @@ export default function Orders() {
                                 <SelectItem value="none">Book without Lot</SelectItem>
                                 {lots
                                   ?.filter((l: any) => l.varietyId.toString() === selectedVarietyId)
-                                  .map((l: any) => (
-                                    <SelectItem key={l.id} value={l.id.toString()}>
-                                      Lot {l.lotNumber} (Stock: {l.seedsSown - l.damaged})
-                                    </SelectItem>
-                                  ))}
+                                  .map((l: any) => {
+                                    const totalBooked = (l.orders || []).reduce((sum: number, o: any) => sum + (Number(o.bookedQty) || 0), 0);
+                                    const availableStock = (Number(l.seedsSown) || 0) - (Number(l.damaged) || 0) - totalBooked;
+                                    return (
+                                      <SelectItem key={l.id} value={l.id.toString()}>
+                                        Lot {l.lotNumber} (Stock: {Math.max(0, availableStock)})
+                                      </SelectItem>
+                                    );
+                                  })}
                               </SelectContent>
                             </Select>
                             <FormMessage />
