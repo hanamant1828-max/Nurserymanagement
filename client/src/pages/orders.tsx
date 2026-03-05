@@ -1464,6 +1464,7 @@ export default function Orders() {
             <TableHeader>
               <TableRow>
                 <TableHead>Customer / Village</TableHead>
+                <TableHead>Quantity</TableHead>
                 <TableHead>Amount</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -1484,12 +1485,20 @@ export default function Orders() {
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col">
-                      <span>{Number(order.bookedQty).toLocaleString()}</span>
+                      <span className="font-medium">{Number(order.bookedQty).toLocaleString()}</span>
                       {order.lotStatus !== "PENDING_LOT" && (
-                        <span className="text-xs text-muted-foreground">
-                          Allocated: {Number(order.allocatedQuantity).toLocaleString()}
+                        <span className="text-[10px] text-muted-foreground">
+                          Alloc: {Number(order.allocatedQuantity).toLocaleString()}
                         </span>
                       )}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col">
+                      <span className="font-medium text-primary">₹{Number(order.totalAmount).toLocaleString()}</span>
+                      <span className="text-[10px] text-muted-foreground">
+                        Adv: ₹{Number(order.advanceAmount).toLocaleString()}
+                      </span>
                     </div>
                   </TableCell>
                   <TableCell>
