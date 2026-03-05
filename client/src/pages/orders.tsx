@@ -1529,10 +1529,10 @@ export default function Orders() {
                   <TableCell>
                     <div className="flex flex-col">
                       <div className="text-[10px] text-muted-foreground/60 leading-tight">
-                        {order.lot?.sowingDate ? format(parseISO(order.lot.sowingDate), "dd MMM yy") : (order.sowingDate ? format(parseISO(order.sowingDate), "dd MMM yy") : "-")}
+                        Sown: {order.lot?.sowingDate ? format(parseISO(order.lot.sowingDate), "dd MMM yy") : (order.sowingDate ? format(parseISO(order.sowingDate), "dd MMM yy") : "-")}
                       </div>
                       <div className="text-xs font-semibold text-foreground leading-tight">
-                        {format(parseISO(order.deliveryDate), "dd MMM yy")}
+                        Ready: {order.lot?.expectedReadyDate ? format(parseISO(order.lot.expectedReadyDate), "dd MMM yy") : (order.deliveryDate ? format(parseISO(order.deliveryDate), "dd MMM yy") : "-")}
                       </div>
                     </div>
                   </TableCell>
