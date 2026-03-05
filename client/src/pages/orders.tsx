@@ -1933,7 +1933,7 @@ export default function Orders() {
                               variant="outline"
                               className={cn(
                                 "font-semibold whitespace-nowrap",
-                                isOutOfStock ? "bg-red-100 text-red-700 border-red-200" : "bg-secondary/50"
+                                isOutOfStock ? "bg-red-100 text-red-700 border-red-200" : availableStock < 5000 ? "bg-orange-100 text-orange-700 border-orange-200" : "bg-secondary/50"
                               )}
                             >
                               Stock: {Math.max(0, availableStock)}

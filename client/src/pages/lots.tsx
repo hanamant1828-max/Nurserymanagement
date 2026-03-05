@@ -984,7 +984,10 @@ export default function LotsPage() {
                     </div>
                     <div className="flex justify-between text-sm border-t border-border/50 pt-1 mt-1">
                       <span className="text-muted-foreground">Available Stock:</span>
-                      <span className="text-primary font-bold">{lot.available}</span>
+                      <span className={cn(
+                        "font-bold",
+                        lot.available < 5000 ? "text-orange-600" : "text-primary"
+                      )}>{lot.available}</span>
                     </div>
                   </div>
                 );
@@ -1068,7 +1071,10 @@ export default function LotsPage() {
                     </div>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <div className="text-xl font-black text-primary leading-tight">{lot.available}</div>
+                    <div className={cn(
+                      "text-xl font-black leading-tight",
+                      lot.available < 5000 ? "text-orange-600" : "text-primary"
+                    )}>{lot.available}</div>
                     <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Available</div>
                   </div>
                 </div>
@@ -1211,7 +1217,17 @@ export default function LotsPage() {
                     <TableCell className="text-right font-medium text-muted-foreground">{lot.packetsSown || "-"}</TableCell>
                     <TableCell className="text-right text-destructive">{lot.damaged > 0 ? lot.damaged : '-'}</TableCell>
                     <TableCell className="text-right font-bold text-primary text-lg">
-                      {lot.available}
+                      <Badge 
+                        variant="outline" 
+                        className={cn(
+                          "font-bold",
+                          lot.available <= 0 ? "bg-red-100 text-red-700 border-red-200" : 
+                          lot.available < 5000 ? "bg-orange-100 text-orange-700 border-orange-200" : 
+                          "bg-green-100 text-green-700 border-green-200"
+                        )}
+                      >
+                        {lot.available.toLocaleString()}
+                      </Badge>
                     </TableCell>
                     <TableCell className="text-center">
                       {lot.available === 0 ? (
@@ -1325,7 +1341,10 @@ export default function LotsPage() {
                   </div>
                   <div className="text-right">
                     <p className="text-muted-foreground text-xs">Available Stock</p>
-                    <p className="font-bold text-primary text-lg">{lot.available}</p>
+                    <p className={cn(
+                      "font-bold text-lg",
+                      lot.available < 5000 ? "text-orange-600" : "text-primary"
+                    )}>{lot.available}</p>
                   </div>
                   <div className="col-span-2">
                     <p className="text-muted-foreground text-xs">Damaged</p>
