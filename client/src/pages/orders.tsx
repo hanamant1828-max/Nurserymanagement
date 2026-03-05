@@ -1504,6 +1504,7 @@ export default function Orders() {
             <TableHeader>
               <TableRow>
                 <TableHead>Customer / Village</TableHead>
+                <TableHead>Dates (Sown / Ready)</TableHead>
                 <TableHead>Quantity</TableHead>
                 <TableHead>Advance</TableHead>
                 <TableHead>Amount</TableHead>
@@ -1524,6 +1525,16 @@ export default function Orders() {
                       </div>
                     )}
                     <div className="text-xs text-muted-foreground">{order.phone}</div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col">
+                      <div className="text-[10px] text-muted-foreground/60 leading-tight">
+                        {order.lot?.sowingDate ? format(parseISO(order.lot.sowingDate), "dd MMM yy") : (order.sowingDate ? format(parseISO(order.sowingDate), "dd MMM yy") : "-")}
+                      </div>
+                      <div className="text-xs font-semibold text-foreground leading-tight">
+                        {format(parseISO(order.deliveryDate), "dd MMM yy")}
+                      </div>
+                    </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col">
