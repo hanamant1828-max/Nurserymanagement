@@ -1475,17 +1475,6 @@ export default function Orders() {
                   <TableCell>
                     <div className="font-bold">{order.customerName}</div>
                     <div className="text-xs text-muted-foreground">{order.phone}</div>
-                    <div className="mt-1">
-                      {order.lotId ? (
-                        <Badge variant="outline" className="text-[10px] h-5">
-                          {order.lot?.lotNumber}
-                        </Badge>
-                      ) : (order.status !== "DELIVERED" && order.lotStatus === "PENDING_LOT") ? (
-                        <Badge variant="destructive" className="bg-red-500 hover:bg-red-600 text-[10px] h-5">
-                          Lot Pending
-                        </Badge>
-                      ) : null}
-                    </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col">
@@ -1498,7 +1487,20 @@ export default function Orders() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={order.status === "DELIVERED" ? "default" : "outline"}>{order.status}</Badge>
+                    <div className="flex flex-col items-start gap-1">
+                      <Badge variant={order.status === "DELIVERED" ? "default" : "outline"}>
+                        {order.status}
+                      </Badge>
+                      {order.lotId ? (
+                        <Badge variant="outline" className="text-[10px] h-5">
+                          {order.lot?.lotNumber}
+                        </Badge>
+                      ) : (order.status !== "DELIVERED" && order.lotStatus === "PENDING_LOT") ? (
+                        <Badge variant="destructive" className="bg-red-500 hover:bg-red-600 text-[10px] h-5">
+                          Lot Pending
+                        </Badge>
+                      ) : null}
+                    </div>
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
