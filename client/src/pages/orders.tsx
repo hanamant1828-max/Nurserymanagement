@@ -1394,37 +1394,40 @@ export default function Orders() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <Card className="border shadow-sm">
-          <CardContent className="pt-4 pb-3">
-            <div className="text-2xl font-bold text-primary">{filteredOrdersList.length}</div>
-            <p className="text-xs text-muted-foreground mt-1 font-medium">Total Orders</p>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <Card className="border-2 border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-blue-50/50 dark:from-blue-950/30 dark:to-blue-950/20 shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="pt-5 pb-4">
+            <div className="text-3xl font-bold text-blue-700 dark:text-blue-300">{filteredOrdersList.length}</div>
+            <p className="text-xs text-blue-600 dark:text-blue-400 mt-2 font-semibold uppercase tracking-wider">Total Orders</p>
           </CardContent>
         </Card>
-        <Card className="border shadow-sm">
-          <CardContent className="pt-4 pb-3">
-            <div className="text-2xl font-bold text-green-600">{filteredOrdersList.filter(o => o.status === "DELIVERED").length}</div>
-            <p className="text-xs text-muted-foreground mt-1 font-medium">Delivered</p>
+        <Card className="border-2 border-green-200 dark:border-green-800 bg-gradient-to-br from-green-50 to-green-50/50 dark:from-green-950/30 dark:to-green-950/20 shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="pt-5 pb-4">
+            <div className="text-3xl font-bold text-green-700 dark:text-green-300">{filteredOrdersList.filter(o => o.status === "DELIVERED").length}</div>
+            <p className="text-xs text-green-600 dark:text-green-400 mt-2 font-semibold uppercase tracking-wider">Delivered</p>
           </CardContent>
         </Card>
-        <Card className="border shadow-sm">
-          <CardContent className="pt-4 pb-3">
-            <div className="text-2xl font-bold text-amber-600">{filteredOrdersList.filter(o => o.status === "BOOKED").length}</div>
-            <p className="text-xs text-muted-foreground mt-1 font-medium">Pending</p>
+        <Card className="border-2 border-amber-200 dark:border-amber-800 bg-gradient-to-br from-amber-50 to-amber-50/50 dark:from-amber-950/30 dark:to-amber-950/20 shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="pt-5 pb-4">
+            <div className="text-3xl font-bold text-amber-700 dark:text-amber-300">{filteredOrdersList.filter(o => o.status === "BOOKED").length}</div>
+            <p className="text-xs text-amber-600 dark:text-amber-400 mt-2 font-semibold uppercase tracking-wider">Pending</p>
           </CardContent>
         </Card>
-        <Card className="border shadow-sm">
-          <CardContent className="pt-4 pb-3">
-            <div className="text-2xl font-bold text-blue-600">₹{filteredOrdersList.reduce((sum, o) => sum + Number(o.totalAmount || 0), 0).toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground mt-1 font-medium">Total Value</p>
+        <Card className="border-2 border-purple-200 dark:border-purple-800 bg-gradient-to-br from-purple-50 to-purple-50/50 dark:from-purple-950/30 dark:to-purple-950/20 shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="pt-5 pb-4">
+            <div className="text-3xl font-bold text-purple-700 dark:text-purple-300">₹{filteredOrdersList.reduce((sum, o) => sum + Number(o.totalAmount || 0), 0).toLocaleString()}</div>
+            <p className="text-xs text-purple-600 dark:text-purple-400 mt-2 font-semibold uppercase tracking-wider">Total Value</p>
           </CardContent>
         </Card>
       </div>
 
       <Card className="border shadow-sm">
-        <CardContent className="p-4">
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+        <CardContent className="p-5">
+          <div className="space-y-5">
+            <div>
+              <h3 className="text-sm font-semibold mb-4 text-foreground">Filters</h3>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
               <div className="space-y-2">
                 <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">From Date</label>
                 <Popover>
@@ -1527,11 +1530,12 @@ export default function Orders() {
                   placeholder="Search by customer, phone, or village..." 
                   value={search} 
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9 h-9 text-sm"
+                  className="pl-9 h-10 text-sm font-medium"
+                  data-testid="input-search-orders"
                 />
               </div>
               <Select value={sortOption} onValueChange={setSortOption}>
-                <SelectTrigger className="w-full sm:w-[200px] h-9 text-sm">
+                <SelectTrigger className="w-full sm:w-[200px] h-10 text-sm font-medium">
                   <SelectValue placeholder="Sort" />
                 </SelectTrigger>
                 <SelectContent>
@@ -1544,7 +1548,8 @@ export default function Orders() {
               <Button 
                 variant="outline" 
                 onClick={clearFilters}
-                className="h-9 px-3 text-sm"
+                className="h-10 px-4 text-sm font-medium"
+                data-testid="button-reset-filters"
               >
                 Reset
               </Button>
@@ -1577,57 +1582,63 @@ export default function Orders() {
                 </TableRow>
               ) : (
                 paginatedOrders.map((order: any) => (
-                  <TableRow key={order.id} className="hover:bg-muted/40">
-                    <TableCell className="py-3">
-                      <div className="font-bold text-sm">{order.customerName}</div>
+                  <TableRow 
+                    key={order.id} 
+                    className={cn(
+                      "hover:bg-muted/60 transition-colors",
+                      order.status === "DELIVERED" ? "bg-green-50/30 dark:bg-green-950/10" : "hover:bg-amber-50/30 dark:hover:bg-amber-950/10"
+                    )}
+                  >
+                    <TableCell className="py-4">
+                      <div className="font-bold text-base text-foreground">{order.customerName}</div>
                       {order.village && (
-                        <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                          <MapPin className="h-3 w-3" />
+                        <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                          <MapPin className="h-3 w-3 shrink-0" />
                           {order.village}
                         </div>
                       )}
-                      <div className="text-xs text-muted-foreground">{order.phone}</div>
+                      <div className="text-xs text-muted-foreground font-medium">{order.phone}</div>
                     </TableCell>
-                    <TableCell className="py-3">
-                      <div className="flex flex-col gap-0.5">
+                    <TableCell className="py-4">
+                      <div className="flex flex-col gap-1">
                         <div className="text-xs text-muted-foreground">
-                          Sown: <span className="font-medium">{order.lot?.sowingDate ? format(parseISO(order.lot.sowingDate), "dd MMM") : (order.sowingDate ? format(parseISO(order.sowingDate), "dd MMM") : "-")}</span>
+                          Sown: <span className="font-semibold text-foreground">{order.lot?.sowingDate ? format(parseISO(order.lot.sowingDate), "dd MMM") : (order.sowingDate ? format(parseISO(order.sowingDate), "dd MMM") : "-")}</span>
                         </div>
                         <div className="text-xs">
-                          Ready: <span className="font-semibold text-foreground">{order.lot?.expectedReadyDate ? format(parseISO(order.lot.expectedReadyDate), "dd MMM yy") : (order.deliveryDate ? format(parseISO(order.deliveryDate), "dd MMM yy") : "-")}</span>
+                          Ready: <span className="font-bold text-lg text-primary">{order.lot?.expectedReadyDate ? format(parseISO(order.lot.expectedReadyDate), "dd MMM yy") : (order.deliveryDate ? format(parseISO(order.deliveryDate), "dd MMM yy") : "-")}</span>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="py-3">
-                      <div className="flex flex-col gap-0.5">
-                        <span className="font-bold text-sm">{Number(order.bookedQty).toLocaleString()}</span>
+                    <TableCell className="py-4">
+                      <div className="flex flex-col gap-1">
+                        <span className="font-bold text-lg text-foreground">{Number(order.bookedQty).toLocaleString()}</span>
                         {order.lotStatus !== "PENDING_LOT" && (
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-xs text-muted-foreground font-medium">
                             Alloc: {Number(order.allocatedQuantity).toLocaleString()}
                           </span>
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="py-3">
-                      <div className="flex flex-col gap-0.5">
-                        <span className="font-bold text-amber-600">₹{Number(order.advanceAmount).toLocaleString()}</span>
-                        <span className="text-xs text-muted-foreground">
+                    <TableCell className="py-4">
+                      <div className="flex flex-col gap-1">
+                        <span className="font-bold text-amber-700 dark:text-amber-300 text-lg">₹{Number(order.advanceAmount).toLocaleString()}</span>
+                        <span className="text-xs text-muted-foreground font-medium">
                           {order.paymentMode}
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell className="py-3">
-                      <div className="flex flex-col gap-0.5">
-                        <span className="font-bold text-primary">₹{Number(order.totalAmount).toLocaleString()}</span>
-                        <span className="text-xs font-medium text-red-600">
+                    <TableCell className="py-4">
+                      <div className="flex flex-col gap-1">
+                        <span className="font-bold text-primary text-lg">₹{Number(order.totalAmount).toLocaleString()}</span>
+                        <span className={cn("text-xs font-semibold", order.remainingBalance === 0 ? "text-green-700 dark:text-green-400" : "text-orange-600 dark:text-orange-400")}>
                           Bal: ₹{Number(order.remainingBalance).toLocaleString()}
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell className="py-3">
-                      <div className="flex flex-col items-start gap-0.5">
+                    <TableCell className="py-4">
+                      <div className="flex flex-col items-start gap-1">
                         <Badge 
-                          className={order.status === "DELIVERED" ? "bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900 dark:text-green-300" : "bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-900 dark:text-amber-300"} 
+                          className={order.status === "DELIVERED" ? "bg-green-200 text-green-900 hover:bg-green-300 dark:bg-green-800 dark:text-green-100 dark:hover:bg-green-700 font-semibold text-xs px-3 py-1" : "bg-amber-200 text-amber-900 hover:bg-amber-300 dark:bg-amber-800 dark:text-amber-100 dark:hover:bg-amber-700 font-semibold text-xs px-3 py-1"} 
                           data-testid={`status-badge-${order.id}`}
                         >
                           {order.status}
@@ -1636,7 +1647,7 @@ export default function Orders() {
                           <Button
                             size="sm"
                             onClick={() => undoDelivery(order.id)}
-                            className="h-6 text-[10px] uppercase font-bold bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200 px-2"
+                            className="h-7 text-[10px] uppercase font-bold bg-gray-200 hover:bg-gray-300 text-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-100 px-2"
                             data-testid={`button-undo-order-${order.id}`}
                           >
                             Undo
@@ -1644,22 +1655,31 @@ export default function Orders() {
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="py-3">
+                    <TableCell className="py-4">
                       {order.lotId ? (
-                        <Badge variant="outline" className="text-[10px] h-5 bg-green-50 dark:bg-green-900/10 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800" data-testid={`lot-number-${order.id}`}>
+                        <Badge variant="outline" className="text-xs h-6 bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300 border-green-300 dark:border-green-700 font-semibold px-2" data-testid={`lot-number-${order.id}`}>
                           Lot {order.lot?.lotNumber}
                         </Badge>
                       ) : (order.status !== "DELIVERED" && order.lotStatus === "PENDING_LOT") ? (
-                        <Badge variant="destructive" className="bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-900 dark:text-red-300 text-[10px] h-5" data-testid={`lot-pending-${order.id}`}>
-                          Lot Pending
+                        <Badge className="bg-red-500 text-white hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-xs h-6 font-bold px-2 animate-pulse" data-testid={`lot-pending-${order.id}`}>
+                          ⚠ Lot Pending
                         </Badge>
                       ) : (
                         <span className="text-xs text-muted-foreground">-</span>
                       )}
                     </TableCell>
-                    <TableCell className="py-3 text-right">
-                      <div className="flex justify-end gap-0.5">
-                        <Button variant="ghost" size="sm" onClick={() => handlePrint(order)} className="h-8 w-8 p-0" title="Print Invoice" data-testid={`button-print-order-${order.id}`}><Printer className="h-4 w-4 text-primary" /></Button>
+                    <TableCell className="py-4 text-right">
+                      <div className="flex justify-end gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => handlePrint(order)} 
+                          className="h-9 w-9 p-0 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400" 
+                          title="Print Invoice" 
+                          data-testid={`button-print-order-${order.id}`}
+                        >
+                          <Printer className="h-4 w-4" />
+                        </Button>
                         {order.status !== "DELIVERED" && order.status !== "CANCELLED" && order.lotId && (
                           <Button 
                             variant="ghost" 
@@ -1676,42 +1696,58 @@ export default function Orders() {
                               });
                               setDeliveryDialogOpen(true);
                             }} 
-                            className="h-8 w-8 p-0 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+                            className="h-9 w-9 p-0 hover:bg-green-100 dark:hover:bg-green-900/30 hover:text-green-700 dark:hover:text-green-400"
                             title="Mark as Delivered"
                             data-testid={`button-deliver-order-${order.id}`}
                           >
                             <Truck className="h-4 w-4" />
                           </Button>
                         )}
-                        <Button variant="ghost" size="sm" onClick={() => {
-                          setPrintingOrder(order);
-                          setTimeout(() => generateInvoice(order), 100);
-                        }} className="h-8 w-8 p-0" data-testid={`button-export-order-${order.id}`}><FileSpreadsheet className="h-4 w-4 text-blue-600" /></Button>
-                        <Button variant="ghost" size="sm" onClick={() => { 
-                          const bookingData = {
-                            ...order,
-                            categoryId: (order.categoryId || order.lot?.categoryId)?.toString() || "",
-                            varietyId: (order.varietyId || order.lot?.varietyId)?.toString() || "",
-                            lotId: order.lotId?.toString() || "none",
-                            deliveryDate: order.deliveryDate ? parseISO(order.deliveryDate) : new Date(),
-                            sowingDate: order.sowingDate ? parseISO(order.sowingDate) : undefined,
-                            bookedQty: Number(order.bookedQty),
-                            perUnitPrice: Number(order.perUnitPrice),
-                            totalAmount: Number(order.totalAmount),
-                            advanceAmount: Number(order.advanceAmount),
-                            discount: Number(order.discount || 0),
-                          };
-                          setEditingOrder(order);
-                          setSelectedCategoryId(bookingData.categoryId);
-                          setSelectedVarietyId(bookingData.varietyId);
-                          form.reset(bookingData);
-                          setTimeout(() => {
-                            form.setValue("lotId", bookingData.lotId);
-                          }, 0);
-                          setStep(4);
-                          setOpen(true); 
-                        }} className="h-8 w-8 p-0" data-testid={`button-edit-order-${order.id}`}>
-                          <Edit2 className="h-4 w-4 text-muted-foreground" />
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => {
+                            setPrintingOrder(order);
+                            setTimeout(() => generateInvoice(order), 100);
+                          }} 
+                          className="h-9 w-9 p-0 hover:bg-purple-100 dark:hover:bg-purple-900/30 hover:text-purple-600 dark:hover:text-purple-400" 
+                          title="Export as PDF"
+                          data-testid={`button-export-order-${order.id}`}
+                        >
+                          <FileSpreadsheet className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => { 
+                            const bookingData = {
+                              ...order,
+                              categoryId: (order.categoryId || order.lot?.categoryId)?.toString() || "",
+                              varietyId: (order.varietyId || order.lot?.varietyId)?.toString() || "",
+                              lotId: order.lotId?.toString() || "none",
+                              deliveryDate: order.deliveryDate ? parseISO(order.deliveryDate) : new Date(),
+                              sowingDate: order.sowingDate ? parseISO(order.sowingDate) : undefined,
+                              bookedQty: Number(order.bookedQty),
+                              perUnitPrice: Number(order.perUnitPrice),
+                              totalAmount: Number(order.totalAmount),
+                              advanceAmount: Number(order.advanceAmount),
+                              discount: Number(order.discount || 0),
+                            };
+                            setEditingOrder(order);
+                            setSelectedCategoryId(bookingData.categoryId);
+                            setSelectedVarietyId(bookingData.varietyId);
+                            form.reset(bookingData);
+                            setTimeout(() => {
+                              form.setValue("lotId", bookingData.lotId);
+                            }, 0);
+                            setStep(4);
+                            setOpen(true); 
+                          }} 
+                          className="h-9 w-9 p-0 hover:bg-gray-100 dark:hover:bg-gray-900/30 hover:text-gray-700 dark:hover:text-gray-400" 
+                          title="Edit Order"
+                          data-testid={`button-edit-order-${order.id}`}
+                        >
+                          <Edit2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>
@@ -1726,52 +1762,58 @@ export default function Orders() {
             <div className="text-center py-8 text-muted-foreground">No orders found</div>
           ) : (
             paginatedOrders.map((order: any) => (
-              <div key={order.id} className="bg-card border rounded-lg p-4 space-y-3 shadow-sm">
+              <div 
+                key={order.id} 
+                className={cn(
+                  "bg-card border rounded-lg p-4 space-y-3 shadow-sm transition-colors",
+                  order.status === "DELIVERED" ? "bg-green-50/50 dark:bg-green-950/10 border-green-200 dark:border-green-800" : "border-amber-200 dark:border-amber-800 hover:bg-amber-50/30"
+                )}
+              >
                 <div className="flex justify-between items-start gap-2">
                   <div className="min-w-0">
                     <h3 className="font-bold text-base truncate">{order.customerName}</h3>
-                    <p className="text-xs text-muted-foreground">{order.phone}</p>
+                    <p className="text-xs text-muted-foreground font-medium">{order.phone}</p>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
                     <Badge 
-                      className={order.status === "DELIVERED" ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300" : "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300"} 
+                      className={order.status === "DELIVERED" ? "bg-green-200 text-green-900 dark:bg-green-800 dark:text-green-100 font-semibold" : "bg-amber-200 text-amber-900 dark:bg-amber-800 dark:text-amber-100 font-semibold"} 
                       data-testid={`status-badge-mobile-${order.id}`}
                     >
                       {order.status}
-                  </Badge>
-                  {order.status === "DELIVERED" && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => undoDelivery(order.id)}
-                      className="h-6 text-[10px] font-bold text-muted-foreground hover:text-destructive"
-                      data-testid={`button-undo-mobile-order-${order.id}`}
-                    >
-                      Undo
-                    </Button>
-                  )}
+                    </Badge>
+                    {order.status === "DELIVERED" && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => undoDelivery(order.id)}
+                        className="h-6 text-[10px] font-bold text-muted-foreground hover:text-destructive"
+                        data-testid={`button-undo-mobile-order-${order.id}`}
+                      >
+                        Undo
+                      </Button>
+                    )}
+                  </div>
                 </div>
-              </div>
 
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
                   <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">Lot Details</p>
                   {order.lotId ? (
                     <div className="flex flex-col gap-0.5 mt-1">
-                      <Badge variant="outline" className="w-fit bg-green-50/50 dark:bg-green-900/10 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800 py-0 h-5">
-                        {order.lot?.lotNumber}
+                      <Badge variant="outline" className="w-fit bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300 border-green-300 dark:border-green-700 py-0 h-6 font-semibold text-xs">
+                        Lot {order.lot?.lotNumber}
                       </Badge>
                       <span className="text-xs font-medium truncate">{order.lot?.variety?.name}</span>
                     </div>
                   ) : (order.status !== "DELIVERED" && order.lotStatus === "PENDING_LOT") ? (
-                    <Badge variant="destructive" className="bg-red-500/10 text-red-600 border-red-200 dark:border-red-900 py-0 h-5 mt-1">
-                      Lot Pending
+                    <Badge className="bg-red-500 text-white py-0 h-6 mt-1 font-bold text-xs animate-pulse">
+                      ⚠ Lot Pending
                     </Badge>
                   ) : null}
                 </div>
                 <div className="text-right">
                   <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">Quantity</p>
-                  <p className="font-bold text-lg text-primary">{Number(order.bookedQty).toLocaleString()}</p>
+                  <p className="font-bold text-lg text-foreground">{Number(order.bookedQty).toLocaleString()}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">Location</p>
@@ -1856,35 +1898,39 @@ export default function Orders() {
         </div>
       </Card>
       
-      <div className="flex flex-col sm:flex-row justify-between items-center py-4 gap-4">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Rows per page:</span>
-          <Select value={limit.toString()} onValueChange={(val) => {
-            setLimit(parseInt(val));
-            setPage(1);
-          }}>
-            <SelectTrigger className="w-[80px] h-9">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="25">25</SelectItem>
-              <SelectItem value="50">50</SelectItem>
-              <SelectItem value="100">100</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-muted-foreground">Page {page} of {totalPages}</span>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(p => p - 1)}>
-              <ChevronLeft className="h-4 w-4 mr-1" /> Previous
-            </Button>
-            <Button variant="outline" size="sm" disabled={page === totalPages} onClick={() => setPage(p => p + 1)}>
-              Next <ChevronRight className="h-4 w-4 ml-1" />
-            </Button>
+      <Card className="border shadow-sm bg-muted/30 sticky bottom-0 z-10">
+        <CardContent className="p-4">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-medium text-foreground">Rows per page:</span>
+              <Select value={limit.toString()} onValueChange={(val) => {
+                setLimit(parseInt(val));
+                setPage(1);
+              }}>
+                <SelectTrigger className="w-[100px] h-9 font-medium">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="25">25</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                  <SelectItem value="100">100</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-sm font-semibold text-foreground bg-primary/10 px-3 py-1 rounded">Page <span className="text-primary">{page}</span> of <span className="text-primary">{totalPages}</span></span>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(p => p - 1)} className="font-medium" data-testid="button-previous-page">
+                  <ChevronLeft className="h-4 w-4 mr-1" /> Previous
+                </Button>
+                <Button variant="outline" size="sm" disabled={page === totalPages} onClick={() => setPage(p => p + 1)} className="font-medium" data-testid="button-next-page">
+                  Next <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       <Dialog open={open} onOpenChange={(val) => {
         setOpen(val);
