@@ -1385,217 +1385,250 @@ export default function Orders() {
       
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Orders ({filteredOrdersList.length})</h1>
-          <p className="text-sm text-muted-foreground">Book new orders and manage deliveries.</p>
+          <h1 className="text-3xl font-bold tracking-tight">Orders</h1>
+          <p className="text-sm text-muted-foreground mt-1">Book new orders and manage deliveries</p>
         </div>
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <Button onClick={() => setOpen(true)} className="bg-green-600 hover:bg-green-700 flex-1 sm:flex-none">
-            <Plus className="mr-2 h-4 w-4" /> 
-            Book Order
-          </Button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div className="space-y-2">
-          <label className="text-xs font-medium uppercase text-muted-foreground">From Date</label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="w-full justify-start text-left font-normal h-10 px-3">
-                <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
-                <span className="truncate">{dateRange.from ? format(dateRange.from, "MMM do, yyyy") : "Pick a date"}</span>
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={dateRange.from}
-                onSelect={(date) => date && setDateRange(prev => ({ ...prev, from: date }))}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-xs font-medium uppercase text-muted-foreground">To Date</label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="w-full justify-start text-left font-normal h-10 px-3">
-                <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
-                <span className="truncate">{dateRange.to ? format(dateRange.to, "MMM do, yyyy") : "Pick a date"}</span>
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={dateRange.to}
-                onSelect={(date) => date && setDateRange(prev => ({ ...prev, to: date }))}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-xs font-medium uppercase text-muted-foreground">Category</label>
-          <Select value={pageCategoryId} onValueChange={setPageCategoryId}>
-            <SelectTrigger className="h-10 px-3">
-              <div className="flex items-center gap-2 truncate">
-                <Layers className="h-4 w-4 text-green-600 shrink-0" />
-                <SelectValue placeholder="All Categories" />
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {categories?.map((cat: any) => (
-                <SelectItem key={cat.id} value={cat.id.toString()}>{cat.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-xs font-medium uppercase text-muted-foreground">Variety</label>
-          <Select value={pageVarietyId} onValueChange={setPageVarietyId}>
-            <SelectTrigger className="h-10 px-3">
-              <div className="flex items-center gap-2 truncate">
-                <Layers className="h-4 w-4 text-green-600 shrink-0" />
-                <SelectValue placeholder="All Varieties" />
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Varieties</SelectItem>
-              {varieties?.filter(v => pageCategoryId === "all" || v.categoryId?.toString() === pageCategoryId).map((v: any) => (
-                <SelectItem key={v.id} value={v.id.toString()}>{v.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2 sm:col-span-2 lg:col-span-1">
-          <label className="text-xs font-medium uppercase text-muted-foreground">Lot</label>
-          <Select value={pageLotId} onValueChange={setPageLotId}>
-            <SelectTrigger className="h-10 px-3">
-              <div className="flex items-center gap-2 truncate">
-                <Layers className="h-4 w-4 text-green-600 shrink-0" />
-                <SelectValue placeholder="All Lots" />
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Lots</SelectItem>
-              {lots?.filter(l => (pageCategoryId === "all" || l.categoryId?.toString() === pageCategoryId) && (pageVarietyId === "all" || l.varietyId?.toString() === pageVarietyId)).map((l: any) => (
-                <SelectItem key={l.id} value={l.id.toString()}>Lot {l.lotNumber} - {l.variety?.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input 
-            placeholder="Search customer, phone, village..." 
-            value={search} 
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-10 w-full"
-          />
-        </div>
-        <Select value={sortOption} onValueChange={setSortOption}>
-          <SelectTrigger className="w-full sm:w-[220px] h-10">
-            <SelectValue placeholder="Sort by" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="delivery-newest">Delivery Date (Newest)</SelectItem>
-            <SelectItem value="delivery-oldest">Delivery Date (Oldest)</SelectItem>
-            <SelectItem value="ready-newest">Ready Date (Newest)</SelectItem>
-            <SelectItem value="ready-oldest">Ready Date (Oldest)</SelectItem>
-          </SelectContent>
-        </Select>
-        <Button 
-          variant="outline" 
-          onClick={clearFilters}
-          className="h-10 px-4 flex items-center gap-2 text-muted-foreground hover:text-foreground"
-        >
-          <Search className="h-4 w-4" />
-          Clear Filters
+        <Button onClick={() => setOpen(true)} className="bg-green-600 hover:bg-green-700 w-full sm:w-auto">
+          <Plus className="mr-2 h-4 w-4" /> 
+          Book Order
         </Button>
       </div>
 
-      <div className="bg-card rounded-lg border shadow-sm overflow-hidden">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <Card className="border shadow-sm">
+          <CardContent className="pt-4 pb-3">
+            <div className="text-2xl font-bold text-primary">{filteredOrdersList.length}</div>
+            <p className="text-xs text-muted-foreground mt-1 font-medium">Total Orders</p>
+          </CardContent>
+        </Card>
+        <Card className="border shadow-sm">
+          <CardContent className="pt-4 pb-3">
+            <div className="text-2xl font-bold text-green-600">{filteredOrdersList.filter(o => o.status === "DELIVERED").length}</div>
+            <p className="text-xs text-muted-foreground mt-1 font-medium">Delivered</p>
+          </CardContent>
+        </Card>
+        <Card className="border shadow-sm">
+          <CardContent className="pt-4 pb-3">
+            <div className="text-2xl font-bold text-amber-600">{filteredOrdersList.filter(o => o.status === "BOOKED").length}</div>
+            <p className="text-xs text-muted-foreground mt-1 font-medium">Pending</p>
+          </CardContent>
+        </Card>
+        <Card className="border shadow-sm">
+          <CardContent className="pt-4 pb-3">
+            <div className="text-2xl font-bold text-blue-600">₹{filteredOrdersList.reduce((sum, o) => sum + Number(o.totalAmount || 0), 0).toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground mt-1 font-medium">Total Value</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="border shadow-sm">
+        <CardContent className="p-4">
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+              <div className="space-y-2">
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">From Date</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start text-left font-normal h-9 px-3 text-sm">
+                      <CalendarIcon className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
+                      <span className="truncate">{dateRange.from ? format(dateRange.from, "MMM d") : "Pick date"}</span>
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={dateRange.from}
+                      onSelect={(date) => date && setDateRange(prev => ({ ...prev, from: date }))}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">To Date</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start text-left font-normal h-9 px-3 text-sm">
+                      <CalendarIcon className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
+                      <span className="truncate">{dateRange.to ? format(dateRange.to, "MMM d") : "Pick date"}</span>
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={dateRange.to}
+                      onSelect={(date) => date && setDateRange(prev => ({ ...prev, to: date }))}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Category</label>
+                <Select value={pageCategoryId} onValueChange={setPageCategoryId}>
+                  <SelectTrigger className="h-9 px-3 text-sm">
+                    <div className="flex items-center gap-2 truncate">
+                      <Layers className="h-3.5 w-3.5 text-green-600 shrink-0" />
+                      <SelectValue placeholder="All" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {categories?.map((cat: any) => (
+                      <SelectItem key={cat.id} value={cat.id.toString()}>{cat.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Variety</label>
+                <Select value={pageVarietyId} onValueChange={setPageVarietyId}>
+                  <SelectTrigger className="h-9 px-3 text-sm">
+                    <div className="flex items-center gap-2 truncate">
+                      <Layers className="h-3.5 w-3.5 text-green-600 shrink-0" />
+                      <SelectValue placeholder="All" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Varieties</SelectItem>
+                    {varieties?.filter(v => pageCategoryId === "all" || v.categoryId?.toString() === pageCategoryId).map((v: any) => (
+                      <SelectItem key={v.id} value={v.id.toString()}>{v.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Lot</label>
+                <Select value={pageLotId} onValueChange={setPageLotId}>
+                  <SelectTrigger className="h-9 px-3 text-sm">
+                    <div className="flex items-center gap-2 truncate">
+                      <Layers className="h-3.5 w-3.5 text-green-600 shrink-0" />
+                      <SelectValue placeholder="All" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Lots</SelectItem>
+                    {lots?.filter(l => (pageCategoryId === "all" || l.categoryId?.toString() === pageCategoryId) && (pageVarietyId === "all" || l.varietyId?.toString() === pageVarietyId)).map((l: any) => (
+                      <SelectItem key={l.id} value={l.id.toString()}>Lot {l.lotNumber}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input 
+                  placeholder="Search by customer, phone, or village..." 
+                  value={search} 
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-9 h-9 text-sm"
+                />
+              </div>
+              <Select value={sortOption} onValueChange={setSortOption}>
+                <SelectTrigger className="w-full sm:w-[200px] h-9 text-sm">
+                  <SelectValue placeholder="Sort" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="delivery-newest">Newest Delivery</SelectItem>
+                  <SelectItem value="delivery-oldest">Oldest Delivery</SelectItem>
+                  <SelectItem value="ready-newest">Newest Ready</SelectItem>
+                  <SelectItem value="ready-oldest">Oldest Ready</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button 
+                variant="outline" 
+                onClick={clearFilters}
+                className="h-9 px-3 text-sm"
+              >
+                Reset
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border shadow-sm overflow-hidden">
         <div className="hidden md:block">
           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Customer / Village</TableHead>
-                <TableHead>Dates (Sown / Ready)</TableHead>
-                <TableHead>Quantity</TableHead>
-                <TableHead>Advance</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Comment</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+            <TableHeader className="bg-muted/50">
+              <TableRow className="border-b hover:bg-transparent">
+                <TableHead className="font-semibold text-xs uppercase tracking-wide">Customer / Village</TableHead>
+                <TableHead className="font-semibold text-xs uppercase tracking-wide">Dates (Sown / Ready)</TableHead>
+                <TableHead className="font-semibold text-xs uppercase tracking-wide">Quantity</TableHead>
+                <TableHead className="font-semibold text-xs uppercase tracking-wide">Advance</TableHead>
+                <TableHead className="font-semibold text-xs uppercase tracking-wide">Amount</TableHead>
+                <TableHead className="font-semibold text-xs uppercase tracking-wide">Status</TableHead>
+                <TableHead className="text-right font-semibold text-xs uppercase tracking-wide">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedOrders.map((order: any) => (
-                <TableRow key={order.id}>
-                  <TableCell>
-                    <div className="font-bold">{order.customerName}</div>
-                    {order.village && (
-                      <div className="text-[10px] text-muted-foreground flex items-center gap-1 mt-0.5">
-                        <MapPin className="h-2.5 w-2.5" />
-                        {order.village}
-                      </div>
-                    )}
-                    <div className="text-xs text-muted-foreground">{order.phone}</div>
+              {paginatedOrders.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                    No orders found
                   </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col">
-                      <div className="text-[10px] text-muted-foreground/60 leading-tight">
-                        Sown: {order.lot?.sowingDate ? format(parseISO(order.lot.sowingDate), "dd MMM yy") : (order.sowingDate ? format(parseISO(order.sowingDate), "dd MMM yy") : "-")}
-                      </div>
-                      <div className="text-xs font-semibold text-foreground leading-tight">
-                        Ready: {order.lot?.expectedReadyDate ? format(parseISO(order.lot.expectedReadyDate), "dd MMM yy") : (order.deliveryDate ? format(parseISO(order.deliveryDate), "dd MMM yy") : "-")}
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col">
-                      <span className="font-medium">{Number(order.bookedQty).toLocaleString()}</span>
-                      {order.lotStatus !== "PENDING_LOT" && (
-                        <span className="text-[10px] text-muted-foreground">
-                          Alloc: {Number(order.allocatedQuantity).toLocaleString()}
-                        </span>
+                </TableRow>
+              ) : (
+                paginatedOrders.map((order: any) => (
+                  <TableRow key={order.id} className="hover:bg-muted/40">
+                    <TableCell className="py-3">
+                      <div className="font-bold text-sm">{order.customerName}</div>
+                      {order.village && (
+                        <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                          <MapPin className="h-3 w-3" />
+                          {order.village}
+                        </div>
                       )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col">
-                      <span className="font-medium text-amber-600">₹{Number(order.advanceAmount).toLocaleString()}</span>
-                      <span className="text-[10px] text-muted-foreground">
-                        {order.paymentMode}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col">
-                      <span className="font-medium text-primary">₹{Number(order.totalAmount).toLocaleString()}</span>
-                      <span className="text-[10px] text-muted-foreground font-medium text-red-500">
-                        Bal: ₹{Number(order.remainingBalance).toLocaleString()}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="max-w-[150px] truncate text-xs text-muted-foreground" title={order.remarks || ""}>
-                      {order.remarks || "-"}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col items-start gap-1">
-                      <div className="flex items-center gap-2">
-                        <Badge variant={order.status === "DELIVERED" ? "default" : "outline"} data-testid={`status-badge-${order.id}`}>
+                      <div className="text-xs text-muted-foreground">{order.phone}</div>
+                    </TableCell>
+                    <TableCell className="py-3">
+                      <div className="flex flex-col gap-0.5">
+                        <div className="text-xs text-muted-foreground">
+                          Sown: <span className="font-medium">{order.lot?.sowingDate ? format(parseISO(order.lot.sowingDate), "dd MMM") : (order.sowingDate ? format(parseISO(order.sowingDate), "dd MMM") : "-")}</span>
+                        </div>
+                        <div className="text-xs">
+                          Ready: <span className="font-semibold text-foreground">{order.lot?.expectedReadyDate ? format(parseISO(order.lot.expectedReadyDate), "dd MMM yy") : (order.deliveryDate ? format(parseISO(order.deliveryDate), "dd MMM yy") : "-")}</span>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-3">
+                      <div className="flex flex-col gap-0.5">
+                        <span className="font-bold text-sm">{Number(order.bookedQty).toLocaleString()}</span>
+                        {order.lotStatus !== "PENDING_LOT" && (
+                          <span className="text-xs text-muted-foreground">
+                            Alloc: {Number(order.allocatedQuantity).toLocaleString()}
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-3">
+                      <div className="flex flex-col gap-0.5">
+                        <span className="font-bold text-amber-600">₹{Number(order.advanceAmount).toLocaleString()}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {order.paymentMode}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-3">
+                      <div className="flex flex-col gap-0.5">
+                        <span className="font-bold text-primary">₹{Number(order.totalAmount).toLocaleString()}</span>
+                        <span className="text-xs font-medium text-red-600">
+                          Bal: ₹{Number(order.remainingBalance).toLocaleString()}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-3">
+                      <div className="flex flex-col items-start gap-1">
+                        <Badge 
+                          className={order.status === "DELIVERED" ? "bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900 dark:text-green-300" : "bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-900 dark:text-amber-300"} 
+                          data-testid={`status-badge-${order.id}`}
+                        >
                           {order.status}
                         </Badge>
                         {order.status === "DELIVERED" && (
@@ -1603,99 +1636,104 @@ export default function Orders() {
                             variant="ghost"
                             size="sm"
                             onClick={() => undoDelivery(order.id)}
-                            className="h-6 text-[10px] uppercase font-bold text-muted-foreground hover:text-destructive"
+                            className="h-5 text-[10px] uppercase font-bold text-muted-foreground hover:text-destructive px-1"
                             data-testid={`button-undo-order-${order.id}`}
                           >
                             Undo
                           </Button>
                         )}
+                        {order.lotId ? (
+                          <Badge variant="outline" className="text-[10px] h-5 bg-green-50 dark:bg-green-900/10 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800" data-testid={`lot-number-${order.id}`}>
+                            Lot {order.lot?.lotNumber}
+                          </Badge>
+                        ) : (order.status !== "DELIVERED" && order.lotStatus === "PENDING_LOT") ? (
+                          <Badge variant="destructive" className="bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-900 dark:text-red-300 text-[10px] h-5" data-testid={`lot-pending-${order.id}`}>
+                            Lot Pending
+                          </Badge>
+                        ) : null}
                       </div>
-                      {order.lotId ? (
-                        <Badge variant="outline" className="text-[10px] h-5" data-testid={`lot-number-${order.id}`}>
-                          {order.lot?.lotNumber}
-                        </Badge>
-                      ) : (order.status !== "DELIVERED" && order.lotStatus === "PENDING_LOT") ? (
-                        <Badge variant="destructive" className="bg-red-500 hover:bg-red-600 text-[10px] h-5" data-testid={`lot-pending-${order.id}`}>
-                          Lot Pending
-                        </Badge>
-                      ) : null}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button variant="outline" size="icon" onClick={() => handlePrint(order)} className="h-8 w-8" title="Print Invoice" data-testid={`button-print-order-${order.id}`}><Printer className="h-4 w-4 text-primary" /></Button>
-                      {order.status !== "DELIVERED" && order.status !== "CANCELLED" && order.lotId && (
-                        <Button 
-                          variant="outline" 
-                          size="icon" 
-                          onClick={() => {
-                            setSelectedOrderForDelivery(order);
-                            deliveryForm.reset({
-                              actualDeliveryDate: new Date(),
-                              actualDeliveryTime: format(new Date(), "HH:mm"),
-                              deliveredQty: order.bookedQty,
-                              vehicleDetails: order.vehicleDetails || "",
-                              driverName: order.driverName || "",
-                              driverPhone: order.driverPhone || "",
-                            });
-                            setDeliveryDialogOpen(true);
-                          }} 
-                          className="h-8 w-8 text-green-600 border-green-200 hover:bg-green-50"
-                          title="Mark as Delivered"
-                          data-testid={`button-deliver-order-${order.id}`}
-                        >
-                          <Truck className="h-4 w-4" />
+                    </TableCell>
+                    <TableCell className="py-3 text-right">
+                      <div className="flex justify-end gap-1">
+                        <Button variant="ghost" size="sm" onClick={() => handlePrint(order)} className="h-8 w-8 p-0" title="Print Invoice" data-testid={`button-print-order-${order.id}`}><Printer className="h-4 w-4 text-primary" /></Button>
+                        {order.status !== "DELIVERED" && order.status !== "CANCELLED" && order.lotId && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => {
+                              setSelectedOrderForDelivery(order);
+                              deliveryForm.reset({
+                                actualDeliveryDate: new Date(),
+                                actualDeliveryTime: format(new Date(), "HH:mm"),
+                                deliveredQty: order.bookedQty,
+                                vehicleDetails: order.vehicleDetails || "",
+                                driverName: order.driverName || "",
+                                driverPhone: order.driverPhone || "",
+                              });
+                              setDeliveryDialogOpen(true);
+                            }} 
+                            className="h-8 w-8 p-0 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+                            title="Mark as Delivered"
+                            data-testid={`button-deliver-order-${order.id}`}
+                          >
+                            <Truck className="h-4 w-4" />
+                          </Button>
+                        )}
+                        <Button variant="ghost" size="sm" onClick={() => {
+                          setPrintingOrder(order);
+                          setTimeout(() => generateInvoice(order), 100);
+                        }} className="h-8 w-8 p-0" data-testid={`button-export-order-${order.id}`}><FileSpreadsheet className="h-4 w-4 text-blue-600" /></Button>
+                        <Button variant="ghost" size="sm" onClick={() => { 
+                          const bookingData = {
+                            ...order,
+                            categoryId: (order.categoryId || order.lot?.categoryId)?.toString() || "",
+                            varietyId: (order.varietyId || order.lot?.varietyId)?.toString() || "",
+                            lotId: order.lotId?.toString() || "none",
+                            deliveryDate: order.deliveryDate ? parseISO(order.deliveryDate) : new Date(),
+                            sowingDate: order.sowingDate ? parseISO(order.sowingDate) : undefined,
+                            bookedQty: Number(order.bookedQty),
+                            perUnitPrice: Number(order.perUnitPrice),
+                            totalAmount: Number(order.totalAmount),
+                            advanceAmount: Number(order.advanceAmount),
+                            discount: Number(order.discount || 0),
+                          };
+                          setEditingOrder(order);
+                          setSelectedCategoryId(bookingData.categoryId);
+                          setSelectedVarietyId(bookingData.varietyId);
+                          form.reset(bookingData);
+                          setTimeout(() => {
+                            form.setValue("lotId", bookingData.lotId);
+                          }, 0);
+                          setStep(4);
+                          setOpen(true); 
+                        }} className="h-8 w-8 p-0" data-testid={`button-edit-order-${order.id}`}>
+                          <Edit2 className="h-4 w-4 text-muted-foreground" />
                         </Button>
-                      )}
-                      <Button variant="outline" size="icon" onClick={() => {
-                        setPrintingOrder(order);
-                        setTimeout(() => generateInvoice(order), 100);
-                      }} className="h-8 w-8" data-testid={`button-export-order-${order.id}`}><FileSpreadsheet className="h-4 w-4 text-green-600" /></Button>
-                      <Button variant="outline" size="icon" onClick={() => { 
-                        const bookingData = {
-                          ...order,
-                          categoryId: (order.categoryId || order.lot?.categoryId)?.toString() || "",
-                          varietyId: (order.varietyId || order.lot?.varietyId)?.toString() || "",
-                          lotId: order.lotId?.toString() || "none",
-                          deliveryDate: order.deliveryDate ? parseISO(order.deliveryDate) : new Date(),
-                          sowingDate: order.sowingDate ? parseISO(order.sowingDate) : undefined,
-                          bookedQty: Number(order.bookedQty),
-                          perUnitPrice: Number(order.perUnitPrice),
-                          totalAmount: Number(order.totalAmount),
-                          advanceAmount: Number(order.advanceAmount),
-                          discount: Number(order.discount || 0),
-                        };
-                        setEditingOrder(order);
-                        setSelectedCategoryId(bookingData.categoryId);
-                        setSelectedVarietyId(bookingData.varietyId);
-                        form.reset(bookingData);
-                        // Ensure lotId is set after reset to trigger dependencies if needed
-                        setTimeout(() => {
-                          form.setValue("lotId", bookingData.lotId);
-                        }, 0);
-                        setStep(4);
-                        setOpen(true); 
-                      }} className="h-8 w-8" data-testid={`button-edit-order-${order.id}`}>
-                        <Edit2 className="h-4 w-4 text-muted-foreground" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </div>
-        <div className="md:hidden space-y-4">
-          {paginatedOrders.map((order: any) => (
-            <div key={order.id} className="bg-card border rounded-lg p-4 space-y-3 shadow-sm">
-              <div className="flex justify-between items-start">
-                <div className="min-w-0">
-                  <h3 className="font-bold text-lg truncate">{order.customerName}</h3>
-                  <p className="text-sm font-medium text-green-700 dark:text-green-400">{order.phone}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant={order.status === "DELIVERED" ? "default" : "outline"} className="shrink-0" data-testid={`status-badge-mobile-${order.id}`}>
-                    {order.status}
+        <div className="md:hidden space-y-3">
+          {paginatedOrders.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">No orders found</div>
+          ) : (
+            paginatedOrders.map((order: any) => (
+              <div key={order.id} className="bg-card border rounded-lg p-4 space-y-3 shadow-sm">
+                <div className="flex justify-between items-start gap-2">
+                  <div className="min-w-0">
+                    <h3 className="font-bold text-base truncate">{order.customerName}</h3>
+                    <p className="text-xs text-muted-foreground">{order.phone}</p>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Badge 
+                      className={order.status === "DELIVERED" ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300" : "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300"} 
+                      data-testid={`status-badge-mobile-${order.id}`}
+                    >
+                      {order.status}
                   </Badge>
                   {order.status === "DELIVERED" && (
                     <Button
@@ -1809,7 +1847,8 @@ export default function Orders() {
                 </Button>
               </div>
             </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
       
