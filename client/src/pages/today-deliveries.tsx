@@ -751,15 +751,14 @@ export default function TodayDeliveriesPage() {
                           <FileSpreadsheet className="h-4 w-4 text-green-600" />
                         </Button>
                         {order.status === "DELIVERED" ? (
-                          <div className="flex items-center justify-end gap-2">
+                          <div className="flex items-center justify-end gap-1">
                             <Badge className="bg-green-100 text-green-700 border-green-200 hover:bg-green-100" data-testid={`status-delivered-${order.id}`}>
                               <CheckCircle className="w-3 h-3 mr-1" /> Delivered
                             </Badge>
                             <Button
-                              variant="ghost"
                               size="sm"
                               onClick={() => undoDelivery(order.id)}
-                              className="h-8 text-[10px] uppercase font-bold text-muted-foreground hover:text-destructive"
+                              className="h-8 text-[10px] uppercase font-bold bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200"
                               data-testid={`button-undo-${order.id}`}
                             >
                               Undo

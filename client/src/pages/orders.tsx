@@ -1624,7 +1624,7 @@ export default function Orders() {
                       </div>
                     </TableCell>
                     <TableCell className="py-3">
-                      <div className="flex flex-col items-start gap-1">
+                      <div className="flex flex-col items-start gap-0.5">
                         <Badge 
                           className={order.status === "DELIVERED" ? "bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900 dark:text-green-300" : "bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-900 dark:text-amber-300"} 
                           data-testid={`status-badge-${order.id}`}
@@ -1633,10 +1633,9 @@ export default function Orders() {
                         </Badge>
                         {order.status === "DELIVERED" && (
                           <Button
-                            variant="ghost"
                             size="sm"
                             onClick={() => undoDelivery(order.id)}
-                            className="h-5 text-[10px] uppercase font-bold text-muted-foreground hover:text-destructive px-1"
+                            className="h-6 text-[10px] uppercase font-bold bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200 px-2"
                             data-testid={`button-undo-order-${order.id}`}
                           >
                             Undo
@@ -1654,7 +1653,7 @@ export default function Orders() {
                       </div>
                     </TableCell>
                     <TableCell className="py-3 text-right">
-                      <div className="flex justify-end gap-1">
+                      <div className="flex justify-end gap-0.5">
                         <Button variant="ghost" size="sm" onClick={() => handlePrint(order)} className="h-8 w-8 p-0" title="Print Invoice" data-testid={`button-print-order-${order.id}`}><Printer className="h-4 w-4 text-primary" /></Button>
                         {order.status !== "DELIVERED" && order.status !== "CANCELLED" && order.lotId && (
                           <Button 
