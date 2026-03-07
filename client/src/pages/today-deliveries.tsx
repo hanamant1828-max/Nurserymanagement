@@ -727,6 +727,7 @@ export default function TodayDeliveriesPage() {
                           <Badge
                             variant="destructive"
                             className="font-black text-[10px] uppercase py-0.5 whitespace-nowrap"
+                            data-testid={`status-lot-pending-${order.id}`}
                           >
                             Lot Pending
                           </Badge>
@@ -736,6 +737,7 @@ export default function TodayDeliveriesPage() {
                           size="icon"
                           className="h-8 w-8"
                           onClick={() => handlePrint(order)}
+                          data-testid={`button-print-${order.id}`}
                         >
                           <Printer className="h-4 w-4 text-primary" />
                         </Button>
@@ -744,12 +746,13 @@ export default function TodayDeliveriesPage() {
                           size="icon"
                           className="h-8 w-8"
                           onClick={() => generateInvoice(order)}
+                          data-testid={`button-export-${order.id}`}
                         >
                           <FileSpreadsheet className="h-4 w-4 text-green-600" />
                         </Button>
                         {order.status === "DELIVERED" ? (
                           <div className="flex items-center justify-end gap-2">
-                            <Badge className="bg-green-100 text-green-700 border-green-200 hover:bg-green-100">
+                            <Badge className="bg-green-100 text-green-700 border-green-200 hover:bg-green-100" data-testid={`status-delivered-${order.id}`}>
                               <CheckCircle className="w-3 h-3 mr-1" /> Delivered
                             </Badge>
                             <Button
@@ -757,6 +760,7 @@ export default function TodayDeliveriesPage() {
                               size="sm"
                               onClick={() => undoDelivery(order.id)}
                               className="h-8 text-[10px] uppercase font-bold text-muted-foreground hover:text-destructive"
+                              data-testid={`button-undo-${order.id}`}
                             >
                               Undo
                             </Button>
@@ -766,6 +770,7 @@ export default function TodayDeliveriesPage() {
                             size="sm"
                             onClick={() => markDelivered(order.id)}
                             className="bg-green-600 hover:bg-green-700 shadow-sm font-bold h-8"
+                            data-testid={`button-mark-delivered-${order.id}`}
                           >
                             Mark Delivered
                           </Button>
@@ -857,14 +862,15 @@ export default function TodayDeliveriesPage() {
                         </div>
                       {order.status === "DELIVERED" ? (
                         <div className="flex items-center gap-2">
-                          <Badge className="bg-green-100 text-green-700 border-green-200">
+                          <Badge className="bg-green-100 text-green-700 border-green-200" data-testid={`status-delivered-mobile-${order.id}`}>
                             Delivered
                           </Badge>
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => undoDelivery(order.id)}
-                            className="h-8 text-[10px] font-bold text-muted-foreground"
+                            className="h-8 text-[10px] font-bold text-muted-foreground hover:text-destructive"
+                            data-testid={`button-undo-mobile-${order.id}`}
                           >
                             Undo
                           </Button>
@@ -874,6 +880,7 @@ export default function TodayDeliveriesPage() {
                           size="sm"
                           onClick={() => markDelivered(order.id)}
                           className="bg-green-600 hover:bg-green-700 font-bold"
+                          data-testid={`button-deliver-now-${order.id}`}
                         >
                           Deliver Now
                         </Button>
