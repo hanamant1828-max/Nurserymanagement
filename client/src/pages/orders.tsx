@@ -1636,24 +1636,12 @@ export default function Orders() {
                       </div>
                     </TableCell>
                     <TableCell className="py-4">
-                      <div className="flex flex-col items-start gap-1">
-                        <Badge 
-                          className={order.status === "DELIVERED" ? "bg-green-200 text-green-900 hover:bg-green-300 dark:bg-green-800 dark:text-green-100 dark:hover:bg-green-700 font-semibold text-xs px-3 py-1" : "bg-amber-200 text-amber-900 hover:bg-amber-300 dark:bg-amber-800 dark:text-amber-100 dark:hover:bg-amber-700 font-semibold text-xs px-3 py-1"} 
-                          data-testid={`status-badge-${order.id}`}
-                        >
-                          {order.status}
-                        </Badge>
-                        {order.status === "DELIVERED" && (
-                          <Button
-                            size="sm"
-                            onClick={() => undoDelivery(order.id)}
-                            className="h-7 text-[10px] uppercase font-bold bg-gray-200 hover:bg-gray-300 text-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-100 px-2"
-                            data-testid={`button-undo-order-${order.id}`}
-                          >
-                            Undo
-                          </Button>
-                        )}
-                      </div>
+                      <Badge 
+                        className={order.status === "DELIVERED" ? "bg-green-200 text-green-900 hover:bg-green-300 dark:bg-green-800 dark:text-green-100 dark:hover:bg-green-700 font-semibold text-xs px-3 py-1" : "bg-amber-200 text-amber-900 hover:bg-amber-300 dark:bg-amber-800 dark:text-amber-100 dark:hover:bg-amber-700 font-semibold text-xs px-3 py-1"} 
+                        data-testid={`status-badge-${order.id}`}
+                      >
+                        {order.status}
+                      </Badge>
                     </TableCell>
                     <TableCell className="py-4">
                       {order.lotId ? (
@@ -1668,17 +1656,17 @@ export default function Orders() {
                         <span className="text-xs text-muted-foreground">-</span>
                       )}
                     </TableCell>
-                    <TableCell className="py-4 text-right">
-                      <div className="flex justify-end gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+                    <TableCell className="py-4">
+                      <div className="flex flex-wrap justify-end gap-2">
                         <Button 
                           variant="ghost" 
                           size="sm" 
                           onClick={() => handlePrint(order)} 
-                          className="h-9 w-9 p-0 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400" 
+                          className="h-8 px-2 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 text-xs font-medium" 
                           title="Print Invoice" 
                           data-testid={`button-print-order-${order.id}`}
                         >
-                          <Printer className="h-4 w-4" />
+                          <Printer className="h-4 w-4 mr-1" /> Print
                         </Button>
                         {order.status !== "DELIVERED" && order.status !== "CANCELLED" && order.lotId && (
                           <Button 
@@ -1696,11 +1684,11 @@ export default function Orders() {
                               });
                               setDeliveryDialogOpen(true);
                             }} 
-                            className="h-9 w-9 p-0 hover:bg-green-100 dark:hover:bg-green-900/30 hover:text-green-700 dark:hover:text-green-400"
+                            className="h-8 px-2 hover:bg-green-100 dark:hover:bg-green-900/30 hover:text-green-700 dark:hover:text-green-400 text-xs font-medium"
                             title="Mark as Delivered"
                             data-testid={`button-deliver-order-${order.id}`}
                           >
-                            <Truck className="h-4 w-4" />
+                            <Truck className="h-4 w-4 mr-1" /> Deliver
                           </Button>
                         )}
                         <Button 
@@ -1710,11 +1698,11 @@ export default function Orders() {
                             setPrintingOrder(order);
                             setTimeout(() => generateInvoice(order), 100);
                           }} 
-                          className="h-9 w-9 p-0 hover:bg-purple-100 dark:hover:bg-purple-900/30 hover:text-purple-600 dark:hover:text-purple-400" 
+                          className="h-8 px-2 hover:bg-purple-100 dark:hover:bg-purple-900/30 hover:text-purple-600 dark:hover:text-purple-400 text-xs font-medium" 
                           title="Export as PDF"
                           data-testid={`button-export-order-${order.id}`}
                         >
-                          <FileSpreadsheet className="h-4 w-4" />
+                          <FileSpreadsheet className="h-4 w-4 mr-1" /> PDF
                         </Button>
                         <Button 
                           variant="ghost" 
@@ -1743,12 +1731,23 @@ export default function Orders() {
                             setStep(4);
                             setOpen(true); 
                           }} 
-                          className="h-9 w-9 p-0 hover:bg-gray-100 dark:hover:bg-gray-900/30 hover:text-gray-700 dark:hover:text-gray-400" 
+                          className="h-8 px-2 hover:bg-gray-100 dark:hover:bg-gray-900/30 hover:text-gray-700 dark:hover:text-gray-400 text-xs font-medium" 
                           title="Edit Order"
                           data-testid={`button-edit-order-${order.id}`}
                         >
-                          <Edit2 className="h-4 w-4" />
+                          <Edit2 className="h-4 w-4 mr-1" /> Edit
                         </Button>
+                        {order.status === "DELIVERED" && (
+                          <Button
+                            size="sm"
+                            onClick={() => undoDelivery(order.id)}
+                            className="h-8 px-2 text-xs font-bold bg-red-100 hover:bg-red-200 text-red-700 dark:bg-red-900/30 dark:hover:bg-red-900/50 dark:text-red-300"
+                            data-testid={`button-undo-order-${order.id}`}
+                            title="Undo Delivery"
+                          >
+                            ↶ Undo
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -1774,25 +1773,12 @@ export default function Orders() {
                     <h3 className="font-bold text-base truncate">{order.customerName}</h3>
                     <p className="text-xs text-muted-foreground font-medium">{order.phone}</p>
                   </div>
-                  <div className="flex items-center gap-1 shrink-0">
-                    <Badge 
-                      className={order.status === "DELIVERED" ? "bg-green-200 text-green-900 dark:bg-green-800 dark:text-green-100 font-semibold" : "bg-amber-200 text-amber-900 dark:bg-amber-800 dark:text-amber-100 font-semibold"} 
-                      data-testid={`status-badge-mobile-${order.id}`}
-                    >
-                      {order.status}
-                    </Badge>
-                    {order.status === "DELIVERED" && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => undoDelivery(order.id)}
-                        className="h-6 text-[10px] font-bold text-muted-foreground hover:text-destructive"
-                        data-testid={`button-undo-mobile-order-${order.id}`}
-                      >
-                        Undo
-                      </Button>
-                    )}
-                  </div>
+                  <Badge 
+                    className={order.status === "DELIVERED" ? "bg-green-200 text-green-900 dark:bg-green-800 dark:text-green-100 font-semibold" : "bg-amber-200 text-amber-900 dark:bg-amber-800 dark:text-amber-100 font-semibold"} 
+                    data-testid={`status-badge-mobile-${order.id}`}
+                  >
+                    {order.status}
+                  </Badge>
                 </div>
 
               <div className="grid grid-cols-2 gap-3 text-sm">
@@ -1832,65 +1818,76 @@ export default function Orders() {
                 </div>
               )}
 
-              <div className="flex justify-end gap-2 pt-2 border-t">
-                <Button variant="outline" size="sm" onClick={() => handlePrint(order)} className="flex-1 h-9" data-testid={`button-print-mobile-order-${order.id}`}>
-                  <Printer className="h-4 w-4 mr-2 text-primary" /> Print
-                </Button>
-                {order.status !== "DELIVERED" && order.status !== "CANCELLED" && order.lotId && (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => {
-                      setSelectedOrderForDelivery(order);
-                      deliveryForm.reset({
-                        actualDeliveryDate: new Date(),
-                        actualDeliveryTime: format(new Date(), "HH:mm"),
-                        deliveredQty: order.bookedQty,
-                        vehicleDetails: order.vehicleDetails || "",
-                        driverName: order.driverName || "",
-                        driverPhone: order.driverPhone || "",
-                      });
-                      setDeliveryDialogOpen(true);
-                    }} 
-                    className="flex-1 h-9 text-green-600 border-green-200"
-                    data-testid={`button-deliver-mobile-order-${order.id}`}
+              <div className="flex flex-col gap-2 pt-2 border-t">
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => handlePrint(order)} className="flex-1 h-9" data-testid={`button-print-mobile-order-${order.id}`}>
+                    <Printer className="h-4 w-4 mr-2 text-primary" /> Print
+                  </Button>
+                  {order.status !== "DELIVERED" && order.status !== "CANCELLED" && order.lotId && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => {
+                        setSelectedOrderForDelivery(order);
+                        deliveryForm.reset({
+                          actualDeliveryDate: new Date(),
+                          actualDeliveryTime: format(new Date(), "HH:mm"),
+                          deliveredQty: order.bookedQty,
+                          vehicleDetails: order.vehicleDetails || "",
+                          driverName: order.driverName || "",
+                          driverPhone: order.driverPhone || "",
+                        });
+                        setDeliveryDialogOpen(true);
+                      }} 
+                      className="flex-1 h-9 text-green-600 border-green-200"
+                      data-testid={`button-deliver-mobile-order-${order.id}`}
+                    >
+                      <Truck className="h-4 w-4 mr-2" /> Deliver
+                    </Button>
+                  )}
+                  <Button variant="outline" size="sm" onClick={() => {
+                    setPrintingOrder(order);
+                    setTimeout(() => generateInvoice(order), 100);
+                  }} className="flex-1 h-9" data-testid={`button-export-mobile-order-${order.id}`}>
+                    <FileSpreadsheet className="h-4 w-4 mr-2 text-blue-600" /> PDF
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => { 
+                    const bookingData = {
+                      ...order,
+                      categoryId: (order.categoryId || order.lot?.categoryId)?.toString() || "",
+                      varietyId: (order.varietyId || order.lot?.varietyId)?.toString() || "",
+                      lotId: order.lotId?.toString() || "none",
+                      deliveryDate: order.deliveryDate ? parseISO(order.deliveryDate) : new Date(),
+                      sowingDate: order.sowingDate ? parseISO(order.sowingDate) : undefined,
+                      bookedQty: Number(order.bookedQty),
+                      perUnitPrice: Number(order.perUnitPrice),
+                      totalAmount: Number(order.totalAmount),
+                      advanceAmount: Number(order.advanceAmount),
+                      discount: Number(order.discount || 0),
+                    };
+                    setEditingOrder(order);
+                    setSelectedCategoryId(bookingData.categoryId);
+                    setSelectedVarietyId(bookingData.varietyId);
+                    form.reset(bookingData);
+                    setTimeout(() => {
+                      form.setValue("lotId", bookingData.lotId);
+                    }, 0);
+                    setStep(4);
+                    setOpen(true);
+                  }} className="h-9 w-9 p-0" data-testid={`button-edit-mobile-order-${order.id}`}>
+                    <Edit2 className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                </div>
+                {order.status === "DELIVERED" && (
+                  <Button
+                    size="sm"
+                    onClick={() => undoDelivery(order.id)}
+                    className="w-full h-9 text-xs font-bold bg-red-100 hover:bg-red-200 text-red-700 dark:bg-red-900/30 dark:hover:bg-red-900/50 dark:text-red-300"
+                    data-testid={`button-undo-mobile-order-${order.id}`}
                   >
-                    <Truck className="h-4 w-4 mr-2" /> Deliver
+                    ↶ Undo Delivery
                   </Button>
                 )}
-                <Button variant="outline" size="sm" onClick={() => {
-                  setPrintingOrder(order);
-                  setTimeout(() => generateInvoice(order), 100);
-                }} className="flex-1 h-9" data-testid={`button-export-mobile-order-${order.id}`}>
-                  <FileSpreadsheet className="h-4 w-4 mr-2 text-green-600" /> PDF
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => { 
-                  const bookingData = {
-                    ...order,
-                    categoryId: (order.categoryId || order.lot?.categoryId)?.toString() || "",
-                    varietyId: (order.varietyId || order.lot?.varietyId)?.toString() || "",
-                    lotId: order.lotId?.toString() || "none",
-                    deliveryDate: order.deliveryDate ? parseISO(order.deliveryDate) : new Date(),
-                    sowingDate: order.sowingDate ? parseISO(order.sowingDate) : undefined,
-                    bookedQty: Number(order.bookedQty),
-                    perUnitPrice: Number(order.perUnitPrice),
-                    totalAmount: Number(order.totalAmount),
-                    advanceAmount: Number(order.advanceAmount),
-                    discount: Number(order.discount || 0),
-                  };
-                  setEditingOrder(order);
-                  setSelectedCategoryId(bookingData.categoryId);
-                  setSelectedVarietyId(bookingData.varietyId);
-                  form.reset(bookingData);
-                  // Ensure lotId is set after reset to trigger dependencies if needed
-                  setTimeout(() => {
-                    form.setValue("lotId", bookingData.lotId);
-                  }, 0);
-                  setStep(4);
-                  setOpen(true);
-                }} className="h-9 w-9 p-0" data-testid={`button-edit-mobile-order-${order.id}`}>
-                  <Edit2 className="h-4 w-4 text-muted-foreground" />
-                </Button>
               </div>
             </div>
             ))
