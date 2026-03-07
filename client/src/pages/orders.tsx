@@ -1553,7 +1553,7 @@ export default function Orders() {
         </CardContent>
       </Card>
 
-      <Card className="border shadow-sm overflow-hidden">
+      <Card className="border shadow-sm overflow-hidden" data-testid="orders-table-card">
         <div className="hidden md:block">
           <Table>
             <TableHeader className="bg-muted/50">
@@ -1850,7 +1850,7 @@ export default function Orders() {
             ))
           )}
         </div>
-      </div>
+      </Card>
       
       <div className="flex flex-col sm:flex-row justify-between items-center py-4 gap-4">
         <div className="flex items-center gap-2">
