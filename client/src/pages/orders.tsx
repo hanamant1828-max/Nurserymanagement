@@ -1564,13 +1564,14 @@ export default function Orders() {
                 <TableHead className="font-semibold text-xs uppercase tracking-wide">Advance</TableHead>
                 <TableHead className="font-semibold text-xs uppercase tracking-wide">Amount</TableHead>
                 <TableHead className="font-semibold text-xs uppercase tracking-wide">Status</TableHead>
+                <TableHead className="font-semibold text-xs uppercase tracking-wide">Lot</TableHead>
                 <TableHead className="text-right font-semibold text-xs uppercase tracking-wide">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {paginatedOrders.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                     No orders found
                   </TableCell>
                 </TableRow>
@@ -1641,16 +1642,20 @@ export default function Orders() {
                             Undo
                           </Button>
                         )}
-                        {order.lotId ? (
-                          <Badge variant="outline" className="text-[10px] h-5 bg-green-50 dark:bg-green-900/10 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800" data-testid={`lot-number-${order.id}`}>
-                            Lot {order.lot?.lotNumber}
-                          </Badge>
-                        ) : (order.status !== "DELIVERED" && order.lotStatus === "PENDING_LOT") ? (
-                          <Badge variant="destructive" className="bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-900 dark:text-red-300 text-[10px] h-5" data-testid={`lot-pending-${order.id}`}>
-                            Lot Pending
-                          </Badge>
-                        ) : null}
                       </div>
+                    </TableCell>
+                    <TableCell className="py-3">
+                      {order.lotId ? (
+                        <Badge variant="outline" className="text-[10px] h-5 bg-green-50 dark:bg-green-900/10 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800" data-testid={`lot-number-${order.id}`}>
+                          Lot {order.lot?.lotNumber}
+                        </Badge>
+                      ) : (order.status !== "DELIVERED" && order.lotStatus === "PENDING_LOT") ? (
+                        <Badge variant="destructive" className="bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-900 dark:text-red-300 text-[10px] h-5" data-testid={`lot-pending-${order.id}`}>
+                          Lot Pending
+                        </Badge>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">-</span>
+                      )}
                     </TableCell>
                     <TableCell className="py-3 text-right">
                       <div className="flex justify-end gap-0.5">

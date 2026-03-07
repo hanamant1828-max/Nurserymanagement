@@ -633,6 +633,7 @@ export default function TodayDeliveriesPage() {
             <TableRow>
               <TableHead>Customer</TableHead>
               <TableHead>Plant Details</TableHead>
+              <TableHead>Lot</TableHead>
               <TableHead className="text-right">Qty</TableHead>
               <TableHead className="text-right">Rate</TableHead>
               <TableHead className="text-right">Total</TableHead>
@@ -644,7 +645,7 @@ export default function TodayDeliveriesPage() {
             {filteredOrders.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={7}
+                  colSpan={8}
                   className="h-32 text-center text-muted-foreground"
                 >
                   <div className="flex flex-col items-center gap-2">
@@ -696,11 +697,17 @@ export default function TodayDeliveriesPage() {
                           <span className="text-xs text-muted-foreground">
                             {variety?.name}
                           </span>
-                          <span className="text-[10px] font-mono bg-muted px-1 rounded self-start mt-0.5">
-                            {lot?.lotNumber}
-                          </span>
                         </div>
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      {lot?.lotNumber ? (
+                        <Badge variant="outline" className="text-[10px] h-5 bg-green-50 dark:bg-green-900/10 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800" data-testid={`lot-number-${order.id}`}>
+                          Lot {lot?.lotNumber}
+                        </Badge>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">-</span>
+                      )}
                     </TableCell>
                     <TableCell className="text-right font-black text-primary">
                       {order.bookedQty}
