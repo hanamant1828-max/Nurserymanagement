@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { InvoicePrint } from "@/components/invoice-print";
 import { generateInvoice } from "@/lib/invoice";
-import { Receipt, Printer, Edit2, Plus, ShoppingCart, CheckCircle, Layers, Check, ChevronsUpDown, Loader2, Search, ChevronLeft, ChevronRight, MapPin, Calendar as CalendarIcon, FileSpreadsheet, Truck } from "lucide-react";
+import { Receipt, Printer, Edit2, Plus, ShoppingCart, CheckCircle, Layers, Check, ChevronsUpDown, Loader2, Search, ChevronLeft, ChevronRight, MapPin, Calendar as CalendarIcon, FileSpreadsheet, Truck, Phone } from "lucide-react";
 import { useOrders, useCreateOrder, useUpdateOrder } from "@/hooks/use-orders";
 import { useLots } from "@/hooks/use-lots";
 import { useCategories } from "@/hooks/use-categories";
@@ -1661,6 +1661,16 @@ export default function Orders() {
                         <Button 
                           variant="outline" 
                           size="sm" 
+                          onClick={() => window.location.href = `tel:${order.phone}`}
+                          className="h-8 px-3 bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-700 hover:bg-green-100 dark:hover:bg-green-900/30 hover:text-green-700 dark:hover:text-green-400 text-green-700 dark:text-green-400 text-xs font-medium" 
+                          title="Call Customer" 
+                          data-testid={`button-call-order-${order.id}`}
+                        >
+                          <Phone className="h-4 w-4 mr-1" /> Call
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
                           onClick={() => handlePrint(order)} 
                           className="h-8 px-3 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-700 dark:hover:text-blue-400 text-blue-600 dark:text-blue-400 text-xs font-medium" 
                           title="Print Invoice" 
@@ -1820,6 +1830,9 @@ export default function Orders() {
 
               <div className="flex flex-col gap-2 pt-2 border-t">
                 <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => window.location.href = `tel:${order.phone}`} className="flex-1 h-9 text-green-600 border-green-200" title="Call Customer" data-testid={`button-call-mobile-order-${order.id}`}>
+                    <Phone className="h-4 w-4 mr-2" /> Call
+                  </Button>
                   <Button variant="outline" size="sm" onClick={() => handlePrint(order)} className="flex-1 h-9" data-testid={`button-print-mobile-order-${order.id}`}>
                     <Printer className="h-4 w-4 mr-2 text-primary" /> Print
                   </Button>
