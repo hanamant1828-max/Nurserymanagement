@@ -223,6 +223,13 @@ export default function ReportsPage() {
     return Object.values(report);
   }, [orders, dateRange]);
 
+  const totalDeliveredQty = useMemo(() => {
+    return orders?.reduce((sum: number, order: any) => {
+      if (!isInRange(order.deliveryDate)) return sum;
+      return sum + (Number(order.deliveredQty) || 0);
+    }, 0) || 0;
+  }, [orders, dateRange]);
+
   if (loadingLots || loadingOrders) {
     return <div className="p-8 text-center text-muted-foreground">Loading reports...</div>;
   }
@@ -347,6 +354,26 @@ export default function ReportsPage() {
           </Select>
         </div>
       </div>
+
+      {/* Summary Cards */}
+      {orders.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Card className="border-none shadow-sm bg-gradient-to-br from-blue-50 to-cyan-50 overflow-hidden">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase text-muted-foreground tracking-wider mb-2">Total Delivered Quantity</p>
+                  <p className="text-3xl font-black text-blue-600">{totalDeliveredQty.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Irrespective of category</p>
+                </div>
+                <div className="p-3 rounded-xl bg-white shadow-sm">
+                  <ShoppingBag className="w-6 h-6 text-blue-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       <Tabs defaultValue="sowing" value={activeTab} className="w-full" onValueChange={setActiveTab}>
         <TabsList className="grid grid-cols-2 sm:grid-cols-4 w-full h-auto p-1 bg-muted/50 rounded-xl mb-6">

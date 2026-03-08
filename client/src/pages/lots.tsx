@@ -1171,6 +1171,26 @@ export default function LotsPage() {
         )}
       </div>
 
+      {/* Total Seeds Sown Summary */}
+      {filteredLotsList.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <Card className="border-none shadow-sm bg-gradient-to-br from-green-50 to-emerald-50 overflow-hidden">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase text-muted-foreground tracking-wider mb-2">Total Seeds Sown</p>
+                  <p className="text-3xl font-black text-green-600">{filteredLotsList.reduce((sum: number, lot: any) => sum + (lot.seedsSown || 0), 0).toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{filteredLotsList.length} lots</p>
+                </div>
+                <div className="p-3 rounded-xl bg-white shadow-sm">
+                  <Sprout className="w-6 h-6 text-green-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       <div className="hidden md:block rounded-xl border bg-card shadow-sm overflow-hidden">
         <Table>
           <TableHeader className="bg-muted/50">
