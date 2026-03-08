@@ -294,7 +294,7 @@ export class DatabaseStorage implements IStorage {
       and(
         eq(orders.categoryId, categoryId),
         eq(orders.varietyId, varietyId),
-        eq(orders.lotStatus, 'PENDING_LOT'),
+        sql`${orders.lotStatus} IN ('PENDING_LOT', 'PARTIAL')`,
         eq(orders.status, 'BOOKED')
       )
     ).orderBy(orders.id);
