@@ -8,8 +8,6 @@ import {
   ShoppingCart, 
   Clock, 
   Truck, 
-  TrendingUp, 
-  AlertCircle, 
   BarChart3, 
   CheckCircle, 
   Layers,
@@ -17,8 +15,7 @@ import {
   UserCheck,
   UserX,
   Calendar,
-  ArrowUpRight,
-  ArrowDownRight
+  AlertCircle
 } from "lucide-react";
 import { format, isToday, parseISO } from "date-fns";
 import { motion } from "framer-motion";
@@ -106,8 +103,6 @@ export default function Dashboard() {
     o.deliveryDate === format(today, 'yyyy-MM-dd')
   ).length || 0;
 
-  const totalRevenue = orders?.reduce((sum, o) => sum + (Number(o.totalAmount) || 0), 0) || 0;
-  const totalBalance = orders?.reduce((sum, o) => sum + (Number(o.remainingBalance) || 0), 0) || 0;
   const totalInStock = lots?.reduce((sum, l) => sum + (Number((l as any).available) || 0), 0) || 0;
 
   // Attendance Stats
@@ -116,28 +111,6 @@ export default function Dashboard() {
   const absentCount = totalEmployees - presentCount;
 
   const mainStats = [
-    { 
-      label: "Total Revenue", 
-      value: `₹${totalRevenue.toLocaleString()}`, 
-      icon: TrendingUp, 
-      color: "text-emerald-600",
-      bg: "bg-emerald-50",
-      border: "border-emerald-100",
-      href: "/reports",
-      trend: "+12.5%",
-      isPositive: true
-    },
-    { 
-      label: "Balance Due", 
-      value: `₹${totalBalance.toLocaleString()}`, 
-      icon: AlertCircle, 
-      color: "text-amber-600",
-      bg: "bg-amber-50",
-      border: "border-amber-100",
-      href: "/reports",
-      trend: "-2.4%",
-      isPositive: false
-    },
     { 
       label: "Total Employees", 
       value: totalEmployees, 
