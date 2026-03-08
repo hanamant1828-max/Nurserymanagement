@@ -1659,10 +1659,10 @@ export default function Orders() {
                     <TableCell className="py-4">
                       <div className="flex flex-wrap justify-end gap-2">
                         <Button 
-                          variant="ghost" 
+                          variant="outline" 
                           size="sm" 
                           onClick={() => handlePrint(order)} 
-                          className="h-8 px-2 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 text-xs font-medium" 
+                          className="h-8 px-3 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-700 dark:hover:text-blue-400 text-blue-600 dark:text-blue-400 text-xs font-medium" 
                           title="Print Invoice" 
                           data-testid={`button-print-order-${order.id}`}
                         >
@@ -1670,7 +1670,7 @@ export default function Orders() {
                         </Button>
                         {order.status !== "DELIVERED" && order.status !== "CANCELLED" && order.lotId && (
                           <Button 
-                            variant="ghost" 
+                            variant="outline" 
                             size="sm" 
                             onClick={() => {
                               setSelectedOrderForDelivery(order);
@@ -1684,7 +1684,7 @@ export default function Orders() {
                               });
                               setDeliveryDialogOpen(true);
                             }} 
-                            className="h-8 px-2 hover:bg-green-100 dark:hover:bg-green-900/30 hover:text-green-700 dark:hover:text-green-400 text-xs font-medium"
+                            className="h-8 px-3 bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-700 hover:bg-green-100 dark:hover:bg-green-900/30 hover:text-green-700 dark:hover:text-green-400 text-green-700 dark:text-green-400 text-xs font-medium"
                             title="Mark as Delivered"
                             data-testid={`button-deliver-order-${order.id}`}
                           >
@@ -1692,20 +1692,20 @@ export default function Orders() {
                           </Button>
                         )}
                         <Button 
-                          variant="ghost" 
+                          variant="outline" 
                           size="sm" 
                           onClick={() => {
                             setPrintingOrder(order);
                             setTimeout(() => generateInvoice(order), 100);
                           }} 
-                          className="h-8 px-2 hover:bg-purple-100 dark:hover:bg-purple-900/30 hover:text-purple-600 dark:hover:text-purple-400 text-xs font-medium" 
+                          className="h-8 px-3 bg-purple-50 dark:bg-purple-950/20 border-purple-200 dark:border-purple-700 hover:bg-purple-100 dark:hover:bg-purple-900/30 hover:text-purple-700 dark:hover:text-purple-400 text-purple-600 dark:text-purple-400 text-xs font-medium" 
                           title="Export as PDF"
                           data-testid={`button-export-order-${order.id}`}
                         >
                           <FileSpreadsheet className="h-4 w-4 mr-1" /> PDF
                         </Button>
                         <Button 
-                          variant="ghost" 
+                          variant="outline" 
                           size="sm" 
                           onClick={() => { 
                             const bookingData = {
@@ -1731,7 +1731,7 @@ export default function Orders() {
                             setStep(4);
                             setOpen(true); 
                           }} 
-                          className="h-8 px-2 hover:bg-gray-100 dark:hover:bg-gray-900/30 hover:text-gray-700 dark:hover:text-gray-400 text-xs font-medium" 
+                          className="h-8 px-3 bg-gray-50 dark:bg-gray-900/20 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-900/30 hover:text-gray-700 dark:hover:text-gray-300 text-gray-700 dark:text-gray-300 text-xs font-medium" 
                           title="Edit Order"
                           data-testid={`button-edit-order-${order.id}`}
                         >
