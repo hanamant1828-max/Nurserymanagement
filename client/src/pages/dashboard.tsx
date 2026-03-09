@@ -15,7 +15,8 @@ import {
   UserCheck,
   UserX,
   Calendar,
-  AlertCircle
+  AlertCircle,
+  Package
 } from "lucide-react";
 import { format, isToday, parseISO } from "date-fns";
 import { motion } from "framer-motion";
@@ -142,6 +143,7 @@ export default function Dashboard() {
 
   const subStats = [
     { label: "Today's Sowing", value: sowingToday, icon: Sprout, color: "text-green-600", bg: "bg-green-100/50", href: "/lots" },
+    { label: "Pending Lots", value: unassignedOrders, icon: Package, color: "text-red-600", bg: "bg-red-100/50", href: "/pending-lot-reports" },
     { label: "Deliverable Today", value: deliverableToday, icon: Clock, color: "text-orange-600", bg: "bg-orange-100/50", href: "/today-deliveries" },
     { label: "Delivered Today", value: deliveriesToday, icon: Truck, color: "text-blue-600", bg: "bg-blue-100/50", href: "/delivery-reports" },
   ];
@@ -227,7 +229,7 @@ export default function Dashboard() {
       </div>
 
       {/* Secondary Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {subStats.map((stat, idx) => (
           <motion.div 
             key={stat.label}
@@ -250,7 +252,7 @@ export default function Dashboard() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Chart Section */}
         <Card className="lg:col-span-2 border-none shadow-lg rounded-[2rem] overflow-hidden">
           <CardHeader className="bg-muted/5 border-b border-muted/20 pb-6">
@@ -313,6 +315,67 @@ export default function Dashboard() {
               )}
             </div>
           </CardContent>
+        </Card>
+
+        {/* Pending Lot Orders List */}
+        <Card className="border-none shadow-lg rounded-[2rem] overflow-hidden flex flex-col">
+          <CardHeader className="bg-muted/5 border-b border-muted/20">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg font-black flex items-center gap-2">
+                <Package className="w-5 h-5 text-red-500" />
+                Pending Lots
+              </CardTitle>
+              <div className="px-2 py-1 bg-red-100 text-red-700 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                Awaiting Lot
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0 flex-1 overflow-auto">
+            {unassignedOrders > 0 ? (
+              <div className="divide-y divide-border/30">
+                {orders.filter((o: any) => o && o.lotStatus === 'PENDING_LOT' && o.status === 'BOOKED').slice(0, 8).map((order: any, idx: number) => (
+                  <motion.div 
+                    key={order.id} 
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.6 + idx * 0.05 }}
+                    className="p-4 hover:bg-muted/20 transition-all flex items-center justify-between group cursor-default"
+                    data-testid={`row-pending-lot-${order.id}`}
+                  >
+                    <div className="min-w-0">
+                      <p className="font-black text-sm truncate group-hover:text-primary transition-colors" data-testid={`text-pending-customer-${order.id}`}>{order.customerName}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider truncate bg-muted px-1.5 py-0.5 rounded" data-testid={`text-pending-variety-${order.id}`}>
+                          {order.variety?.name || order.lot?.variety?.name || "Unknown"}
+                        </span>
+                        <span className="text-[10px] font-bold text-red-600" data-testid={`text-pending-qty-${order.id}`}>QTY: {order.bookedQty}</span>
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-xs font-black text-red-600">
+                        PENDING
+                      </p>
+                      <p className="text-[10px] font-bold text-muted-foreground/60 mt-1">
+                        #{order.id}
+                      </p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="h-full flex flex-col items-center justify-center p-8 text-center text-muted-foreground/40 italic">
+                <Package className="w-12 h-12 mb-3 opacity-20" />
+                <p className="text-sm font-medium">No pending lot orders</p>
+              </div>
+            )}
+          </CardContent>
+          {unassignedOrders > 0 && (
+            <div className="p-4 bg-muted/5 border-t border-muted/20">
+              <Button className="w-full rounded-xl font-bold text-xs" asChild data-testid="button-full-pending-lots">
+                <Link href="/pending-lot-reports">Full Pending Lots Report</Link>
+              </Button>
+            </div>
+          )}
         </Card>
 
         {/* Upcoming Deliveries List */}
