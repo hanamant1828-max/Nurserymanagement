@@ -179,16 +179,32 @@ export default function Dashboard() {
   const pendingLotsQty = orders?.filter((o: any) => o && o.lotStatus === 'PENDING_LOT' && o.status === 'BOOKED')
     .reduce((sum, o) => sum + (Number((o as any).bookedQty) || 0), 0) || 0;
 
+  const totalDeliveredQty = orders?.filter((o: any) => o && o.status === 'DELIVERED')
+    .reduce((sum, o) => sum + (Number(o.deliveredQty) || Number(o.bookedQty) || 0), 0) || 0;
+  
+  const totalSownQty = lots?.reduce((sum, l) => sum + (Number((l as any).seedsSown) || 0), 0) || 0;
+
   const formatLakhs = (val: number) => {
     return (val / 100000).toFixed(2) + " L";
   };
 
-  const speedometerData = [
-    {
-      name: 'Pending',
-      value: pendingLotsQty,
-      fill: '#ef4444',
-    }
+  const getMaxDomain = (val: number) => {
+    // Round up to nearest 10L, minimum 20L
+    const lakhs = val / 100000;
+    const rounded = Math.ceil(lakhs / 10) * 10;
+    return Math.max(rounded, 20) * 100000;
+  };
+
+  const pendingData = [
+    { name: 'Pending', value: pendingLotsQty, fill: '#ef4444' }
+  ];
+
+  const deliveredData = [
+    { name: 'Delivered', value: totalDeliveredQty, fill: '#3b82f6' }
+  ];
+
+  const sownData = [
+    { name: 'Sown', value: totalSownQty, fill: '#10b981' }
   ];
 
   return (
@@ -271,61 +287,123 @@ export default function Dashboard() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Speedometer Section */}
-        <Card className="border-none shadow-lg rounded-[2rem] overflow-hidden flex flex-col">
-          <CardHeader className="bg-muted/5 border-b border-muted/20 pb-6">
-            <CardTitle className="text-xl font-black flex items-center gap-2">
-              <Package className="w-5 h-5 text-red-500" />
-              Pending Quantity
-            </CardTitle>
-            <CardDescription>Total quantity in Lakhs (L)</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-8 flex flex-col items-center justify-center min-h-[300px]">
-            <div className="h-[250px] w-full relative">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadialBarChart 
-                  cx="50%" 
-                  cy="50%" 
-                  innerRadius="70%" 
-                  outerRadius="100%" 
-                  barSize={20} 
-                  data={speedometerData} 
-                  startAngle={180} 
-                  endAngle={0}
-                >
-                  <PolarAngleAxis
-                    type="number"
-                    domain={[0, Math.max(pendingLotsQty * 1.2, 1000000)]}
-                    angleAxisId={0}
-                    tick={false}
-                  />
-                  <RadialBar
-                    background
-                    dataKey="value"
-                    cornerRadius={10}
-                  />
-                  <Tooltip 
-                    formatter={(value: number) => [value.toLocaleString(), "Quantity"]}
-                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                  />
-                </RadialBarChart>
-              </ResponsiveContainer>
-              <div className="absolute inset-0 flex flex-col items-center justify-center pt-12">
-                <span className="text-4xl font-black text-red-600">{formatLakhs(pendingLotsQty)}</span>
-                <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Pending Lots</span>
-              </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* Pending Quantity Speedometer */}
+        <Card className="border-none shadow-lg rounded-[2rem] overflow-hidden flex flex-col cursor-pointer hover:shadow-xl transition-shadow" asChild>
+          <Link href="/pending-lot-reports">
+            <div>
+              <CardHeader className="bg-muted/5 border-b border-muted/20 pb-4">
+                <CardTitle className="text-lg font-black flex items-center gap-2">
+                  <Package className="w-5 h-5 text-red-500" />
+                  Pending Quantity
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-6 flex flex-col items-center justify-center min-h-[250px]">
+                <div className="h-[200px] w-full relative">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RadialBarChart 
+                      cx="50%" cy="50%" innerRadius="70%" outerRadius="100%" barSize={15} 
+                      data={pendingData} startAngle={180} endAngle={0}
+                    >
+                      <PolarAngleAxis type="number" domain={[0, getMaxDomain(pendingLotsQty)]} tick={false} />
+                      <RadialBar background dataKey="value" cornerRadius={10} />
+                      <Tooltip formatter={(value: number) => [value.toLocaleString(), "Total Pending Quantity"]} />
+                    </RadialBarChart>
+                  </ResponsiveContainer>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pt-8">
+                    <span className="text-2xl font-black text-red-600">{formatLakhs(pendingLotsQty)}</span>
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Pending</span>
+                  </div>
+                  <div className="absolute bottom-4 left-0 right-0 flex justify-between px-6 text-[8px] font-black text-muted-foreground/40 uppercase tracking-tighter">
+                    <span>0 L</span>
+                    <span>10 L</span>
+                    <span>20 L</span>
+                    <span>{formatLakhs(getMaxDomain(pendingLotsQty))}</span>
+                  </div>
+                </div>
+              </CardContent>
             </div>
-            <div className="w-full flex justify-between px-8 text-[10px] font-black text-muted-foreground/40 uppercase tracking-tighter">
-              <span>0 L</span>
-              <span>{formatLakhs(Math.max(pendingLotsQty * 1.2, 1000000))}</span>
-            </div>
-            <Button variant="ghost" size="sm" className="mt-4 rounded-xl font-bold text-xs text-red-600 hover:text-red-700 hover:bg-red-50" asChild>
-              <Link href="/pending-lot-reports">View Details</Link>
-            </Button>
-          </CardContent>
+          </Link>
         </Card>
 
+        {/* Delivered Quantity Speedometer */}
+        <Card className="border-none shadow-lg rounded-[2rem] overflow-hidden flex flex-col cursor-pointer hover:shadow-xl transition-shadow" asChild>
+          <Link href="/delivery-reports">
+            <div>
+              <CardHeader className="bg-muted/5 border-b border-muted/20 pb-4">
+                <CardTitle className="text-lg font-black flex items-center gap-2">
+                  <Truck className="w-5 h-5 text-blue-500" />
+                  Total Delivered
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-6 flex flex-col items-center justify-center min-h-[250px]">
+                <div className="h-[200px] w-full relative">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RadialBarChart 
+                      cx="50%" cy="50%" innerRadius="70%" outerRadius="100%" barSize={15} 
+                      data={deliveredData} startAngle={180} endAngle={0}
+                    >
+                      <PolarAngleAxis type="number" domain={[0, getMaxDomain(totalDeliveredQty)]} tick={false} />
+                      <RadialBar background dataKey="value" cornerRadius={10} />
+                      <Tooltip formatter={(value: number) => [value.toLocaleString(), "Total Delivered Quantity"]} />
+                    </RadialBarChart>
+                  </ResponsiveContainer>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pt-8">
+                    <span className="text-2xl font-black text-blue-600">{formatLakhs(totalDeliveredQty)}</span>
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Delivered</span>
+                  </div>
+                  <div className="absolute bottom-4 left-0 right-0 flex justify-between px-6 text-[8px] font-black text-muted-foreground/40 uppercase tracking-tighter">
+                    <span>0 L</span>
+                    <span>10 L</span>
+                    <span>20 L</span>
+                    <span>{formatLakhs(getMaxDomain(totalDeliveredQty))}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </div>
+          </Link>
+        </Card>
+
+        {/* Sown Quantity Speedometer */}
+        <Card className="border-none shadow-lg rounded-[2rem] overflow-hidden flex flex-col cursor-pointer hover:shadow-xl transition-shadow" asChild>
+          <Link href="/lots">
+            <div>
+              <CardHeader className="bg-muted/5 border-b border-muted/20 pb-4">
+                <CardTitle className="text-lg font-black flex items-center gap-2">
+                  <Sprout className="w-5 h-5 text-green-500" />
+                  Total Sown
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-6 flex flex-col items-center justify-center min-h-[250px]">
+                <div className="h-[200px] w-full relative">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RadialBarChart 
+                      cx="50%" cy="50%" innerRadius="70%" outerRadius="100%" barSize={15} 
+                      data={sownData} startAngle={180} endAngle={0}
+                    >
+                      <PolarAngleAxis type="number" domain={[0, getMaxDomain(totalSownQty)]} tick={false} />
+                      <RadialBar background dataKey="value" cornerRadius={10} />
+                      <Tooltip formatter={(value: number) => [value.toLocaleString(), "Total Sown Quantity"]} />
+                    </RadialBarChart>
+                  </ResponsiveContainer>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pt-8">
+                    <span className="text-2xl font-black text-green-600">{formatLakhs(totalSownQty)}</span>
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Sown</span>
+                  </div>
+                  <div className="absolute bottom-4 left-0 right-0 flex justify-between px-6 text-[8px] font-black text-muted-foreground/40 uppercase tracking-tighter">
+                    <span>0 L</span>
+                    <span>10 L</span>
+                    <span>20 L</span>
+                    <span>{formatLakhs(getMaxDomain(totalSownQty))}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </div>
+          </Link>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Chart Section */}
         <Card className="lg:col-span-2 border-none shadow-lg rounded-[2rem] overflow-hidden">
           <CardHeader className="bg-muted/5 border-b border-muted/20 pb-6">
