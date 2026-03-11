@@ -183,6 +183,23 @@ export default function DeliveryReportsPage() {
     return Array.from(taluks).sort();
   }, [orders, pageDistrictId]);
 
+  // Filtered orders for totals (only district/taluk, no category/variety filters)
+  const filteredOrdersForTotals = useMemo(() => {
+    if (!orders) return [];
+    let filtered = orders;
+
+    if (pageDistrictId !== "all") {
+      filtered = filtered.filter((item: any) => item.district === pageDistrictId);
+    }
+    
+    if (pageTalukId !== "all") {
+      filtered = filtered.filter((item: any) => item.taluk === pageTalukId);
+    }
+
+    return filtered;
+  }, [orders, pageDistrictId, pageTalukId]);
+
+  // Fully filtered orders for table display (includes category/variety filters)
   const filteredOrders = useMemo(() => {
     if (!orders) return [];
     let filtered = orders;
@@ -219,7 +236,7 @@ export default function DeliveryReportsPage() {
     }
 
     return filtered;
-  }, [orders, searchTerm, pageDistrictId, pageTalukId]);
+  }, [orders, searchTerm, pageDistrictId, pageTalukId, selectedCategory, selectedVariety, lots]);
 
   const pendingDeliveries = useMemo(() => {
     return filteredOrders.filter((o: any) => o.status === "BOOKED" && isInRange(null, o.deliveryDate)).map((o: any) => {
@@ -243,13 +260,18 @@ export default function DeliveryReportsPage() {
     });
   }, [filteredOrders, lots, dateRange]);
 
+  // Total quantities irrespective of category/variety filters
   const totalQtyToDeliver = useMemo(() => {
-    return pendingDeliveries.reduce((sum: number, order: any) => sum + (order.bookedQty || 0), 0);
-  }, [pendingDeliveries]);
+    return filteredOrdersForTotals
+      .filter((o: any) => o.status === "BOOKED" && isInRange(null, o.deliveryDate))
+      .reduce((sum: number, order: any) => sum + (order.bookedQty || 0), 0);
+  }, [filteredOrdersForTotals, dateRange]);
 
   const totalQtyDelivered = useMemo(() => {
-    return deliveredOrders.reduce((sum: number, order: any) => sum + (order.bookedQty || 0), 0);
-  }, [deliveredOrders]);
+    return filteredOrdersForTotals
+      .filter((o: any) => o.status === "DELIVERED" && isInRange(o.actualDeliveryDate, o.deliveryDate))
+      .reduce((sum: number, order: any) => sum + (order.bookedQty || 0), 0);
+  }, [filteredOrdersForTotals, dateRange]);
 
   const deliveryVarietyReport = useMemo(() => {
     const report: Record<string, any> = {};
