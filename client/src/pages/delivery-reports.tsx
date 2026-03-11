@@ -23,6 +23,7 @@ import autoTable from "jspdf-autotable";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
+import { formatIndianNumber } from "@/lib/formatters";
 
 export default function DeliveryReportsPage() {
   const { data: lots, isLoading: loadingLots } = useLots();
@@ -472,7 +473,7 @@ export default function DeliveryReportsPage() {
                     {activeTab === "pending" ? "Total to Deliver" : "Total Delivered Qty"}
                   </p>
                   <p className="text-xl font-black text-primary">
-                    {(activeTab === "pending" ? totalQtyToDeliver : totalQtyDelivered).toLocaleString()}
+                    {formatIndianNumber(activeTab === "pending" ? totalQtyToDeliver : totalQtyDelivered)}
                   </p>
                 </div>
               </div>
