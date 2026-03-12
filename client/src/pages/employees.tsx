@@ -30,12 +30,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Edit2, Users, Trash2, Phone, Mail, MapPin, Briefcase, Camera } from "lucide-react";
+import { Plus, Edit2, Users, Trash2, Phone, Mail, MapPin, Briefcase, Camera, Search } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { insertEmployeeSchema, type Employee } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 
@@ -147,29 +148,21 @@ export default function EmployeesPage() {
     });
   };
 
+  const activeCount = filteredEmployees.filter(e => e.active).length;
+
   return (
-    <div className="space-y-8 p-4 md:p-8">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-display font-bold tracking-tight">Employee Master ({filteredEmployees.length})</h1>
-          <p className="text-muted-foreground text-sm">Manage nursery staff and their contact information.</p>
+    <div className="space-y-6 px-4 md:px-8 py-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Employee Master</h1>
+          <p className="text-sm text-muted-foreground mt-1">Manage nursery staff and their contact information.</p>
         </div>
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-          <div className="relative flex-1 sm:min-w-[300px]">
-            <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search by name, designation or phone..." 
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 h-11 rounded-xl bg-muted/30 border-muted-foreground/10 focus-visible:ring-primary/20 transition-all"
-            />
-          </div>
-          <Dialog open={open} onOpenChange={(val) => { setOpen(val); if(!val) resetForm(); }}>
-            <DialogTrigger asChild>
-              <Button size="lg" className="h-11 px-6 rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all active:scale-95">
-                <Plus className="w-5 h-5 mr-2" /> Add Employee
-              </Button>
-            </DialogTrigger>
+        <Dialog open={open} onOpenChange={(val) => { setOpen(val); if(!val) resetForm(); }}>
+          <DialogTrigger asChild>
+            <Button className="bg-green-600 hover:bg-green-700 w-full sm:w-auto">
+              <Plus className="mr-2 h-4 w-4" /> Add Employee
+            </Button>
+          </DialogTrigger>
             <DialogContent className="sm:max-w-[525px] rounded-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle className="text-2xl font-bold">{editingId ? "Edit Employee" : "New Employee"}</DialogTitle>
@@ -310,8 +303,53 @@ export default function EmployeesPage() {
               </Form>
             </DialogContent>
           </Dialog>
-        </div>
       </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <Card className="border-2 border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-blue-50/50 dark:from-blue-950/30 dark:to-blue-950/20 shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="pt-5 pb-4">
+            <div className="text-3xl font-bold text-blue-700 dark:text-blue-300">{filteredEmployees.length}</div>
+            <p className="text-xs text-blue-600 dark:text-blue-400 mt-2 font-semibold uppercase tracking-wider">Total Staff</p>
+          </CardContent>
+        </Card>
+        <Card className="border-2 border-green-200 dark:border-green-800 bg-gradient-to-br from-green-50 to-green-50/50 dark:from-green-950/30 dark:to-green-950/20 shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="pt-5 pb-4">
+            <div className="text-3xl font-bold text-green-700 dark:text-green-300">{activeCount}</div>
+            <p className="text-xs text-green-600 dark:text-green-400 mt-2 font-semibold uppercase tracking-wider">Active</p>
+          </CardContent>
+        </Card>
+        <Card className="border-2 border-amber-200 dark:border-amber-800 bg-gradient-to-br from-amber-50 to-amber-50/50 dark:from-amber-950/30 dark:to-amber-950/20 shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="pt-5 pb-4">
+            <div className="text-3xl font-bold text-amber-700 dark:text-amber-300">{filteredEmployees.length - activeCount}</div>
+            <p className="text-xs text-amber-600 dark:text-amber-400 mt-2 font-semibold uppercase tracking-wider">Inactive</p>
+          </CardContent>
+        </Card>
+        <Card className="border-2 border-purple-200 dark:border-purple-800 bg-gradient-to-br from-purple-50 to-purple-50/50 dark:from-purple-950/30 dark:to-purple-950/20 shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="pt-5 pb-4">
+            <div className="text-3xl font-bold text-purple-700 dark:text-purple-300">{employees?.length || 0}</div>
+            <p className="text-xs text-purple-600 dark:text-purple-400 mt-2 font-semibold uppercase tracking-wider">Total Registered</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="border shadow-sm">
+        <CardContent className="p-5">
+          <div className="space-y-5">
+            <div>
+              <h3 className="text-sm font-semibold mb-4 text-foreground">Search</h3>
+            </div>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input 
+                placeholder="Search by name, designation or phone..." 
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 h-9 text-sm"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Desktop Table */}
       <div className="hidden lg:block">
