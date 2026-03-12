@@ -237,6 +237,77 @@ export default function VarietiesPage() {
               </Form>
             </DialogContent>
           </Dialog>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <Card className="border-2 border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-blue-50/50 dark:from-blue-950/30 dark:to-blue-950/20 shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="pt-5 pb-4">
+            <div className="text-3xl font-bold text-blue-700 dark:text-blue-300">{filteredVarietiesList.length}</div>
+            <p className="text-xs text-blue-600 dark:text-blue-400 mt-2 font-semibold uppercase tracking-wider">Total</p>
+          </CardContent>
+        </Card>
+        <Card className="border-2 border-green-200 dark:border-green-800 bg-gradient-to-br from-green-50 to-green-50/50 dark:from-green-950/30 dark:to-green-950/20 shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="pt-5 pb-4">
+            <div className="text-3xl font-bold text-green-700 dark:text-green-300">{activeCount}</div>
+            <p className="text-xs text-green-600 dark:text-green-400 mt-2 font-semibold uppercase tracking-wider">Active</p>
+          </CardContent>
+        </Card>
+        <Card className="border-2 border-amber-200 dark:border-amber-800 bg-gradient-to-br from-amber-50 to-amber-50/50 dark:from-amber-950/30 dark:to-amber-950/20 shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="pt-5 pb-4">
+            <div className="text-3xl font-bold text-amber-700 dark:text-amber-300">{filteredVarietiesList.length - activeCount}</div>
+            <p className="text-xs text-amber-600 dark:text-amber-400 mt-2 font-semibold uppercase tracking-wider">Disabled</p>
+          </CardContent>
+        </Card>
+        <Card className="border-2 border-purple-200 dark:border-purple-800 bg-gradient-to-br from-purple-50 to-purple-50/50 dark:from-purple-950/30 dark:to-purple-950/20 shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="pt-5 pb-4">
+            <div className="text-3xl font-bold text-purple-700 dark:text-purple-300">{categories?.filter(c => c.active).length || 0}</div>
+            <p className="text-xs text-purple-600 dark:text-purple-400 mt-2 font-semibold uppercase tracking-wider">Categories</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="border shadow-sm">
+        <CardContent className="p-5">
+          <div className="space-y-5">
+            <div>
+              <h3 className="text-sm font-semibold mb-4 text-foreground">Filters</h3>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Search</label>
+                <Input 
+                  placeholder="Search varieties..." 
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="h-9 px-3 text-sm"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Category</label>
+                <Select value={selectedCategory} onValueChange={(val) => {
+                  setSelectedCategory(val);
+                  setCurrentPage(1);
+                }}>
+                  <SelectTrigger className="h-9 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {categories?.filter(c => c.active).map(c => (
+                      <SelectItem key={c.id} value={c.id.toString()}>
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Desktop Table View */}
       <div className="hidden lg:block">
