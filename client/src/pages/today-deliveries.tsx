@@ -271,31 +271,41 @@ export default function TodayDeliveriesPage() {
     return filteredOrders.reduce((sum: number, order: any) => sum + (Number(order.bookedQty) || 0), 0);
   }, [filteredOrders]);
 
+  const totalAmount = useMemo(() => {
+    return filteredOrders.reduce((sum: number, order: any) => sum + (Number(order.totalAmount) || 0), 0);
+  }, [filteredOrders]);
+
+  const totalPending = useMemo(() => {
+    return filteredOrders.reduce((sum: number, order: any) => sum + (Number(order.remainingBalance) || 0), 0);
+  }, [filteredOrders]);
+
+  const avgOrderValue = filteredOrders.length > 0 ? totalAmount / filteredOrders.length : 0;
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 px-4 md:px-8 py-6">
       {printingOrder && <div id="invoice-print" className="hidden print:block"><InvoicePrint order={printingOrder} /></div>}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-display font-bold">
+          <h1 className="text-3xl font-bold tracking-tight">
             {isSameDay(selectedDate, new Date())
               ? "Today's Deliveries"
               : "Scheduled Deliveries"}
           </h1>
-          <p className="text-muted-foreground">
-            Orders for {format(selectedDate, "eeee, dd MMMM yyyy")}.
+          <p className="text-sm text-muted-foreground mt-1">
+            {format(selectedDate, "eeee, dd MMMM yyyy")}
           </p>
         </div>
 
         <Popover>
           <PopoverTrigger asChild>
             <Button
-              variant={"outline"}
+              variant="outline"
               className={cn(
-                "w-full md:w-[280px] justify-start text-left font-normal h-12 text-lg border-primary/20 hover:bg-primary/5",
+                "w-full sm:w-[240px] justify-start text-left font-normal h-10 border-muted-foreground/20 rounded-lg",
                 !selectedDate && "text-muted-foreground",
               )}
             >
-              <CalendarIcon className="mr-2 h-5 w-5" />
+              <CalendarIcon className="mr-2 h-4 w-4" />
               {selectedDate ? (
                 format(selectedDate, "PPP")
               ) : (
@@ -314,8 +324,8 @@ export default function TodayDeliveriesPage() {
         </Popover>
       </div>
 
-      <Card className="bg-muted/30 border-none shadow-none">
-        <CardContent className="p-4 flex flex-wrap gap-4 items-end">
+      <Card className="border shadow-sm">
+        <CardContent className="p-5 flex flex-col md:flex-row gap-4 items-end flex-wrap">
           <div className="space-y-1.5 flex-1 min-w-[200px]">
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">
               Category Filter
@@ -599,46 +609,46 @@ export default function TodayDeliveriesPage() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="bg-primary/5 border-primary/20">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-              <ShoppingCart className="w-4 h-4" /> Total Orders
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-black text-primary">
-              {filteredOrders.length}
-            </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <Card className="border-2 border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-blue-50/50 dark:from-blue-950/30 dark:to-blue-950/20 shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="pt-5 pb-4">
+            <div className="text-3xl font-bold text-blue-700 dark:text-blue-300">{filteredOrders.length}</div>
+            <p className="text-xs text-blue-600 dark:text-blue-400 mt-2 font-semibold uppercase tracking-wider">Total Orders</p>
           </CardContent>
         </Card>
-
-        <Card className="bg-emerald-50/50 border-emerald-200">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-emerald-700 uppercase tracking-wider flex items-center gap-2">
-              <CheckCircle className="w-4 h-4" /> Total Quantity
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-black text-emerald-600">
-              {totalQuantityToDeliver.toLocaleString()}
-            </div>
+        <Card className="border-2 border-green-200 dark:border-green-800 bg-gradient-to-br from-green-50 to-green-50/50 dark:from-green-950/30 dark:to-green-950/20 shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="pt-5 pb-4">
+            <div className="text-3xl font-bold text-green-700 dark:text-green-300">{totalQuantityToDeliver.toLocaleString()}</div>
+            <p className="text-xs text-green-600 dark:text-green-400 mt-2 font-semibold uppercase tracking-wider">Total Qty</p>
+          </CardContent>
+        </Card>
+        <Card className="border-2 border-amber-200 dark:border-amber-800 bg-gradient-to-br from-amber-50 to-amber-50/50 dark:from-amber-950/30 dark:to-amber-950/20 shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="pt-5 pb-4">
+            <div className="text-3xl font-bold text-amber-700 dark:text-amber-300">₹{(totalAmount / 100000).toFixed(1)}L</div>
+            <p className="text-xs text-amber-600 dark:text-amber-400 mt-2 font-semibold uppercase tracking-wider">Total Amount</p>
+          </CardContent>
+        </Card>
+        <Card className="border-2 border-purple-200 dark:border-purple-800 bg-gradient-to-br from-purple-50 to-purple-50/50 dark:from-purple-950/30 dark:to-purple-950/20 shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="pt-5 pb-4">
+            <div className="text-3xl font-bold text-purple-700 dark:text-purple-300">₹{(totalPending / 100000).toFixed(1)}L</div>
+            <p className="text-xs text-purple-600 dark:text-purple-400 mt-2 font-semibold uppercase tracking-wider">Pending</p>
           </CardContent>
         </Card>
       </div>
 
-      <div className="hidden md:block rounded-xl border bg-card shadow-sm overflow-hidden">
-        <Table>
-          <TableHeader className="bg-muted/50">
+      <div className="hidden lg:block">
+        <div className="rounded-2xl border bg-card shadow-sm overflow-hidden">
+          <Table>
+            <TableHeader className="bg-muted/30">
             <TableRow>
-              <TableHead>Customer</TableHead>
-              <TableHead>Plant Details</TableHead>
-              <TableHead>Lot</TableHead>
-              <TableHead className="text-right">Qty</TableHead>
-              <TableHead className="text-right">Rate</TableHead>
-              <TableHead className="text-right">Total</TableHead>
-              <TableHead className="text-right">Adv/Bal</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="py-4 pl-6 font-bold text-xs uppercase tracking-wider">Customer</TableHead>
+              <TableHead className="py-4 font-bold text-xs uppercase tracking-wider">Plant Details</TableHead>
+              <TableHead className="py-4 font-bold text-xs uppercase tracking-wider">Lot</TableHead>
+              <TableHead className="py-4 font-bold text-xs uppercase tracking-wider text-right">Qty</TableHead>
+              <TableHead className="py-4 font-bold text-xs uppercase tracking-wider text-right">Rate</TableHead>
+              <TableHead className="py-4 font-bold text-xs uppercase tracking-wider text-right">Total</TableHead>
+              <TableHead className="py-4 font-bold text-xs uppercase tracking-wider text-right">Adv/Bal</TableHead>
+              <TableHead className="py-4 pr-6 font-bold text-xs uppercase tracking-wider text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -663,8 +673,8 @@ export default function TodayDeliveriesPage() {
                 );
 
                 return (
-                  <TableRow key={order.id} className="group hover:bg-muted/30 transition-colors">
-                    <TableCell>
+                  <TableRow key={order.id} className="group hover:bg-muted/10 transition-colors">
+                    <TableCell className="pl-6 py-4">
                       <div className="flex flex-col">
                         <span className="font-bold text-foreground">
                           {order.customerName}
@@ -709,16 +719,16 @@ export default function TodayDeliveriesPage() {
                         <span className="text-xs text-muted-foreground">-</span>
                       )}
                     </TableCell>
-                    <TableCell className="text-right font-black text-primary">
+                    <TableCell className="py-4 text-right font-black text-primary">
                       {order.bookedQty}
                     </TableCell>
-                    <TableCell className="text-right font-medium text-muted-foreground">
+                    <TableCell className="py-4 text-right font-medium text-muted-foreground">
                       ₹{order.perUnitPrice}
                     </TableCell>
-                    <TableCell className="text-right font-black">
+                    <TableCell className="py-4 text-right font-bold">
                       ₹{Number(order.totalAmount).toLocaleString()}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="py-4 text-right pr-6">
                       <div className="flex flex-col items-end">
                         <span className="text-xs font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
                           ₹{Number(order.advanceAmount).toLocaleString()}
@@ -788,15 +798,16 @@ export default function TodayDeliveriesPage() {
               })
             )}
           </TableBody>
-        </Table>
+          </Table>
+        </div>
       </div>
 
-      {/* Mobile view */}
-      <div className="md:hidden space-y-4">
+      {/* Mobile / Tablet Card View */}
+      <div className="lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-4">
         {filteredOrders.length === 0 ? (
-          <div className="h-32 flex flex-col items-center justify-center text-muted-foreground bg-muted/20 rounded-xl border border-dashed">
-            <CalendarIcon className="w-8 h-8 opacity-20 mb-2" />
-            No deliveries scheduled.
+          <div className="col-span-full py-20 text-center border-2 border-dashed rounded-2xl border-muted-foreground/10">
+            <CalendarIcon className="w-16 h-16 mx-auto mb-4 opacity-5" />
+            <p className="text-muted-foreground font-medium">No deliveries scheduled for this date</p>
           </div>
         ) : (
           paginatedOrders.map((order: any) => {
@@ -805,9 +816,9 @@ export default function TodayDeliveriesPage() {
             const category = categories?.find((c) => c.id === lot?.categoryId);
 
             return (
-              <Card key={order.id} className="overflow-hidden border-2">
+              <Card key={order.id} className="rounded-2xl overflow-hidden border shadow-sm hover:shadow-md hover:border-primary/20 transition-all">
                 <CardContent className="p-0">
-                  <div className="p-4 bg-muted/10 border-b flex items-center justify-between">
+                  <div className="p-4 bg-muted/5 border-b flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       {category?.image && (
                         <img
@@ -900,17 +911,18 @@ export default function TodayDeliveriesPage() {
         )}
       </div>
 
-      <div className="flex items-center justify-center space-x-2 py-4">
+      <div className="flex items-center justify-center gap-2 py-4">
         <Button
           variant="outline"
           size="sm"
           onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
           disabled={currentPage === 1}
+          className="rounded-lg"
         >
           <ChevronLeft className="h-4 w-4 mr-2" />
           Previous
         </Button>
-        <div className="text-sm font-medium">
+        <div className="text-sm font-medium text-muted-foreground">
           Page {currentPage} of {totalPages || 1}
         </div>
         <Button
@@ -918,6 +930,7 @@ export default function TodayDeliveriesPage() {
           size="sm"
           onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
           disabled={currentPage >= totalPages}
+          className="rounded-lg"
         >
           Next
           <ChevronRight className="h-4 w-4 ml-2" />
