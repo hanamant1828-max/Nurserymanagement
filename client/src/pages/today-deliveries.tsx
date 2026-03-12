@@ -268,7 +268,7 @@ export default function TodayDeliveriesPage() {
   }
 
   const totalQuantityToDeliver = useMemo(() => {
-    return filteredOrders.reduce((sum: number, order: any) => sum + (order.bookedQty || 0), 0);
+    return filteredOrders.reduce((sum: number, order: any) => sum + (Number(order.bookedQty) || 0), 0);
   }, [filteredOrders]);
 
   return (
