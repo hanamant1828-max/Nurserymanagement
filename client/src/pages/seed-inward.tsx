@@ -6,11 +6,23 @@ import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import {
   Form,
   FormControl,
@@ -36,17 +48,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, Plus, Trash2, Edit2, Calendar, Package, ArrowLeft, History } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, Plus, Trash2, Edit2, Calendar, Package, Search } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { format } from "date-fns";
-import { Badge } from "@/components/ui/badge";
 
 export default function SeedInwardPage() {
   const { toast } = useToast();
-  const [isAdding, setIsAdding] = useState(false);
+  const [open, setOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<(SeedInward & { category: Category; variety: Variety }) | null>(null);
+  const [search, setSearch] = useState("");
 
-  const { data: seedInwards, isLoading: isLoadingInwards } = useQuery<(SeedInward & { category: Category; variety: Variety })[]>({
+  const { data: seedInwards, isLoading } = useQuery<(SeedInward & { category: Category; variety: Variety })[]>({
     queryKey: [api.seedInward.list.path],
   });
 
@@ -74,10 +88,9 @@ export default function SeedInwardPage() {
   });
 
   const selectedCategoryId = form.watch("categoryId");
-  
 
   const filteredVarieties = useMemo(() => {
-    return varieties?.filter(v => v.categoryId === Number(selectedCategoryId)) || [];
+    return varieties?.filter((v) => v.categoryId === Number(selectedCategoryId)) || [];
   }, [varieties, selectedCategoryId]);
 
   const numberOfPackets = form.watch("numberOfPackets");
@@ -88,16 +101,15 @@ export default function SeedInwardPage() {
     }
   }, [numberOfPackets, editingItem, form]);
 
-    useEffect(() => {
-      const currentVarietyId = form.getValues("varietyId");
-      // Only reset if we are NOT currently loading an editing item
-      if (!editingItem && selectedCategoryId !== 0 && currentVarietyId !== 0 && filteredVarieties.length > 0) {
-        const isVarietyValid = filteredVarieties.some(v => v.id === currentVarietyId);
-        if (!isVarietyValid) {
-          form.setValue("varietyId", 0);
-        }
+  useEffect(() => {
+    const currentVarietyId = form.getValues("varietyId");
+    if (!editingItem && selectedCategoryId !== 0 && currentVarietyId !== 0 && filteredVarieties.length > 0) {
+      const isVarietyValid = filteredVarieties.some((v) => v.id === currentVarietyId);
+      if (!isVarietyValid) {
+        form.setValue("varietyId", 0);
       }
-    }, [selectedCategoryId, filteredVarieties, form, editingItem]);
+    }
+  }, [selectedCategoryId, filteredVarieties, form, editingItem]);
 
   const createMutation = useMutation({
     mutationFn: async (values: any) => {
@@ -107,8 +119,7 @@ export default function SeedInwardPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [api.seedInward.list.path] });
       toast({ title: "Success", description: "Seed inward entry created successfully" });
-      form.reset();
-      setIsAdding(false);
+      resetForm();
     },
     onError: (error: Error) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -117,7 +128,6 @@ export default function SeedInwardPage() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, values }: { id: number; values: any }) => {
-      // Remove id from values to avoid primary key update attempt
       const { id: _, category, variety, timestamp, ...updateValues } = values;
       const res = await apiRequest("PUT", `/api/seed-inward/${id}`, updateValues);
       if (!res.ok) {
@@ -129,18 +139,7 @@ export default function SeedInwardPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [api.seedInward.list.path] });
       toast({ title: "Success", description: "Seed inward entry updated successfully" });
-      form.reset({
-        categoryId: 0,
-        varietyId: 0,
-        lotNo: "",
-        expiryDate: "",
-        numberOfPackets: 0,
-        totalQuantity: 0,
-        availableQuantity: 0,
-        typeOfPackage: "",
-        receivedFrom: "",
-      });
-      setEditingItem(null);
+      resetForm();
     },
     onError: (error: Error) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -157,426 +156,493 @@ export default function SeedInwardPage() {
     },
   });
 
-    useEffect(() => {
-      if (editingItem) {
-        // Set all values except varietyId first to avoid race conditions with filteredVarieties
-        form.setValue("categoryId", editingItem.categoryId);
-        form.setValue("lotNo", editingItem.lotNo);
-        form.setValue("expiryDate", editingItem.expiryDate);
-        form.setValue("numberOfPackets", editingItem.numberOfPackets);
-        form.setValue("totalQuantity", editingItem.totalQuantity);
-        form.setValue("availableQuantity", editingItem.availableQuantity);
-        form.setValue("typeOfPackage", editingItem.typeOfPackage);
-        form.setValue("receivedFrom", editingItem.receivedFrom);
-        
-        // Use a small timeout to ensure the category change has triggered the filteredVarieties update
-        const timer = setTimeout(() => {
-          form.setValue("varietyId", editingItem.varietyId);
-        }, 150);
-        return () => clearTimeout(timer);
-      }
-    }, [editingItem, form]);
+  useEffect(() => {
+    if (editingItem) {
+      form.setValue("categoryId", editingItem.categoryId);
+      form.setValue("lotNo", editingItem.lotNo);
+      form.setValue("expiryDate", editingItem.expiryDate);
+      form.setValue("numberOfPackets", editingItem.numberOfPackets);
+      form.setValue("totalQuantity", editingItem.totalQuantity);
+      form.setValue("availableQuantity", editingItem.availableQuantity);
+      form.setValue("typeOfPackage", editingItem.typeOfPackage);
+      form.setValue("receivedFrom", editingItem.receivedFrom);
+      const timer = setTimeout(() => {
+        form.setValue("varietyId", editingItem.varietyId);
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [editingItem, form]);
 
-  if (isLoadingInwards) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
+  const resetForm = () => {
+    setEditingItem(null);
+    setOpen(false);
+    form.reset({
+      categoryId: 0,
+      varietyId: 0,
+      lotNo: "",
+      expiryDate: "",
+      numberOfPackets: 0,
+      totalQuantity: 0,
+      availableQuantity: 0,
+      typeOfPackage: "",
+      receivedFrom: "",
+    });
+  };
+
+  const handleEdit = (item: SeedInward & { category: Category; variety: Variety }) => {
+    setEditingItem(item);
+    setOpen(true);
+  };
+
+  const filteredInwards = useMemo(() => {
+    if (!seedInwards) return [];
+    if (!search) return seedInwards;
+    const lower = search.toLowerCase();
+    return seedInwards.filter(
+      (item) =>
+        item.category?.name?.toLowerCase().includes(lower) ||
+        item.variety?.name?.toLowerCase().includes(lower) ||
+        item.lotNo?.toLowerCase().includes(lower) ||
+        item.receivedFrom?.toLowerCase().includes(lower)
     );
-  }
+  }, [seedInwards, search]);
 
-  const showForm = isAdding || editingItem;
+  // Stat calculations
+  const totalEntries = seedInwards?.length || 0;
+  const totalQty = seedInwards?.reduce((s, i) => s + (Number(i.totalQuantity) || 0), 0) || 0;
+  const usedQty = seedInwards?.reduce((s, i) => s + (Number(i.usedQuantity) || 0), 0) || 0;
+  const availableQty = seedInwards?.reduce((s, i) => s + (Number(i.availableQuantity) || 0), 0) || 0;
 
   return (
-    <div className="flex flex-col min-h-full">
-      {/* Header Section */}
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b p-4 md:p-6 lg:p-8">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              {showForm && (
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => {
-                    setIsAdding(false);
-                    setEditingItem(null);
-                  }}
-                  className="md:hidden -ml-2"
-                >
-                  <ArrowLeft className="h-5 w-5" />
-                </Button>
-              )}
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Seed Inward</h1>
-            </div>
-            <p className="text-muted-foreground text-sm md:text-base">Manage incoming seed stocks</p>
-          </div>
-          {!showForm && (
-            <Button 
-              onClick={() => setIsAdding(true)}
-              className="w-full sm:w-auto shadow-sm"
-              size="lg"
+    <div className="space-y-6 px-4 md:px-8 py-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Seed Inward</h1>
+          <p className="text-sm text-muted-foreground mt-1">Manage incoming seed stocks for your nursery.</p>
+        </div>
+        <Button
+          className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
+          onClick={() => { resetForm(); setOpen(true); }}
+        >
+          <Plus className="mr-2 h-4 w-4" /> Add New Entry
+        </Button>
+      </div>
+
+      {/* Dialog Form */}
+      <Dialog open={open} onOpenChange={(val) => { if (!val) resetForm(); else setOpen(true); }}>
+        <DialogContent className="sm:max-w-2xl rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">
+              {editingItem ? "Edit Entry" : "New Seed Inward Entry"}
+            </DialogTitle>
+            <DialogDescription>
+              {editingItem ? "Update the details for this seed inward entry." : "Enter the details of the incoming seed stock below."}
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit((data) => {
+                if (editingItem) {
+                  updateMutation.mutate({ id: editingItem.id, values: data });
+                } else {
+                  createMutation.mutate(data);
+                }
+              })}
+              className="space-y-5 py-2"
             >
-              <Plus className="mr-2 h-5 w-5" />
-              Add New Entry
-            </Button>
-          )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="categoryId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="font-semibold">Category</FormLabel>
+                      <Select onValueChange={(v) => field.onChange(Number(v))} value={field.value === 0 ? "" : field.value?.toString()}>
+                        <FormControl>
+                          <SelectTrigger className="h-11 rounded-lg">
+                            <SelectValue placeholder="Select Category" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {categories?.map((c) => (
+                            <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="varietyId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="font-semibold">Variety</FormLabel>
+                      <Select onValueChange={(v) => field.onChange(Number(v))} value={field.value === 0 ? "" : field.value?.toString()}>
+                        <FormControl>
+                          <SelectTrigger className="h-11 rounded-lg">
+                            <SelectValue placeholder="Select Variety" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {filteredVarieties.map((v) => (
+                            <SelectItem key={v.id} value={v.id.toString()}>{v.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="lotNo"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="font-semibold">Lot No.</FormLabel>
+                      <FormControl>
+                        <Input className="h-11 rounded-lg" placeholder="Enter lot number" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="expiryDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="font-semibold">Expiry Date</FormLabel>
+                      <FormControl>
+                        <Input className="h-11 rounded-lg" type="date" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="numberOfPackets"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="font-semibold">Number of Packets</FormLabel>
+                      <FormControl>
+                        <Input className="h-11 rounded-lg" type="number" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="typeOfPackage"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="font-semibold">Type of Package</FormLabel>
+                      <FormControl>
+                        <Input className="h-11 rounded-lg" placeholder="e.g. Box, Bag, Pouch" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <FormField
+                control={form.control}
+                name="receivedFrom"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-semibold">Received From</FormLabel>
+                    <FormControl>
+                      <Input className="h-11 rounded-lg" placeholder="Enter supplier name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="flex gap-3 pt-2">
+                <Button type="button" variant="ghost" onClick={resetForm} className="flex-1 h-11 rounded-xl">Cancel</Button>
+                <Button
+                  type="submit"
+                  data-testid="button-save-seed-inward"
+                  className="flex-[2] h-11 rounded-xl font-bold"
+                  disabled={createMutation.isPending || updateMutation.isPending}
+                >
+                  {(createMutation.isPending || updateMutation.isPending) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {editingItem ? "Update Entry" : "Save Entry"}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Stat Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <Card className="border-2 border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-blue-50/50 dark:from-blue-950/30 dark:to-blue-950/20 shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="pt-5 pb-4">
+            <div className="text-3xl font-bold text-blue-700 dark:text-blue-300">{totalEntries}</div>
+            <p className="text-xs text-blue-600 dark:text-blue-400 mt-2 font-semibold uppercase tracking-wider">Total Entries</p>
+          </CardContent>
+        </Card>
+        <Card className="border-2 border-green-200 dark:border-green-800 bg-gradient-to-br from-green-50 to-green-50/50 dark:from-green-950/30 dark:to-green-950/20 shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="pt-5 pb-4">
+            <div className="text-3xl font-bold text-green-700 dark:text-green-300">{availableQty}</div>
+            <p className="text-xs text-green-600 dark:text-green-400 mt-2 font-semibold uppercase tracking-wider">Available Qty</p>
+          </CardContent>
+        </Card>
+        <Card className="border-2 border-amber-200 dark:border-amber-800 bg-gradient-to-br from-amber-50 to-amber-50/50 dark:from-amber-950/30 dark:to-amber-950/20 shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="pt-5 pb-4">
+            <div className="text-3xl font-bold text-amber-700 dark:text-amber-300">{usedQty}</div>
+            <p className="text-xs text-amber-600 dark:text-amber-400 mt-2 font-semibold uppercase tracking-wider">Used Qty</p>
+          </CardContent>
+        </Card>
+        <Card className="border-2 border-purple-200 dark:border-purple-800 bg-gradient-to-br from-purple-50 to-purple-50/50 dark:from-purple-950/30 dark:to-purple-950/20 shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="pt-5 pb-4">
+            <div className="text-3xl font-bold text-purple-700 dark:text-purple-300">{totalQty}</div>
+            <p className="text-xs text-purple-600 dark:text-purple-400 mt-2 font-semibold uppercase tracking-wider">Total Qty</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Search Card */}
+      <Card className="border shadow-sm">
+        <CardContent className="p-5">
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-foreground">Search</h3>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by category, variety, lot no. or supplier..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 h-9 text-sm"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Desktop Table */}
+      <div className="hidden lg:block">
+        <div className="rounded-2xl border bg-card shadow-sm overflow-hidden">
+          <Table>
+            <TableHeader className="bg-muted/30">
+              <TableRow>
+                <TableHead className="py-4 pl-6 font-bold text-xs uppercase tracking-wider">Date</TableHead>
+                <TableHead className="py-4 font-bold text-xs uppercase tracking-wider">Item Details</TableHead>
+                <TableHead className="py-4 font-bold text-xs uppercase tracking-wider">Lot Details</TableHead>
+                <TableHead className="py-4 font-bold text-xs uppercase tracking-wider">Total Qty</TableHead>
+                <TableHead className="py-4 font-bold text-xs uppercase tracking-wider">Used Qty</TableHead>
+                <TableHead className="py-4 font-bold text-xs uppercase tracking-wider">Available Qty</TableHead>
+                <TableHead className="py-4 font-bold text-xs uppercase tracking-wider">Source</TableHead>
+                <TableHead className="py-4 pr-6 text-right font-bold text-xs uppercase tracking-wider">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                [1, 2, 3].map((i) => (
+                  <TableRow key={i}>
+                    <TableCell className="pl-6"><div className="h-4 w-20 bg-muted animate-pulse rounded" /></TableCell>
+                    <TableCell>
+                      <div className="h-4 w-24 bg-muted animate-pulse rounded mb-1" />
+                      <div className="h-3 w-16 bg-muted animate-pulse rounded" />
+                    </TableCell>
+                    <TableCell><div className="h-4 w-20 bg-muted animate-pulse rounded" /></TableCell>
+                    <TableCell><div className="h-4 w-10 bg-muted animate-pulse rounded" /></TableCell>
+                    <TableCell><div className="h-4 w-10 bg-muted animate-pulse rounded" /></TableCell>
+                    <TableCell><div className="h-4 w-10 bg-muted animate-pulse rounded" /></TableCell>
+                    <TableCell><div className="h-4 w-24 bg-muted animate-pulse rounded" /></TableCell>
+                    <TableCell className="pr-6"><div className="h-9 w-20 ml-auto bg-muted animate-pulse rounded-xl" /></TableCell>
+                  </TableRow>
+                ))
+              ) : filteredInwards.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="h-48 text-center">
+                    <div className="flex flex-col items-center justify-center gap-3 text-muted-foreground">
+                      <Package className="w-12 h-12 opacity-10" />
+                      <p className="text-sm font-medium">No entries found</p>
+                      {search && (
+                        <Button variant="ghost" onClick={() => setSearch("")} className="text-primary h-auto p-0">
+                          Clear search
+                        </Button>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredInwards.map((item) => (
+                  <TableRow key={item.id} className="group hover:bg-muted/10 transition-colors">
+                    <TableCell className="pl-6 py-4">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground font-medium">
+                        <Calendar className="h-3.5 w-3.5" />
+                        {format(new Date(item.timestamp), "dd/MM/yyyy")}
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <div className="font-bold text-sm text-primary">{item.category?.name}</div>
+                      <div className="text-xs text-muted-foreground">{item.variety?.name}</div>
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <Badge variant="outline" className="font-mono mb-1">{item.lotNo}</Badge>
+                      <div className="text-xs text-muted-foreground">Exp: {item.expiryDate}</div>
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <span className="font-bold">{item.totalQuantity}</span>
+                      <div className="text-xs text-muted-foreground capitalize">{item.typeOfPackage}</div>
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <span className="font-medium text-orange-600">{item.usedQuantity}</span>
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <span className="font-bold text-green-600">{item.availableQuantity}</span>
+                    </TableCell>
+                    <TableCell className="py-4 max-w-[150px] truncate" title={item.receivedFrom}>
+                      <span className="text-sm">{item.receivedFrom}</span>
+                    </TableCell>
+                    <TableCell className="py-4 pr-6 text-right">
+                      <div className="flex justify-end gap-1.5">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-9 w-9 rounded-xl hover:bg-primary/10 hover:text-primary"
+                          onClick={() => handleEdit(item)}
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-9 w-9 rounded-xl hover:bg-destructive/10 hover:text-destructive"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent className="rounded-2xl">
+                            <AlertDialogHeader>
+                              <AlertDialogTitle className="text-xl">Delete Entry?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This will permanently remove this seed inward entry. This cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter className="gap-2">
+                              <AlertDialogCancel className="rounded-xl mt-0">Keep Entry</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => deleteMutation.mutate(item.id)}
+                                className="bg-destructive hover:bg-destructive/90 rounded-xl"
+                              >
+                                Yes, Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </div>
       </div>
 
-      <div className="flex-1 p-4 md:p-6 lg:p-8 space-y-6">
-        {showForm ? (
-          <Card className="max-w-4xl mx-auto border-primary/10 shadow-lg">
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-xl md:text-2xl">
-                {editingItem ? "Edit Entry" : "New Entry"}
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Enter the details of the incoming seed stock below.
-              </p>
-            </CardHeader>
-            <CardContent>
-              <Form {...form}>
-                <form 
-                  onSubmit={form.handleSubmit((data) => {
-                    if (editingItem) {
-                      updateMutation.mutate({ id: editingItem.id, values: data });
-                    } else {
-                      createMutation.mutate(data);
-                    }
-                  })} 
-                  className="space-y-6"
-                >
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="categoryId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Category</FormLabel>
-                          <Select 
-                            onValueChange={(v) => field.onChange(Number(v))} 
-                            value={field.value === 0 ? "" : field.value?.toString()}
-                          >
-                            <FormControl>
-                              <SelectTrigger className="h-11">
-                                <SelectValue placeholder="Select Category" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {categories?.map((c) => (
-                                <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="varietyId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Variety</FormLabel>
-                          <Select 
-                            onValueChange={(v) => field.onChange(Number(v))} 
-                            value={field.value === 0 ? "" : field.value?.toString()}
-                          >
-                            <FormControl>
-                              <SelectTrigger className="h-11">
-                                <SelectValue placeholder="Select Variety" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {filteredVarieties.map((v) => (
-                                <SelectItem key={v.id} value={v.id.toString()}>{v.name}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="lotNo"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Lot No.</FormLabel>
-                          <FormControl>
-                            <Input className="h-11" placeholder="Enter lot number" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="expiryDate"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Expiry Date</FormLabel>
-                          <FormControl>
-                            <Input className="h-11" type="date" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="numberOfPackets"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Number of Packets</FormLabel>
-                          <FormControl>
-                            <Input className="h-11" type="number" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="typeOfPackage"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Type of Package</FormLabel>
-                          <FormControl>
-                            <Input className="h-11" {...field} placeholder="e.g. Box, Bag, Pouch" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <FormField
-                    control={form.control}
-                    name="receivedFrom"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Received From</FormLabel>
-                        <FormControl>
-                          <Input className="h-11" placeholder="Enter supplier name" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      className="h-11 sm:w-32"
-                      onClick={() => {
-                        setIsAdding(false);
-                        setEditingItem(null);
-                        form.reset();
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                    <Button 
-                      type="submit" 
-                      data-testid="button-save-seed-inward"
-                      className="h-11 sm:w-32 shadow-sm"
-                      disabled={createMutation.isPending || updateMutation.isPending}
-                    >
-                      {(createMutation.isPending || updateMutation.isPending) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      {editingItem ? "Update" : "Save"}
-                    </Button>
-                  </div>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
+      {/* Mobile / Tablet Card View */}
+      <div className="lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {isLoading ? (
+          [1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-52 bg-muted animate-pulse rounded-2xl border" />
+          ))
+        ) : filteredInwards.length === 0 ? (
+          <div className="col-span-full py-20 text-center border-2 border-dashed rounded-2xl border-muted-foreground/10">
+            <Package className="w-16 h-16 mx-auto mb-4 opacity-5" />
+            <p className="text-muted-foreground font-medium">No entries found</p>
+          </div>
         ) : (
-          <div className="space-y-6">
-            {/* Desktop Table View */}
-            <div className="hidden lg:block">
-              <Card className="border-primary/5 shadow-sm overflow-hidden">
-                <CardHeader className="bg-muted/30 border-b py-4">
-                  <div className="flex items-center gap-2">
-                    <History className="h-5 w-5 text-primary" />
-                    <CardTitle className="text-lg">Inward History</CardTitle>
+          filteredInwards.map((item) => (
+            <div
+              key={item.id}
+              className="group relative bg-card border rounded-2xl overflow-hidden shadow-sm hover:shadow-md hover:border-primary/20 transition-all"
+            >
+              <div className="p-4 space-y-3">
+                <div className="flex justify-between items-start gap-2">
+                  <div>
+                    <Badge variant="secondary" className="mb-1 text-[10px]">{item.category?.name}</Badge>
+                    <h3 className="font-bold text-base leading-tight">{item.variety?.name}</h3>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                      <Calendar className="h-3 w-3" />
+                      {format(new Date(item.timestamp), "dd MMM yyyy")}
+                    </p>
                   </div>
-                </CardHeader>
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-muted/10">
-                      <TableHead className="w-[120px]">Date</TableHead>
-                      <TableHead>Item Details</TableHead>
-                      <TableHead>Lot Details</TableHead>
-                      <TableHead>Total Qty</TableHead>
-                      <TableHead>Used Qty</TableHead>
-                      <TableHead>Available Qty</TableHead>
-                      <TableHead>Source</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {seedInwards?.map((item) => (
-                      <TableRow key={item.id} className="hover:bg-muted/5">
-                        <TableCell className="font-medium">
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
-                            {format(new Date(item.timestamp), "dd/MM/yyyy")}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="space-y-1">
-                            <div className="font-semibold text-primary">{item.category?.name}</div>
-                            <div className="text-sm text-muted-foreground">{item.variety?.name}</div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="space-y-1">
-                            <Badge variant="outline" className="font-mono">{item.lotNo}</Badge>
-                            <div className="text-xs text-muted-foreground flex items-center gap-1">
-                              Exp: {item.expiryDate}
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-col">
-                            <span className="font-bold">{item.totalQuantity}</span>
-                            <span className="text-xs text-muted-foreground capitalize">{item.typeOfPackage}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <span className="font-medium text-orange-600">{item.usedQuantity}</span>
-                        </TableCell>
-                        <TableCell>
-                          <span className="font-bold text-green-600">{item.availableQuantity}</span>
-                        </TableCell>
-                        <TableCell className="max-w-[150px] truncate" title={item.receivedFrom}>
-                          {item.receivedFrom}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => {
-                                setEditingItem(item);
-                                setIsAdding(false);
-                              }}
-                              className="h-9 w-9 text-primary hover:text-primary hover:bg-primary/10"
-                            >
-                              <Edit2 className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => {
-                                if (confirm("Are you sure you want to delete this entry?")) {
-                                  deleteMutation.mutate(item.id);
-                                }
-                              }}
-                              disabled={deleteMutation.isPending}
-                              className="h-9 w-9 text-destructive hover:text-destructive hover:bg-destructive/10"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                    {seedInwards?.length === 0 && (
-                      <TableRow>
-                        <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
-                          <div className="flex flex-col items-center gap-2">
-                            <Package className="h-10 w-10 opacity-20" />
-                            <p>No inward entries found.</p>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </Card>
-            </div>
+                  <Badge variant="outline" className="font-mono text-xs bg-background shadow-sm flex-shrink-0">
+                    {item.lotNo}
+                  </Badge>
+                </div>
 
-            {/* Mobile & Tablet Grid View */}
-            <div className="lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {seedInwards?.map((item) => (
-                <Card key={item.id} className="border-primary/5 shadow-sm overflow-hidden active:scale-[0.98] transition-transform">
-                  <div className="p-4 space-y-4">
-                    <div className="flex justify-between items-start">
-                      <div className="space-y-1">
-                        <Badge variant="secondary" className="mb-1">{item.category?.name}</Badge>
-                        <h3 className="font-bold text-lg leading-tight">{item.variety?.name}</h3>
-                        <p className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          {format(new Date(item.timestamp), "dd MMM yyyy")}
-                        </p>
-                      </div>
-                      <Badge variant="outline" className="font-mono bg-background shadow-sm">
-                        {item.lotNo}
-                      </Badge>
-                    </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="bg-muted/40 rounded-xl p-2.5 text-center">
+                    <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest mb-1">Total</p>
+                    <p className="font-bold text-sm">{item.totalQuantity}</p>
+                  </div>
+                  <div className="bg-orange-50 dark:bg-orange-950/20 rounded-xl p-2.5 text-center">
+                    <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest mb-1">Used</p>
+                    <p className="font-bold text-sm text-orange-600">{item.usedQuantity}</p>
+                  </div>
+                  <div className="bg-green-50 dark:bg-green-950/20 rounded-xl p-2.5 text-center">
+                    <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest mb-1">Avail</p>
+                    <p className="font-bold text-sm text-green-600">{item.availableQuantity}</p>
+                  </div>
+                </div>
 
-                    <div className="grid grid-cols-2 gap-3 py-3 border-y border-dashed">
-                      <div className="space-y-1">
-                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Quantity</p>
-                        <p className="font-bold text-primary">{item.numberOfPackets} <span className="text-xs font-normal text-muted-foreground">pkts</span></p>
-                        <p className="text-xs text-muted-foreground truncate">{item.typeOfPackage}</p>
-                      </div>
-                      <div className="space-y-1 border-l pl-3">
-                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Expiry</p>
-                        <p className="font-bold text-orange-600">{item.expiryDate || "N/A"}</p>
-                      </div>
-                    </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground truncate max-w-[60%]">{item.receivedFrom}</span>
+                  <span className="text-muted-foreground">Exp: {item.expiryDate}</span>
+                </div>
 
-                    <div className="space-y-1">
-                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Source</p>
-                      <p className="text-sm font-medium line-clamp-1">{item.receivedFrom}</p>
-                    </div>
-
-                    <div className="flex gap-2 pt-2">
-                      <Button
-                        variant="secondary"
-                        className="flex-1 h-10 gap-2"
-                        onClick={() => {
-                          setEditingItem(item);
-                          setIsAdding(false);
-                        }}
-                      >
-                        <Edit2 className="h-4 w-4" />
-                        Edit
-                      </Button>
+                <div className="flex items-center gap-2 pt-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 h-10 rounded-xl bg-muted/20 border-transparent hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all shadow-none"
+                    onClick={() => handleEdit(item)}
+                  >
+                    <Edit2 className="w-3.5 h-3.5 mr-2" /> Edit
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
                       <Button
                         variant="outline"
-                        size="icon"
-                        className="h-10 w-10 text-destructive border-destructive/20 hover:bg-destructive/5"
-                        onClick={() => {
-                          if (confirm("Are you sure?")) {
-                            deleteMutation.mutate(item.id);
-                          }
-                        }}
-                        disabled={deleteMutation.isPending}
+                        size="sm"
+                        className="h-10 w-10 min-w-10 rounded-xl bg-destructive/5 border-transparent text-destructive hover:bg-destructive hover:text-destructive-foreground hover:border-destructive transition-all shadow-none"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="w-4 h-4" />
                       </Button>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-                  <div className="col-span-full py-20 flex flex-col items-center justify-center text-muted-foreground bg-muted/20 rounded-lg border-2 border-dashed">
-                    <Package className="h-12 w-12 mb-3 opacity-20 text-primary" />
-                    <p className="font-medium">No entries yet</p>
-                    <Button variant="ghost" onClick={() => setIsAdding(true)}>Click here to add first entry</Button>
-                  </div>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="w-[90vw] max-w-[340px] rounded-2xl p-6">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="text-lg">Delete this entry?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-sm">
+                          This will permanently remove this seed inward entry.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter className="flex flex-col gap-2 mt-4 sm:flex-row">
+                        <AlertDialogCancel className="rounded-xl w-full sm:w-auto order-2 sm:order-1">Keep it</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => deleteMutation.mutate(item.id)}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl w-full sm:w-auto order-1 sm:order-2"
+                        >
+                          Delete Now
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </div>
             </div>
-          </div>
+          ))
         )}
       </div>
     </div>
