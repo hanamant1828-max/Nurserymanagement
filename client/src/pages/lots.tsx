@@ -447,30 +447,122 @@ export default function LotsPage() {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-6 px-4 md:px-8 py-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-display font-bold">Lots & Stock ({filteredLotsList.length})</h1>
-          <p className="text-muted-foreground">Monitor sowing lots, stock availability, and damages.</p>
+          <h1 className="text-3xl font-bold tracking-tight">Lots & Stock</h1>
+          <p className="text-sm text-muted-foreground mt-1">Monitor sowing lots, stock availability, and damages.</p>
         </div>
-        <div className="flex flex-col sm:flex-row gap-4">
-          <Input 
-            placeholder="Search lot no, variety, category..." 
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full sm:w-64"
-          />
-          <Dialog open={open} onOpenChange={(v) => {
-            setOpen(v);
-            if (!v) {
-              resetForm();
-            }
-          }}>
-            <DialogTrigger asChild>
-              <Button size="lg" className="shadow-lg shadow-primary/20">
-                <Plus className="w-5 h-5 mr-2" /> New Sowing Entry
-              </Button>
-            </DialogTrigger>
+        <Button onClick={() => setOpen(true)} className="bg-green-600 hover:bg-green-700 w-full sm:w-auto">
+          <Plus className="mr-2 h-4 w-4" /> 
+          New Sowing Entry
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <Card className="border-2 border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-blue-50/50 dark:from-blue-950/30 dark:to-blue-950/20 shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="pt-5 pb-4">
+            <div className="text-3xl font-bold text-blue-700 dark:text-blue-300">{filteredLotsList.length}</div>
+            <p className="text-xs text-blue-600 dark:text-blue-400 mt-2 font-semibold uppercase tracking-wider">Total Lots</p>
+          </CardContent>
+        </Card>
+        <Card className="border-2 border-green-200 dark:border-green-800 bg-gradient-to-br from-green-50 to-green-50/50 dark:from-green-950/30 dark:to-green-950/20 shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="pt-5 pb-4">
+            <div className="text-3xl font-bold text-green-700 dark:text-green-300">{filteredLotsList.filter(l => l.status === "READY").length}</div>
+            <p className="text-xs text-green-600 dark:text-green-400 mt-2 font-semibold uppercase tracking-wider">Ready</p>
+          </CardContent>
+        </Card>
+        <Card className="border-2 border-amber-200 dark:border-amber-800 bg-gradient-to-br from-amber-50 to-amber-50/50 dark:from-amber-950/30 dark:to-amber-950/20 shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="pt-5 pb-4">
+            <div className="text-3xl font-bold text-amber-700 dark:text-amber-300">{filteredLotsList.filter(l => !l.status || l.status !== "READY").length}</div>
+            <p className="text-xs text-amber-600 dark:text-amber-400 mt-2 font-semibold uppercase tracking-wider">Growing</p>
+          </CardContent>
+        </Card>
+        <Card className="border-2 border-red-200 dark:border-red-800 bg-gradient-to-br from-red-50 to-red-50/50 dark:from-red-950/30 dark:to-red-950/20 shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="pt-5 pb-4">
+            <div className="text-3xl font-bold text-red-700 dark:text-red-300">{filteredLotsList.reduce((sum, l) => sum + Number(l.damaged || 0), 0).toLocaleString()}</div>
+            <p className="text-xs text-red-600 dark:text-red-400 mt-2 font-semibold uppercase tracking-wider">Total Damaged</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="border shadow-sm">
+        <CardContent className="p-5">
+          <div className="space-y-5">
+            <div>
+              <h3 className="text-sm font-semibold mb-4 text-foreground">Filters</h3>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Search</label>
+                <Input 
+                  placeholder="Lot number, variety..." 
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="h-9 px-3 text-sm"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Category</label>
+                <Select value={selectedCategory} onValueChange={(val) => {
+                  setSelectedCategory(val);
+                  setSelectedVariety("all");
+                }}>
+                  <SelectTrigger className="h-9 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {categories?.filter(c => c.active).map(c => (
+                      <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Variety</label>
+                <Select value={selectedVariety} onValueChange={setSelectedVariety} disabled={selectedCategory === "all"}>
+                  <SelectTrigger className="h-9 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Varieties</SelectItem>
+                    {varieties?.filter(v => selectedCategory === "all" || v.categoryId.toString() === selectedCategory).map(v => (
+                      <SelectItem key={v.id} value={v.id.toString()}>{v.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Sort</label>
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="h-9 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="sowingDate-desc">Latest Sowed</SelectItem>
+                    <SelectItem value="sowingDate-asc">Oldest Sowed</SelectItem>
+                    <SelectItem value="lotNumber-asc">Category (A-Z)</SelectItem>
+                    <SelectItem value="lotNumber-desc">Category (Z-A)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Dialog open={open} onOpenChange={(v) => {
+        setOpen(v);
+        if (!v) {
+          resetForm();
+        }
+      }}>
+        <DialogTrigger asChild>
+          <Button size="lg" className="shadow-lg shadow-primary/20" style={{display: 'none'}}>
+            <Plus className="w-5 h-5 mr-2" /> New Sowing Entry
+          </Button>
+        </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader className="px-1">
                     <DialogTitle>{editingLot ? "Edit Sowing Lot" : "New Sowing Lot Entry"}</DialogTitle>
@@ -816,148 +908,6 @@ export default function LotsPage() {
               </Form>
             </DialogContent>
           </Dialog>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 p-4 bg-muted/30 rounded-xl border border-border/50 relative">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="absolute -top-3 right-4 bg-background border h-7 text-[10px] font-bold uppercase hover:bg-destructive hover:text-destructive-foreground transition-colors z-10"
-          onClick={handleClearFilters}
-        >
-          Clear Filters
-        </Button>
-        <div className="space-y-2">
-          <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Category Filter</label>
-          <Select value={selectedCategory} onValueChange={(val) => {
-            setSelectedCategory(val);
-            setSelectedVariety("all");
-          }}>
-            <SelectTrigger className="bg-background h-10 sm:h-12">
-              <SelectValue placeholder="All Categories" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">
-                <div className="flex items-center gap-2 py-1">
-                  <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground/40" />
-                  <span className="font-medium">All Categories</span>
-                </div>
-              </SelectItem>
-              {categories?.filter(c => c.active)
-                .sort((a, b) => a.name.localeCompare(b.name))
-                .map(c => (
-                <SelectItem key={c.id} value={c.id.toString()}>
-                  <div className="flex items-center gap-2 py-1">
-                    {c.image ? (
-                      <img src={c.image} className="w-7 h-7 sm:w-8 sm:h-8 rounded-md object-cover border" alt="" />
-                    ) : (
-                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-md bg-muted flex items-center justify-center border">
-                        <Layers className="w-4 h-4 text-muted-foreground/30" />
-                      </div>
-                    )}
-                    <span className="font-medium text-sm sm:text-base">{c.name}</span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Variety Filter</label>
-          <Select value={selectedVariety} onValueChange={setSelectedVariety} disabled={selectedCategory === "all"}>
-            <SelectTrigger className="bg-background h-10 sm:h-12">
-              <SelectValue placeholder="All Varieties" />
-            </SelectTrigger>
-            <SelectContent className="z-[100]">
-              <SelectItem value="all">All Varieties</SelectItem>
-              {varieties?.filter(v => (selectedCategory === "all" || v.categoryId.toString() === selectedCategory) && v.active)
-                .sort((a, b) => a.name.localeCompare(b.name))
-                .map(v => (
-                <SelectItem key={v.id} value={v.id.toString()}>{v.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Lot Filter</label>
-          <Select value={search} onValueChange={setSearch}>
-            <SelectTrigger className="bg-background h-10 sm:h-12">
-              <SelectValue placeholder="All Lots" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all-lots">All Lots</SelectItem>
-              {lots?.filter(l => {
-                const matchesCategory = selectedCategory === "all" || l.categoryId.toString() === selectedCategory;
-                const matchesVariety = selectedVariety === "all" || l.varietyId.toString() === selectedVariety;
-                return matchesCategory && matchesVariety;
-              })
-              .sort((a, b) => a.lotNumber.localeCompare(b.lotNumber))
-              .map(l => (
-                <SelectItem key={l.id} value={l.lotNumber}>{l.lotNumber}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">From Date</label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={`w-full h-10 sm:h-12 justify-start text-left font-normal bg-background ${!dateRange?.from && "text-muted-foreground"}`}
-              >
-                <CalendarDays className="mr-2 h-4 w-4 opacity-50" />
-                {dateRange?.from ? format(dateRange.from, "LLL dd, y") : <span>From Date</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-[280px] p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={dateRange?.from}
-                onSelect={(date) => setDateRange((prev: DateRange | undefined) => ({ from: date, to: prev?.to }))}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
-        <div className="space-y-2">
-          <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">To Date</label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={`w-full h-10 sm:h-12 justify-start text-left font-normal bg-background ${!dateRange?.to && "text-muted-foreground"}`}
-              >
-                <CalendarDays className="mr-2 h-4 w-4 opacity-50" />
-                {dateRange?.to ? format(dateRange.to, "LLL dd, y") : <span>To Date</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-[280px] p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={dateRange?.to}
-                onSelect={(date) => setDateRange((prev: DateRange | undefined) => ({ from: prev?.from || new Date(), to: date }))}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
-        <div className="space-y-2 sm:col-span-1">
-          <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Sort By</label>
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="bg-background h-10 sm:h-12">
-              <SelectValue placeholder="Sort order" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="sowingDate-desc">Sowing Date (Newest)</SelectItem>
-              <SelectItem value="sowingDate-asc">Sowing Date (Oldest)</SelectItem>
-              <SelectItem value="lotNumber-asc">Lot Number (A-Z)</SelectItem>
-              <SelectItem value="lotNumber-desc">Lot Number (Z-A)</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
 
       {/* Damage Update Dialog */}
       <Dialog open={damageDialogOpen} onOpenChange={setDamageDialogOpen}>
