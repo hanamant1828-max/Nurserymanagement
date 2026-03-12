@@ -38,12 +38,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Edit2, Flower2, Trash2, Layers } from "lucide-react";
+import { Plus, Edit2, Flower2, Trash2, Layers, Sprout } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { api } from "@shared/routes";
 import { type Variety } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
@@ -136,62 +137,21 @@ export default function VarietiesPage() {
   };
 
   const getCategory = (id: number) => categories?.find(c => c.id === id);
+  const activeCount = filteredVarietiesList.filter(v => v.active).length;
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-display font-bold tracking-tight">Varieties ({filteredVarietiesList.length})</h1>
-          <p className="text-muted-foreground text-sm">Manage plant varieties for your nursery categories.</p>
+    <div className="space-y-6 px-4 md:px-8 py-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Varieties</h1>
+          <p className="text-sm text-muted-foreground mt-1">Manage plant varieties for your nursery categories.</p>
         </div>
-        <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3">
-          <Select value={selectedCategory} onValueChange={(val) => {
-            setSelectedCategory(val);
-            setCurrentPage(1);
-          }}>
-            <SelectTrigger className="w-full lg:w-48 h-11 rounded-xl bg-muted/30 border-muted-foreground/10 focus:ring-primary/20">
-              <SelectValue placeholder="All Categories" />
-            </SelectTrigger>
-            <SelectContent className="rounded-xl">
-              <SelectItem value="all" className="py-2.5">All Categories</SelectItem>
-              {categories?.filter(c => c.active).map(c => (
-                <SelectItem key={c.id} value={c.id.toString()} className="py-2.5">
-                  <div className="flex items-center gap-3">
-                    {c.image ? (
-                      <img 
-                        src={c.image} 
-                        alt={c.name} 
-                        className="w-6 h-6 rounded-md object-cover border shadow-sm"
-                      />
-                    ) : (
-                      <div className="w-6 h-6 rounded-md bg-muted flex items-center justify-center border shadow-sm">
-                        <Layers className="w-3 h-3 text-muted-foreground/30" />
-                      </div>
-                    )}
-                    <span className="font-medium">{c.name}</span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <div className="relative flex-1 sm:min-w-[250px]">
-            <Flower2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search varieties..." 
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="pl-9 h-11 rounded-xl bg-muted/30 border-muted-foreground/10 focus-visible:ring-primary/20 transition-all"
-            />
-          </div>
-          <Dialog open={open} onOpenChange={(val) => { setOpen(val); if(!val) resetForm(); }}>
-            <DialogTrigger asChild>
-              <Button size="lg" className="h-11 px-6 rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all active:scale-95">
-                <Plus className="w-5 h-5 mr-2" /> Add Variety
-              </Button>
-            </DialogTrigger>
+        <Dialog open={open} onOpenChange={(val) => { setOpen(val); if(!val) resetForm(); }}>
+          <DialogTrigger asChild>
+            <Button className="bg-green-600 hover:bg-green-700 w-full sm:w-auto">
+              <Plus className="mr-2 h-4 w-4" /> Add Variety
+            </Button>
+          </DialogTrigger>
             <DialogContent className="sm:max-w-[425px] rounded-2xl">
               <DialogHeader>
                 <DialogTitle className="text-2xl font-bold">{editingId ? "Edit Variety" : "New Variety"}</DialogTitle>
@@ -277,8 +237,6 @@ export default function VarietiesPage() {
               </Form>
             </DialogContent>
           </Dialog>
-        </div>
-      </div>
 
       {/* Desktop Table View */}
       <div className="hidden lg:block">
