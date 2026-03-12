@@ -264,13 +264,13 @@ export default function DeliveryReportsPage() {
   const totalQtyToDeliver = useMemo(() => {
     return filteredOrdersForTotals
       .filter((o: any) => o.status === "BOOKED" && isInRange(null, o.deliveryDate))
-      .reduce((sum: number, order: any) => sum + (order.bookedQty || 0), 0);
+      .reduce((sum: number, order: any) => sum + (Number(order.bookedQty) || 0), 0);
   }, [filteredOrdersForTotals, dateRange]);
 
   const totalQtyDelivered = useMemo(() => {
     return filteredOrdersForTotals
       .filter((o: any) => o.status === "DELIVERED" && isInRange(o.actualDeliveryDate, o.deliveryDate))
-      .reduce((sum: number, order: any) => sum + (order.bookedQty || 0), 0);
+      .reduce((sum: number, order: any) => sum + (Number(order.bookedQty) || 0), 0);
   }, [filteredOrdersForTotals, dateRange]);
 
   const deliveryVarietyReport = useMemo(() => {
@@ -286,7 +286,7 @@ export default function DeliveryReportsPage() {
         };
       }
       report[key].orderCount += 1;
-      report[key].totalQty += order.bookedQty;
+      report[key].totalQty += Number(order.bookedQty) || 0;
       report[key].totalAmount += Number(order.totalAmount);
     });
     return Object.values(report);
@@ -306,7 +306,7 @@ export default function DeliveryReportsPage() {
         };
       }
       report[key].orderCount += 1;
-      report[key].totalQty += order.bookedQty;
+      report[key].totalQty += Number(order.bookedQty) || 0;
       report[key].paymentCollected += Number(order.advanceAmount);
       report[key].pendingBalance += Number(order.remainingBalance);
     });
