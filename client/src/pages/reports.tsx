@@ -494,29 +494,39 @@ export default function ReportsPage() {
             <div className="hidden md:block">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-muted/30 hover:bg-muted/30">
-                    <TableHead className="text-[10px] font-black uppercase tracking-wider">Date</TableHead>
-                    <TableHead className="text-[10px] font-black uppercase tracking-wider">Lot Number</TableHead>
-                    <TableHead className="text-[10px] font-black uppercase tracking-wider">Variety</TableHead>
-                    <TableHead className="text-[10px] font-black uppercase tracking-wider text-right">Sown</TableHead>
-                    <TableHead className="text-[10px] font-black uppercase tracking-wider text-right">Ready Date</TableHead>
+                  <TableRow className="bg-muted/50 border-b hover:bg-transparent">
+                    <TableHead className="font-semibold text-xs uppercase tracking-wide">Lot / Sown Date</TableHead>
+                    <TableHead className="font-semibold text-xs uppercase tracking-wide">Variety</TableHead>
+                    <TableHead className="font-semibold text-xs uppercase tracking-wide text-right">Seeds Sown</TableHead>
+                    <TableHead className="font-semibold text-xs uppercase tracking-wide text-right">Ready Date</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {dailySowingData.length === 0 ? (
-                    <EmptyRow colSpan={5} icon={<Sprout className="w-8 h-8" />} message="No sowing data for this period." />
+                    <EmptyRow colSpan={4} icon={<Sprout className="w-8 h-8" />} message="No sowing data for this period." />
                   ) : (
-                    dailySowingData.map((lot: any, idx: number) => (
-                      <TableRow key={lot.id} className={cn("hover:bg-primary/5 transition-colors", idx % 2 === 0 ? "" : "bg-muted/10")} data-testid={`row-sowing-${lot.id}`}>
-                        <TableCell className="text-xs py-3 text-muted-foreground">{lot.sowingDate}</TableCell>
-                        <TableCell className="py-3">
-                          <span className="font-mono text-xs font-bold bg-muted/60 px-2 py-0.5 rounded">{lot.lotNumber}</span>
+                    dailySowingData.map((lot: any) => (
+                      <TableRow
+                        key={lot.id}
+                        className="hover:bg-muted/60 transition-colors"
+                        data-testid={`row-sowing-${lot.id}`}
+                      >
+                        <TableCell className="py-4">
+                          <div className="font-bold text-base text-foreground font-mono">{lot.lotNumber}</div>
+                          <div className="text-xs text-muted-foreground mt-0.5">Sown: {lot.sowingDate || "—"}</div>
                         </TableCell>
-                        <TableCell className="text-sm py-3 font-medium">{lot.variety?.name || "N/A"}</TableCell>
-                        <TableCell className="text-sm py-3 text-right font-black">{Number(lot.seedsSown).toLocaleString()}</TableCell>
-                        <TableCell className="py-3 text-right">
-                          <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100">
-                            {lot.expectedReadyDate || "—"}
+                        <TableCell className="py-4">
+                          <div className="font-bold text-base text-foreground">{lot.variety?.name || "N/A"}</div>
+                        </TableCell>
+                        <TableCell className="py-4 text-right">
+                          <span className="font-bold text-lg text-foreground">{Number(lot.seedsSown).toLocaleString()}</span>
+                        </TableCell>
+                        <TableCell className="py-4 text-right">
+                          <div className="text-xs text-muted-foreground">Ready</div>
+                          <span className="font-bold text-lg text-primary">
+                            {lot.expectedReadyDate
+                              ? (() => { try { return format(parseISO(lot.expectedReadyDate), "dd MMM yy"); } catch { return lot.expectedReadyDate; } })()
+                              : "—"}
                           </span>
                         </TableCell>
                       </TableRow>
@@ -535,24 +545,29 @@ export default function ReportsPage() {
                   <MobileCard key={lot.id} data-testid={`card-sowing-${lot.id}`}>
                     <div className="flex justify-between items-start gap-2">
                       <div>
-                        <p className="text-[10px] font-bold uppercase text-muted-foreground">Lot</p>
-                        <p className="font-mono text-sm font-black">{lot.lotNumber}</p>
+                        <p className="text-xs text-muted-foreground">Lot</p>
+                        <p className="font-bold text-base font-mono text-foreground">{lot.lotNumber}</p>
                       </div>
-                      <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100 whitespace-nowrap">
-                        {lot.expectedReadyDate || "—"}
-                      </span>
+                      <div className="text-right">
+                        <p className="text-xs text-muted-foreground">Ready</p>
+                        <p className="font-bold text-lg text-primary">
+                          {lot.expectedReadyDate
+                            ? (() => { try { return format(parseISO(lot.expectedReadyDate), "dd MMM yy"); } catch { return lot.expectedReadyDate; } })()
+                            : "—"}
+                        </p>
+                      </div>
                     </div>
                     <div className="flex justify-between items-end pt-2 border-t border-dashed">
                       <div>
-                        <p className="text-[10px] font-bold uppercase text-muted-foreground">Variety</p>
-                        <p className="text-sm font-medium">{lot.variety?.name || "N/A"}</p>
+                        <p className="text-xs text-muted-foreground">Variety</p>
+                        <p className="font-bold text-base text-foreground">{lot.variety?.name || "N/A"}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-[10px] font-bold uppercase text-muted-foreground">Sown</p>
-                        <p className="text-sm font-black">{Number(lot.seedsSown).toLocaleString()}</p>
+                        <p className="text-xs text-muted-foreground">Sown</p>
+                        <p className="font-bold text-lg text-foreground">{Number(lot.seedsSown).toLocaleString()}</p>
                       </div>
                     </div>
-                    <p className="text-[10px] text-muted-foreground/60 pt-1">{lot.sowingDate}</p>
+                    <p className="text-xs text-muted-foreground pt-1">Sown: {lot.sowingDate}</p>
                   </MobileCard>
                 ))
               )}
@@ -577,31 +592,53 @@ export default function ReportsPage() {
           >
             <Table>
               <TableHeader>
-                <TableRow className="bg-muted/30 hover:bg-muted/30">
-                  <TableHead className="text-[10px] font-black uppercase tracking-wider">Lot</TableHead>
-                  <TableHead className="text-[10px] font-black uppercase tracking-wider">Variety</TableHead>
-                  <TableHead className="text-[10px] font-black uppercase tracking-wider text-right">Sown</TableHead>
-                  <TableHead className="text-[10px] font-black uppercase tracking-wider text-right">Available</TableHead>
+                <TableRow className="bg-muted/50 border-b hover:bg-transparent">
+                  <TableHead className="font-semibold text-xs uppercase tracking-wide">Lot Number</TableHead>
+                  <TableHead className="font-semibold text-xs uppercase tracking-wide">Variety</TableHead>
+                  <TableHead className="font-semibold text-xs uppercase tracking-wide text-right">Seeds Sown</TableHead>
+                  <TableHead className="font-semibold text-xs uppercase tracking-wide text-right">Available</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {lotStockData.length === 0 ? (
                   <EmptyRow colSpan={4} icon={<ShoppingBag className="w-8 h-8" />} message="No stock data available." />
                 ) : (
-                  lotStockData.map((lot: any, idx: number) => (
-                    <TableRow key={lot.id} className={cn("hover:bg-primary/5 transition-colors", idx % 2 !== 0 ? "bg-muted/10" : "")} data-testid={`row-stock-${lot.id}`}>
-                      <TableCell className="py-3">
-                        <span className="font-mono text-xs font-bold bg-muted/60 px-2 py-0.5 rounded">{lot.lotNumber}</span>
+                  lotStockData.map((lot: any) => (
+                    <TableRow
+                      key={lot.id}
+                      className={cn(
+                        "hover:bg-muted/60 transition-colors",
+                        lot.available <= 0 ? "bg-red-50/30" : ""
+                      )}
+                      data-testid={`row-stock-${lot.id}`}
+                    >
+                      <TableCell className="py-4">
+                        <div className="font-bold text-base text-foreground font-mono">{lot.lotNumber}</div>
+                        {lot.sowingDate && (
+                          <div className="text-xs text-muted-foreground mt-0.5">Sown: {lot.sowingDate}</div>
+                        )}
                       </TableCell>
-                      <TableCell className="text-sm py-3 font-medium">{lot.variety?.name || "N/A"}</TableCell>
-                      <TableCell className="text-right text-sm py-3 text-muted-foreground">{Number(lot.seedsSown).toLocaleString()}</TableCell>
-                      <TableCell className="text-right py-3">
+                      <TableCell className="py-4">
+                        <div className="font-bold text-base text-foreground">{lot.variety?.name || "N/A"}</div>
+                      </TableCell>
+                      <TableCell className="py-4 text-right">
+                        <span className="font-bold text-lg text-foreground">{Number(lot.seedsSown).toLocaleString()}</span>
+                        {lot.damaged > 0 && (
+                          <div className="text-xs text-muted-foreground">
+                            Dmg: {Number(lot.damaged).toLocaleString()}
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell className="py-4 text-right">
                         <span className={cn(
-                          "text-sm font-black px-2 py-0.5 rounded",
+                          "font-bold text-lg",
                           lot.available > 0 ? "text-primary" : "text-destructive"
                         )}>
                           {Number(lot.available).toLocaleString()}
                         </span>
+                        <div className="text-xs text-muted-foreground">
+                          {lot.available > 0 ? "In Stock" : "Out of Stock"}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
@@ -628,11 +665,11 @@ export default function ReportsPage() {
           >
             <Table>
               <TableHeader>
-                <TableRow className="bg-muted/30 hover:bg-muted/30">
-                  <TableHead className="text-[10px] font-black uppercase tracking-wider">Variety</TableHead>
-                  <TableHead className="text-[10px] font-black uppercase tracking-wider text-right">Total Sown</TableHead>
-                  <TableHead className="text-[10px] font-black uppercase tracking-wider text-right">Damaged</TableHead>
-                  <TableHead className="text-[10px] font-black uppercase tracking-wider text-right">Available</TableHead>
+                <TableRow className="bg-muted/50 border-b hover:bg-transparent">
+                  <TableHead className="font-semibold text-xs uppercase tracking-wide">Variety</TableHead>
+                  <TableHead className="font-semibold text-xs uppercase tracking-wide text-right">Total Sown</TableHead>
+                  <TableHead className="font-semibold text-xs uppercase tracking-wide text-right">Damaged</TableHead>
+                  <TableHead className="font-semibold text-xs uppercase tracking-wide text-right">Available</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -642,24 +679,35 @@ export default function ReportsPage() {
                   varietyPerformance.map((v: any, idx: number) => {
                     const healthPct = v.sown > 0 ? Math.round(((v.sown - v.damaged) / v.sown) * 100) : 100;
                     return (
-                      <TableRow key={idx} className={cn("hover:bg-primary/5 transition-colors", idx % 2 !== 0 ? "bg-muted/10" : "")} data-testid={`row-variety-${idx}`}>
-                        <TableCell className="text-sm py-3 font-bold">{v.name}</TableCell>
-                        <TableCell className="text-right text-sm py-3 font-medium">{Number(v.sown).toLocaleString()}</TableCell>
-                        <TableCell className="text-right py-3">
-                          <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-full">
-                            {Number(v.damaged).toLocaleString()}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-right py-3">
-                          <div className="flex items-center justify-end gap-2">
-                            <div className="hidden sm:block w-16 h-1.5 bg-muted rounded-full overflow-hidden">
+                      <TableRow
+                        key={idx}
+                        className="hover:bg-muted/60 transition-colors"
+                        data-testid={`row-variety-${idx}`}
+                      >
+                        <TableCell className="py-4">
+                          <div className="font-bold text-base text-foreground">{v.name}</div>
+                          <div className="hidden sm:flex items-center gap-2 mt-1.5">
+                            <div className="w-20 h-1.5 bg-muted rounded-full overflow-hidden">
                               <div
                                 className="h-full bg-primary rounded-full"
                                 style={{ width: `${Math.min(100, healthPct)}%` }}
                               />
                             </div>
-                            <span className="text-sm font-black text-primary">{Number(v.available).toLocaleString()}</span>
+                            <span className="text-xs text-muted-foreground">{healthPct}% healthy</span>
                           </div>
+                        </TableCell>
+                        <TableCell className="py-4 text-right">
+                          <span className="font-bold text-lg text-foreground">{Number(v.sown).toLocaleString()}</span>
+                        </TableCell>
+                        <TableCell className="py-4 text-right">
+                          <span className="font-bold text-lg text-destructive">{Number(v.damaged).toLocaleString()}</span>
+                          <div className="text-xs text-muted-foreground">
+                            {v.sown > 0 ? `${Math.round((v.damaged / v.sown) * 100)}% loss` : ""}
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-4 text-right">
+                          <span className="font-bold text-lg text-primary">{Number(v.available).toLocaleString()}</span>
+                          <div className="text-xs text-muted-foreground">Available</div>
                         </TableCell>
                       </TableRow>
                     );
@@ -687,10 +735,10 @@ export default function ReportsPage() {
           >
             <Table>
               <TableHeader>
-                <TableRow className="bg-muted/30 hover:bg-muted/30">
-                  <TableHead className="text-[10px] font-black uppercase tracking-wider">Payment Mode</TableHead>
-                  <TableHead className="text-[10px] font-black uppercase tracking-wider text-right">Orders</TableHead>
-                  <TableHead className="text-[10px] font-black uppercase tracking-wider text-right">Total Advance</TableHead>
+                <TableRow className="bg-muted/50 border-b hover:bg-transparent">
+                  <TableHead className="font-semibold text-xs uppercase tracking-wide">Payment Mode</TableHead>
+                  <TableHead className="font-semibold text-xs uppercase tracking-wide text-right">Orders</TableHead>
+                  <TableHead className="font-semibold text-xs uppercase tracking-wide text-right">Total Advance</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -698,18 +746,27 @@ export default function ReportsPage() {
                   <EmptyRow colSpan={3} icon={<Wallet className="w-8 h-8" />} message="No payment data for this period." />
                 ) : (
                   paymentSummary.map((p: any, idx: number) => (
-                    <TableRow key={idx} className={cn("hover:bg-primary/5 transition-colors", idx % 2 !== 0 ? "bg-muted/10" : "")} data-testid={`row-payment-${idx}`}>
-                      <TableCell className="py-3">
-                        <span className="capitalize font-bold text-sm inline-flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-primary/60 inline-block" />
-                          {p.mode}
-                        </span>
+                    <TableRow
+                      key={idx}
+                      className="hover:bg-muted/60 transition-colors"
+                      data-testid={`row-payment-${idx}`}
+                    >
+                      <TableCell className="py-4">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2.5 h-2.5 rounded-full bg-primary/70 inline-block shrink-0" />
+                          <div>
+                            <div className="font-bold text-base text-foreground capitalize">{p.mode}</div>
+                            <div className="text-xs text-muted-foreground">Payment Method</div>
+                          </div>
+                        </div>
                       </TableCell>
-                      <TableCell className="text-right py-3">
-                        <Badge variant="secondary" className="font-black text-xs">{p.count}</Badge>
+                      <TableCell className="py-4 text-right">
+                        <span className="font-bold text-lg text-foreground">{p.count}</span>
+                        <div className="text-xs text-muted-foreground">Orders</div>
                       </TableCell>
-                      <TableCell className="text-right py-3">
-                        <span className="text-sm font-black text-primary">₹{Number(p.totalAdvance).toLocaleString()}</span>
+                      <TableCell className="py-4 text-right">
+                        <span className="font-bold text-lg text-amber-700">₹{Number(p.totalAdvance).toLocaleString()}</span>
+                        <div className="text-xs text-muted-foreground">Advance Collected</div>
                       </TableCell>
                     </TableRow>
                   ))
