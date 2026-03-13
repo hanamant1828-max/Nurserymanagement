@@ -377,16 +377,16 @@ export default function ReportsPage() {
 
       <Tabs defaultValue="sowing" value={activeTab} className="w-full" onValueChange={setActiveTab}>
         <TabsList className="grid grid-cols-2 sm:grid-cols-4 w-full h-auto p-1 bg-muted/50 rounded-xl mb-6">
-          <TabsTrigger value="sowing" className="flex items-center gap-2 py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
+          <TabsTrigger value="sowing" className="flex items-center gap-2 py-2 rounded-lg ">
             <Sprout className="w-4 h-4" /> <span className="text-xs sm:text-sm">Sowing</span>
           </TabsTrigger>
-          <TabsTrigger value="stock" className="flex items-center gap-2 py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
+          <TabsTrigger value="stock" className="flex items-center gap-2 py-2 rounded-lg ">
             <ShoppingBag className="w-4 h-4" /> <span className="text-xs sm:text-sm">Stock</span>
           </TabsTrigger>
-          <TabsTrigger value="variety" className="flex items-center gap-2 py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
+          <TabsTrigger value="variety" className="flex items-center gap-2 py-2 rounded-lg ">
             <BarChart3 className="w-4 h-4" /> <span className="text-xs sm:text-sm">Varieties</span>
           </TabsTrigger>
-          <TabsTrigger value="payments" className="flex items-center gap-2 py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
+          <TabsTrigger value="payments" className="flex items-center gap-2 py-2 rounded-lg ">
             <Search className="w-4 h-4" /> <span className="text-xs sm:text-sm">Payments</span>
           </TabsTrigger>
         </TabsList>
