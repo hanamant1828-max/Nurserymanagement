@@ -117,27 +117,33 @@ export default function Dashboard() {
   const mainStats = [
     { 
       label: "Total Employees", 
+      desc: "Registered staff",
       value: totalEmployees, 
       icon: Users, 
       color: "text-indigo-600",
+      labelColor: "text-indigo-500",
       bg: "bg-indigo-50",
       border: "border-indigo-100",
       href: "/employees"
     },
     { 
       label: "Present Today", 
+      desc: "Clocked in today",
       value: presentCount, 
       icon: UserCheck, 
       color: "text-green-600",
+      labelColor: "text-green-600",
       bg: "bg-green-50",
       border: "border-green-100",
       href: "/attendance"
     },
     { 
       label: "Absent Today", 
+      desc: "Not yet clocked in",
       value: absentCount, 
       icon: UserX, 
       color: "text-rose-600",
+      labelColor: "text-rose-500",
       bg: "bg-rose-50",
       border: "border-rose-100",
       href: "/attendance"
@@ -145,10 +151,10 @@ export default function Dashboard() {
   ];
 
   const subStats = [
-    { label: "Today's Sowing", value: sowingToday, icon: Sprout, color: "text-green-600", bg: "bg-green-50", border: "border-green-100", href: "/lots" },
-    { label: "Pending Lots", value: unassignedOrders, icon: Package, color: "text-red-600", bg: "bg-red-50", border: "border-red-100", href: "/pending-lot-reports" },
-    { label: "Deliverable Today", value: deliverableToday, icon: Clock, color: "text-orange-600", bg: "bg-orange-50", border: "border-orange-100", href: "/today-deliveries" },
-    { label: "Delivered Today", value: deliveriesToday, icon: Truck, color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-100", href: "/delivery-reports" },
+    { label: "Today's Sowing", desc: "Lots sown today", value: sowingToday, icon: Sprout, color: "text-green-600", labelColor: "text-green-600", bg: "bg-green-50", border: "border-green-100", href: "/lots" },
+    { label: "Pending Lots", desc: "Awaiting lot assignment", value: unassignedOrders, icon: Package, color: "text-red-600", labelColor: "text-red-500", bg: "bg-red-50", border: "border-red-100", href: "/pending-lot-reports" },
+    { label: "Deliverable Today", desc: "Orders due today", value: deliverableToday, icon: Clock, color: "text-orange-600", labelColor: "text-orange-500", bg: "bg-orange-50", border: "border-orange-100", href: "/today-deliveries" },
+    { label: "Delivered Today", desc: "Completed deliveries", value: deliveriesToday, icon: Truck, color: "text-blue-600", labelColor: "text-blue-500", bg: "bg-blue-50", border: "border-blue-100", href: "/delivery-reports" },
   ];
 
   const salesByVariety = orders?.reduce((acc: Record<string, number>, order: any) => {
@@ -249,8 +255,9 @@ export default function Dashboard() {
                       <stat.icon className="w-6 h-6" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 leading-none mb-1.5">{stat.label}</p>
-                      <h3 className="text-3xl font-black tracking-tight leading-none" data-testid={`text-stat-value-${stat.label.toLowerCase().replace(/\s+/g, '-')}`}>{stat.value}</h3>
+                      <p className={cn("text-xs font-semibold leading-none mb-0.5", stat.labelColor)}>{stat.label}</p>
+                      <h3 className="text-3xl font-black tracking-tight leading-none my-1" data-testid={`text-stat-value-${stat.label.toLowerCase().replace(/\s+/g, '-')}`}>{stat.value}</h3>
+                      <p className="text-[11px] text-muted-foreground/70 font-medium leading-none">{stat.desc}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -278,8 +285,9 @@ export default function Dashboard() {
                       <stat.icon className="w-6 h-6" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 leading-none mb-1.5">{stat.label}</p>
-                      <h3 className="text-3xl font-black tracking-tight leading-none" data-testid={`text-substat-value-${stat.label.toLowerCase().replace(/\s+/g, '-')}`}>{stat.value}</h3>
+                      <p className={cn("text-xs font-semibold leading-none mb-0.5", stat.labelColor)}>{stat.label}</p>
+                      <h3 className="text-3xl font-black tracking-tight leading-none my-1" data-testid={`text-substat-value-${stat.label.toLowerCase().replace(/\s+/g, '-')}`}>{stat.value}</h3>
+                      <p className="text-[11px] text-muted-foreground/70 font-medium leading-none">{stat.desc}</p>
                     </div>
                   </CardContent>
                 </Card>
