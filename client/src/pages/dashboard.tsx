@@ -145,10 +145,10 @@ export default function Dashboard() {
   ];
 
   const subStats = [
-    { label: "Today's Sowing", value: sowingToday, icon: Sprout, color: "text-green-600", bg: "bg-green-100/50", href: "/lots" },
-    { label: "Pending Lots", value: unassignedOrders, icon: Package, color: "text-red-600", bg: "bg-red-100/50", href: "/pending-lot-reports" },
-    { label: "Deliverable Today", value: deliverableToday, icon: Clock, color: "text-orange-600", bg: "bg-orange-100/50", href: "/today-deliveries" },
-    { label: "Delivered Today", value: deliveriesToday, icon: Truck, color: "text-blue-600", bg: "bg-blue-100/50", href: "/delivery-reports" },
+    { label: "Today's Sowing", value: sowingToday, icon: Sprout, color: "text-green-600", bg: "bg-green-50", border: "border-green-100", href: "/lots" },
+    { label: "Pending Lots", value: unassignedOrders, icon: Package, color: "text-red-600", bg: "bg-red-50", border: "border-red-100", href: "/pending-lot-reports" },
+    { label: "Deliverable Today", value: deliverableToday, icon: Clock, color: "text-orange-600", bg: "bg-orange-50", border: "border-orange-100", href: "/today-deliveries" },
+    { label: "Delivered Today", value: deliveriesToday, icon: Truck, color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-100", href: "/delivery-reports" },
   ];
 
   const salesByVariety = orders?.reduce((acc: Record<string, number>, order: any) => {
@@ -264,24 +264,26 @@ export default function Dashboard() {
       </div>
 
       {/* Secondary Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {subStats.map((stat, idx) => (
           <motion.div 
             key={stat.label}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 + idx * 0.1 }}
           >
             <Link href={stat.href} data-testid={`link-substat-${stat.label.toLowerCase().replace(/\s+/g, '-')}`}>
-              <div className={cn("p-4 rounded-3xl flex items-center gap-4 cursor-pointer hover:shadow-md transition-all group", stat.bg)}>
-                <div className={cn("p-2 rounded-xl bg-white shadow-sm group-hover:rotate-12 transition-transform", stat.color)}>
-                  <stat.icon className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">{stat.label}</p>
-                  <p className="text-xl font-black leading-tight" data-testid={`text-substat-value-${stat.label.toLowerCase().replace(/\s+/g, '-')}`}>{stat.value}</p>
-                </div>
-              </div>
+              <Card className={cn("border-none shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden group", stat.bg)}>
+                <CardContent className="p-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <div className={cn("p-3 rounded-2xl shadow-sm group-hover:scale-110 transition-transform duration-300", "bg-white", stat.color)}>
+                      <stat.icon className="w-6 h-6" />
+                    </div>
+                  </div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">{stat.label}</p>
+                  <h3 className="text-3xl font-black tracking-tight" data-testid={`text-substat-value-${stat.label.toLowerCase().replace(/\s+/g, '-')}`}>{stat.value}</h3>
+                </CardContent>
+              </Card>
             </Link>
           </motion.div>
         ))}
