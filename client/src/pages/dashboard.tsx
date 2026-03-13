@@ -289,8 +289,8 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Pending Quantity Speedometer */}
-        <Card className="border-none shadow-lg rounded-[2rem] overflow-hidden flex flex-col cursor-pointer hover:shadow-xl transition-shadow" asChild>
-          <Link href="/pending-lot-reports">
+        <Link href="/pending-lot-reports">
+          <Card className="border-none shadow-lg rounded-[2rem] overflow-hidden flex flex-col cursor-pointer hover:shadow-xl transition-shadow">
             <div>
               <CardHeader className="bg-muted/5 border-b border-muted/20 pb-4">
                 <CardTitle className="text-lg font-black flex items-center gap-2">
@@ -323,12 +323,12 @@ export default function Dashboard() {
                 </div>
               </CardContent>
             </div>
-          </Link>
-        </Card>
+          </Card>
+        </Link>
 
         {/* Delivered Quantity Speedometer */}
-        <Card className="border-none shadow-lg rounded-[2rem] overflow-hidden flex flex-col cursor-pointer hover:shadow-xl transition-shadow" asChild>
-          <Link href="/delivery-reports">
+        <Link href="/delivery-reports">
+          <Card className="border-none shadow-lg rounded-[2rem] overflow-hidden flex flex-col cursor-pointer hover:shadow-xl transition-shadow">
             <div>
               <CardHeader className="bg-muted/5 border-b border-muted/20 pb-4">
                 <CardTitle className="text-lg font-black flex items-center gap-2">
@@ -361,12 +361,12 @@ export default function Dashboard() {
                 </div>
               </CardContent>
             </div>
-          </Link>
-        </Card>
+          </Card>
+        </Link>
 
         {/* Sown Quantity Speedometer */}
-        <Card className="border-none shadow-lg rounded-[2rem] overflow-hidden flex flex-col cursor-pointer hover:shadow-xl transition-shadow" asChild>
-          <Link href="/lots">
+        <Link href="/lots">
+          <Card className="border-none shadow-lg rounded-[2rem] overflow-hidden flex flex-col cursor-pointer hover:shadow-xl transition-shadow">
             <div>
               <CardHeader className="bg-muted/5 border-b border-muted/20 pb-4">
                 <CardTitle className="text-lg font-black flex items-center gap-2">
@@ -399,8 +399,8 @@ export default function Dashboard() {
                 </div>
               </CardContent>
             </div>
-          </Link>
-        </Card>
+          </Card>
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
