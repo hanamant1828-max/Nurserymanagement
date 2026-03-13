@@ -1,12 +1,13 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, type ReactNode } from "react";
 import { useLots } from "@/hooks/use-lots";
 import { useOrders } from "@/hooks/use-orders";
 import { useCategories } from "@/hooks/use-categories";
 import { useVarieties } from "@/hooks/use-varieties";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, FileSpreadsheet, Truck, CheckCircle, BarChart3, Calendar as CalendarIcon, MapPin, Layers, Sprout } from "lucide-react";
+import { Search, FileSpreadsheet, Truck, CheckCircle, BarChart3, Calendar as CalendarIcon, MapPin, Sprout, SlidersHorizontal, X, FileDown, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
@@ -39,10 +40,8 @@ export default function DeliveryReportsPage() {
   const { data: categories } = useCategories();
   const { data: varieties } = useVarieties();
 
-  // Persistence key
   const PERSISTENCE_KEY = "delivery_reports_filters_state";
 
-  // Initial state helper
   const getInitialState = () => {
     const saved = localStorage.getItem(PERSISTENCE_KEY);
     if (saved) {
@@ -94,7 +93,6 @@ export default function DeliveryReportsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>(initialState.selectedCategory);
   const [selectedVariety, setSelectedVariety] = useState<string>(initialState.selectedVariety);
 
-  // Persist state changes
   useEffect(() => {
     const stateToSave = {
       searchTerm,
@@ -119,6 +117,16 @@ export default function DeliveryReportsPage() {
     setSelectedCategory("all");
     setSelectedVariety("all");
   };
+
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (searchTerm) count++;
+    if (pageDistrictId !== "all") count++;
+    if (pageTalukId !== "all") count++;
+    if (selectedCategory !== "all") count++;
+    if (selectedVariety !== "all") count++;
+    return count;
+  }, [searchTerm, pageDistrictId, pageTalukId, selectedCategory, selectedVariety]);
 
   const exportToExcel = (data: any[], fileName: string) => {
     const ws = XLSX.utils.json_to_sheet(data);
@@ -155,7 +163,6 @@ export default function DeliveryReportsPage() {
   const isInRange = (dateStr: string | null, fallbackDateStr: string) => {
     if (!dateRange.from || !dateRange.to) return true;
     try {
-      // Use actualDeliveryDate if available, otherwise use fallback (deliveryDate)
       const date = parseISO(dateStr || fallbackDateStr);
       return isWithinInterval(date, {
         start: startOfDay(dateRange.from),
@@ -183,49 +190,39 @@ export default function DeliveryReportsPage() {
     return Array.from(taluks).sort();
   }, [orders, pageDistrictId]);
 
-  // Filtered orders for totals (only district/taluk, no category/variety filters)
   const filteredOrdersForTotals = useMemo(() => {
     if (!orders) return [];
     let filtered = orders;
-
     if (pageDistrictId !== "all") {
       filtered = filtered.filter((item: any) => item.district === pageDistrictId);
     }
-    
     if (pageTalukId !== "all") {
       filtered = filtered.filter((item: any) => item.taluk === pageTalukId);
     }
-
     return filtered;
   }, [orders, pageDistrictId, pageTalukId]);
 
-  // Fully filtered orders for table display (includes category/variety filters)
   const filteredOrders = useMemo(() => {
     if (!orders) return [];
     let filtered = orders;
-
     if (pageDistrictId !== "all") {
       filtered = filtered.filter((item: any) => item.district === pageDistrictId);
     }
-    
     if (pageTalukId !== "all") {
       filtered = filtered.filter((item: any) => item.taluk === pageTalukId);
     }
-
     if (selectedCategory !== "all") {
       filtered = filtered.filter((item: any) => {
         const lot = lots?.find((l: any) => l.id === item.lotId);
         return lot?.categoryId?.toString() === selectedCategory;
       });
     }
-
     if (selectedVariety !== "all") {
       filtered = filtered.filter((item: any) => {
         const lot = lots?.find((l: any) => l.id === item.lotId);
         return lot?.varietyId?.toString() === selectedVariety;
       });
     }
-
     if (searchTerm) {
       const s = searchTerm.toLowerCase();
       filtered = filtered.filter((item: any) => 
@@ -234,7 +231,6 @@ export default function DeliveryReportsPage() {
         (item.phone?.toLowerCase().includes(s))
       );
     }
-
     return filtered;
   }, [orders, searchTerm, pageDistrictId, pageTalukId, selectedCategory, selectedVariety, lots]);
 
@@ -260,7 +256,6 @@ export default function DeliveryReportsPage() {
     });
   }, [filteredOrders, lots, dateRange]);
 
-  // Total quantities irrespective of category/variety filters
   const totalQtyToDeliver = useMemo(() => {
     return filteredOrdersForTotals
       .filter((o: any) => o.status === "BOOKED" && isInRange(null, o.deliveryDate))
@@ -278,12 +273,7 @@ export default function DeliveryReportsPage() {
     deliveredOrders.forEach((order: any) => {
       const key = order.varietyName;
       if (!report[key]) {
-        report[key] = {
-          name: key,
-          orderCount: 0,
-          totalQty: 0,
-          totalAmount: 0
-        };
+        report[key] = { name: key, orderCount: 0, totalQty: 0, totalAmount: 0 };
       }
       report[key].orderCount += 1;
       report[key].totalQty += Number(order.bookedQty) || 0;
@@ -297,13 +287,7 @@ export default function DeliveryReportsPage() {
     deliveredOrders.forEach((order: any) => {
       const key = order.village || "Unknown";
       if (!report[key]) {
-        report[key] = {
-          village: key,
-          orderCount: 0,
-          totalQty: 0,
-          paymentCollected: 0,
-          pendingBalance: 0
-        };
+        report[key] = { village: key, orderCount: 0, totalQty: 0, paymentCollected: 0, pendingBalance: 0 };
       }
       report[key].orderCount += 1;
       report[key].totalQty += Number(order.bookedQty) || 0;
@@ -314,333 +298,404 @@ export default function DeliveryReportsPage() {
   }, [deliveredOrders]);
 
   if (loadingLots || loadingOrders) {
-    return <div className="p-8 text-center text-muted-foreground">Loading delivery reports...</div>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
+        <div className="w-10 h-10 rounded-full border-4 border-primary border-t-transparent animate-spin" />
+        <p className="text-muted-foreground text-sm font-medium">Loading delivery reports...</p>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-display font-bold">Delivery Reports</h1>
-          <p className="text-muted-foreground">Track pending and completed deliveries.</p>
-        </div>
-        <div className="flex flex-col sm:flex-row items-center gap-3">
-          <div className="flex items-center gap-2">
-            <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-bold uppercase text-muted-foreground ml-1">From</span>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-[140px] justify-start text-left font-normal",
-                      !dateRange.from && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-3 w-3" />
-                    {dateRange.from ? format(dateRange.from, "MMM dd, y") : <span>Pick date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={dateRange.from}
-                    onSelect={(date) => setDateRange((prev: any) => ({ ...prev, from: date || undefined }))}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-bold uppercase text-muted-foreground ml-1">To</span>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-[140px] justify-start text-left font-normal",
-                      !dateRange.to && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-3 w-3" />
-                    {dateRange.to ? format(dateRange.to, "MMM dd, y") : <span>Pick date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={dateRange.to}
-                    onSelect={(date) => setDateRange((prev: any) => ({ ...prev, to: date || undefined }))}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-primary/10">
+            <Truck className="w-6 h-6 text-primary" />
           </div>
+          <div>
+            <h1 className="text-2xl font-display font-bold tracking-tight">Delivery Reports</h1>
+            <p className="text-sm text-muted-foreground">Track pending and completed deliveries</p>
+          </div>
+        </div>
 
-          <div className="flex flex-col gap-1 w-full sm:w-64">
-            <span className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Search</span>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input 
-                placeholder="Customer, village, phone..." 
-                className="pl-9"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+        {/* Date Range Picker */}
+        <div className="flex items-center gap-2 bg-muted/40 border rounded-xl px-3 py-2">
+          <CalendarIcon className="w-4 h-4 text-muted-foreground shrink-0" />
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                className={cn(
+                  "text-sm font-medium hover:text-primary transition-colors",
+                  !dateRange.from && "text-muted-foreground"
+                )}
+              >
+                {dateRange.from ? format(dateRange.from, "MMM dd, yyyy") : "Start date"}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={dateRange.from}
+                onSelect={(date) => setDateRange((prev: any) => ({ ...prev, from: date || undefined }))}
+                initialFocus
               />
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-4 bg-muted/20 p-4 rounded-lg border border-dashed relative">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="absolute -top-3 right-4 bg-background border h-7 text-[10px] font-bold uppercase hover:bg-destructive hover:text-destructive-foreground transition-colors"
-            onClick={handleClearFilters}
-          >
-            Clear Filters
-          </Button>
-          <div className="flex flex-col gap-1 w-[200px]">
-            <span className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Filter by District</span>
-            <Select value={pageDistrictId} onValueChange={(val) => {
-              setPageDistrictId(val);
-              setPageTalukId("all");
-            }}>
-              <SelectTrigger className="bg-background">
-                <SelectValue placeholder="All Districts" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Districts</SelectItem>
-                {uniqueDistricts.map((d: any) => (
-                  <SelectItem key={d} value={d || "Unknown"}>{d || "Unknown"}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex flex-col gap-1 w-[200px]">
-            <span className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Filter by Taluk</span>
-            <Select value={pageTalukId} onValueChange={setPageTalukId} disabled={pageDistrictId === "all"}>
-              <SelectTrigger className="bg-background">
-                <SelectValue placeholder="All Taluks" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Taluks</SelectItem>
-                {uniqueTaluks.map((t: any) => (
-                  <SelectItem key={t} value={t || "Unknown"}>{t || "Unknown"}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex flex-col gap-1 w-[200px]">
-            <span className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Filter by Category</span>
-            <Select value={selectedCategory} onValueChange={(val) => {
-              setSelectedCategory(val);
-              setSelectedVariety("all");
-            }}>
-              <SelectTrigger className="bg-background">
-                <SelectValue placeholder="All Categories" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {categories?.map((c: any) => (
-                  <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex flex-col gap-1 w-[200px]">
-            <span className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Filter by Variety</span>
-            <Select value={selectedVariety} onValueChange={setSelectedVariety} disabled={selectedCategory === "all"}>
-              <SelectTrigger className="bg-background">
-                <SelectValue placeholder="All Varieties" />
-              </SelectTrigger>
-              <SelectContent className="z-[100]">
-                <SelectItem value="all">All Varieties</SelectItem>
-                {varieties?.filter((v: any) => selectedCategory === "all" || v.categoryId.toString() === selectedCategory).map((v: any) => (
-                  <SelectItem key={v.id} value={v.id.toString()}>{v.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+            </PopoverContent>
+          </Popover>
+          <span className="text-muted-foreground text-xs">→</span>
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                className={cn(
+                  "text-sm font-medium hover:text-primary transition-colors",
+                  !dateRange.to && "text-muted-foreground"
+                )}
+              >
+                {dateRange.to ? format(dateRange.to, "MMM dd, yyyy") : "End date"}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="end">
+              <Calendar
+                mode="single"
+                selected={dateRange.to}
+                onSelect={(date) => setDateRange((prev: any) => ({ ...prev, to: date || undefined }))}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
 
+      {/* Filters Panel */}
+      <Card className="border-dashed">
+        <CardContent className="p-4">
+          <div className="flex flex-wrap items-end gap-3">
+            {/* Search */}
+            <div className="flex flex-col gap-1.5 flex-1 min-w-[200px]">
+              <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                <Search className="w-3 h-3" /> Search
+              </label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  placeholder="Customer, village, phone..."
+                  className="pl-9 h-9 text-sm"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  data-testid="input-search"
+                />
+              </div>
+            </div>
+
+            <div className="w-px h-8 bg-border hidden sm:block" />
+
+            {/* District */}
+            <div className="flex flex-col gap-1.5 w-[160px]">
+              <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                <MapPin className="w-3 h-3" /> District
+              </label>
+              <Select value={pageDistrictId} onValueChange={(val) => {
+                setPageDistrictId(val);
+                setPageTalukId("all");
+              }}>
+                <SelectTrigger className="h-9 text-sm" data-testid="select-district">
+                  <SelectValue placeholder="All Districts" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Districts</SelectItem>
+                  {uniqueDistricts.map((d: any) => (
+                    <SelectItem key={d} value={d || "Unknown"}>{d || "Unknown"}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Taluk */}
+            <div className="flex flex-col gap-1.5 w-[160px]">
+              <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Taluk</label>
+              <Select value={pageTalukId} onValueChange={setPageTalukId} disabled={pageDistrictId === "all"}>
+                <SelectTrigger className="h-9 text-sm" data-testid="select-taluk">
+                  <SelectValue placeholder="All Taluks" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Taluks</SelectItem>
+                  {uniqueTaluks.map((t: any) => (
+                    <SelectItem key={t} value={t || "Unknown"}>{t || "Unknown"}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="w-px h-8 bg-border hidden sm:block" />
+
+            {/* Category */}
+            <div className="flex flex-col gap-1.5 w-[160px]">
+              <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                <Layers className="w-3 h-3" /> Category
+              </label>
+              <Select value={selectedCategory} onValueChange={(val) => {
+                setSelectedCategory(val);
+                setSelectedVariety("all");
+              }}>
+                <SelectTrigger className="h-9 text-sm" data-testid="select-category">
+                  <SelectValue placeholder="All Categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {categories?.map((c: any) => (
+                    <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Variety */}
+            <div className="flex flex-col gap-1.5 w-[160px]">
+              <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                <Sprout className="w-3 h-3" /> Variety
+              </label>
+              <Select value={selectedVariety} onValueChange={setSelectedVariety} disabled={selectedCategory === "all"}>
+                <SelectTrigger className="h-9 text-sm" data-testid="select-variety">
+                  <SelectValue placeholder="All Varieties" />
+                </SelectTrigger>
+                <SelectContent className="z-[100]">
+                  <SelectItem value="all">All Varieties</SelectItem>
+                  {varieties?.filter((v: any) => selectedCategory === "all" || v.categoryId.toString() === selectedCategory).map((v: any) => (
+                    <SelectItem key={v.id} value={v.id.toString()}>{v.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Clear Filters */}
+            {activeFilterCount > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-9 gap-1.5 text-destructive hover:text-destructive hover:bg-destructive/10 border border-destructive/20"
+                onClick={handleClearFilters}
+                data-testid="button-clear-filters"
+              >
+                <X className="w-3.5 h-3.5" />
+                Clear
+                <Badge variant="destructive" className="h-4 w-4 p-0 flex items-center justify-center text-[10px] rounded-full">
+                  {activeFilterCount}
+                </Badge>
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Tabs + Summary */}
       <Tabs defaultValue="pending" value={activeTab} className="w-full" onValueChange={setActiveTab}>
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <TabsList className="flex w-full overflow-x-auto pb-2 scrollbar-hide">
-            <TabsTrigger value="pending" className="flex items-center gap-2 flex-1 min-w-[160px]">
-              <Truck className="w-4 h-4" /> <span>Pending Deliveries</span>
+        <div className="flex flex-col sm:flex-row gap-3 mb-5">
+          <TabsList className="flex-1 grid grid-cols-3 h-11">
+            <TabsTrigger value="pending" className="flex items-center gap-2 text-sm" data-testid="tab-pending">
+              <Truck className="w-4 h-4 shrink-0" />
+              <span className="hidden sm:inline">Pending</span>
+              <span className="sm:hidden">Pending</span>
+              {pendingDeliveries.length > 0 && (
+                <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-[10px]">{pendingDeliveries.length}</Badge>
+              )}
             </TabsTrigger>
-            <TabsTrigger value="delivered" className="flex items-center gap-2 flex-1 min-w-[160px]">
-              <CheckCircle className="w-4 h-4" /> <span>Delivered Orders</span>
+            <TabsTrigger value="delivered" className="flex items-center gap-2 text-sm" data-testid="tab-delivered">
+              <CheckCircle className="w-4 h-4 shrink-0" />
+              <span>Delivered</span>
+              {deliveredOrders.length > 0 && (
+                <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-[10px]">{deliveredOrders.length}</Badge>
+              )}
             </TabsTrigger>
-            <TabsTrigger value="analysis" className="flex items-center gap-2 flex-1 min-w-[160px]">
-              <BarChart3 className="w-4 h-4" /> <span>Stats Analysis</span>
+            <TabsTrigger value="analysis" className="flex items-center gap-2 text-sm" data-testid="tab-analysis">
+              <BarChart3 className="w-4 h-4 shrink-0" />
+              <span>Analysis</span>
             </TabsTrigger>
           </TabsList>
 
-          <Card className="sm:w-64 bg-primary/5 border-primary/20 shadow-sm">
-            <CardContent className="p-3 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-full">
-                  <Sprout className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider">
-                    {activeTab === "pending" ? "Total to Deliver" : "Total Delivered Qty"}
-                  </p>
-                  <p className="text-xl font-black text-primary">
-                    {formatIndianNumber(activeTab === "pending" ? totalQtyToDeliver : totalQtyDelivered)}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Summary Stat */}
+          <div className="flex items-center gap-3 bg-primary/5 border border-primary/15 rounded-xl px-4 py-2.5 sm:w-56 shrink-0">
+            <div className="p-2 rounded-lg bg-primary/10">
+              <Sprout className="w-4 h-4 text-primary" />
+            </div>
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                {activeTab === "pending" ? "To Deliver" : activeTab === "delivered" ? "Delivered Qty" : "Total Delivered"}
+              </p>
+              <p className="text-xl font-black text-primary leading-tight">
+                {formatIndianNumber(activeTab === "pending" ? totalQtyToDeliver : totalQtyDelivered)}
+              </p>
+            </div>
+          </div>
         </div>
 
-        <TabsContent value="pending">
-      <div className="hidden md:block">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Pending Deliveries</CardTitle>
-              <p className="text-sm text-muted-foreground">Booked orders awaiting delivery.</p>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => exportToPDF(pendingDeliveries, "Pending_Deliveries", ["Customer", "Variety", "Lot", "Qty", "Exp. Date", "Village", "Taluk"], ["customerName", "varietyName", "lotNumber", "bookedQty", "deliveryDate", "village", "taluk"])}>
-                PDF
-              </Button>
-              <Button size="sm" onClick={() => exportToExcel(pendingDeliveries, "Pending_Deliveries")}>
-                <FileSpreadsheet className="w-4 h-4 mr-2" /> Excel
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Variety</TableHead>
-                  <TableHead>Lot</TableHead>
-                  <TableHead className="text-right">Qty</TableHead>
-                  <TableHead>Exp. Date</TableHead>
-                  <TableHead>Village</TableHead>
-                  <TableHead>Taluk</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {pendingDeliveries.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No pending deliveries found.</TableCell>
-                  </TableRow>
-                ) : (
-                  pendingDeliveries.map((order: any) => (
-                    <TableRow key={order.id}>
-                      <TableCell className="font-medium">{order.customerName}</TableCell>
-                      <TableCell>{order.varietyName}</TableCell>
-                      <TableCell>{order.lotNumber}</TableCell>
-                      <TableCell className="text-right">{order.bookedQty}</TableCell>
-                      <TableCell>{order.deliveryDate}</TableCell>
-                      <TableCell className="font-black text-base">{order.village}</TableCell>
-                      <TableCell>{order.taluk || "N/A"}</TableCell>
+        {/* Pending Tab */}
+        <TabsContent value="pending" className="mt-0">
+          {/* Desktop Table */}
+          <div className="hidden md:block">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between py-4 px-5">
+                <div>
+                  <CardTitle className="text-base">Pending Deliveries</CardTitle>
+                  <p className="text-xs text-muted-foreground mt-0.5">Booked orders awaiting delivery</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" onClick={() => exportToPDF(pendingDeliveries, "Pending_Deliveries", ["Customer", "Variety", "Lot", "Qty", "Exp. Date", "Village", "Taluk"], ["customerName", "varietyName", "lotNumber", "bookedQty", "deliveryDate", "village", "taluk"])}>
+                    <FileDown className="w-3.5 h-3.5" /> PDF
+                  </Button>
+                  <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => exportToExcel(pendingDeliveries, "Pending_Deliveries")}>
+                    <FileSpreadsheet className="w-3.5 h-3.5" /> Excel
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/30 hover:bg-muted/30">
+                      <TableHead className="pl-5 font-semibold text-xs uppercase tracking-wider">Customer</TableHead>
+                      <TableHead className="font-semibold text-xs uppercase tracking-wider">Variety</TableHead>
+                      <TableHead className="font-semibold text-xs uppercase tracking-wider">Lot</TableHead>
+                      <TableHead className="text-right font-semibold text-xs uppercase tracking-wider">Qty</TableHead>
+                      <TableHead className="font-semibold text-xs uppercase tracking-wider">Exp. Date</TableHead>
+                      <TableHead className="font-semibold text-xs uppercase tracking-wider">Village</TableHead>
+                      <TableHead className="pr-5 font-semibold text-xs uppercase tracking-wider">Taluk</TableHead>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="md:hidden space-y-4">
-        {pendingDeliveries.length === 0 ? (
-          <div className="h-32 flex items-center justify-center bg-card rounded-xl border border-dashed text-muted-foreground text-sm">
-            No pending deliveries found.
-          </div>
-        ) : (
-          pendingDeliveries.map((order: any) => (
-            <Card key={order.id} className="p-4 space-y-3">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-bold">{order.customerName}</h3>
-                  <div className="text-xs text-muted-foreground">{order.phone}</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-[10px] font-bold uppercase text-muted-foreground">Qty</div>
-                  <div className="text-lg font-black text-primary">{order.bookedQty}</div>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-2 py-2 border-y border-dashed text-xs">
-                <div>
-                  <div className="text-[10px] font-bold text-muted-foreground">Variety</div>
-                  <div>{order.varietyName}</div>
-                  <div className="font-mono text-[10px]">{order.lotNumber}</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-[10px] font-bold text-muted-foreground">Exp. Date</div>
-                  <div>{order.deliveryDate}</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <MapPin className="w-3 h-3" /> {order.village}, {order.taluk || "N/A"}
-              </div>
+                  </TableHeader>
+                  <TableBody>
+                    {pendingDeliveries.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="py-16 text-center">
+                          <EmptyState icon={<Truck className="w-8 h-8" />} message="No pending deliveries found" sub="Try adjusting your filters or date range" />
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      pendingDeliveries.map((order: any) => (
+                        <TableRow key={order.id} className="hover:bg-muted/20 transition-colors">
+                          <TableCell className="pl-5">
+                            <div className="font-semibold text-sm">{order.customerName}</div>
+                            <div className="text-xs text-muted-foreground">{order.phone}</div>
+                          </TableCell>
+                          <TableCell className="text-sm">{order.varietyName}</TableCell>
+                          <TableCell>
+                            <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">{order.lotNumber}</span>
+                          </TableCell>
+                          <TableCell className="text-right font-bold text-primary">{order.bookedQty}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">{order.deliveryDate}</TableCell>
+                          <TableCell className="font-semibold text-sm">{order.village}</TableCell>
+                          <TableCell className="pr-5 text-sm text-muted-foreground">{order.taluk || "N/A"}</TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
             </Card>
-          ))
-        )}
-      </div>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="md:hidden space-y-3">
+            {pendingDeliveries.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 bg-card rounded-xl border border-dashed gap-2">
+                <Truck className="w-8 h-8 text-muted-foreground/40" />
+                <p className="text-sm text-muted-foreground font-medium">No pending deliveries found</p>
+              </div>
+            ) : (
+              pendingDeliveries.map((order: any) => (
+                <Card key={order.id} className="overflow-hidden">
+                  <CardContent className="p-0">
+                    <div className="flex items-start justify-between p-4 pb-3">
+                      <div>
+                        <h3 className="font-bold text-sm">{order.customerName}</h3>
+                        <p className="text-xs text-muted-foreground">{order.phone}</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-[10px] font-semibold uppercase text-muted-foreground">Qty</div>
+                        <div className="text-lg font-black text-primary">{order.bookedQty}</div>
+                      </div>
+                    </div>
+                    <div className="mx-4 border-t border-dashed" />
+                    <div className="grid grid-cols-2 gap-3 p-4 pt-3">
+                      <div>
+                        <div className="text-[10px] font-semibold text-muted-foreground uppercase mb-0.5">Variety</div>
+                        <div className="text-sm font-medium">{order.varietyName}</div>
+                        <div className="font-mono text-[10px] bg-muted inline-block px-1 rounded mt-0.5">{order.lotNumber}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-[10px] font-semibold text-muted-foreground uppercase mb-0.5">Exp. Date</div>
+                        <div className="text-sm">{order.deliveryDate}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 px-4 pb-4 text-xs text-muted-foreground">
+                      <MapPin className="w-3 h-3 text-primary/60" />
+                      <span>{order.village}{order.taluk ? `, ${order.taluk}` : ""}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
         </TabsContent>
 
-        <TabsContent value="delivered">
+        {/* Delivered Tab */}
+        <TabsContent value="delivered" className="mt-0">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader className="flex flex-row items-center justify-between py-4 px-5">
               <div>
-                <CardTitle>Delivered Orders</CardTitle>
-                <p className="text-sm text-muted-foreground">Orders successfully delivered.</p>
+                <CardTitle className="text-base">Delivered Orders</CardTitle>
+                <p className="text-xs text-muted-foreground mt-0.5">Orders successfully delivered</p>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => exportToPDF(deliveredOrders, "Delivered_Orders", ["Customer", "Variety", "Qty", "Total", "Exp. Date", "Actual Date", "Village", "Taluk"], ["customerName", "varietyName", "bookedQty", "totalAmount", "deliveryDate", "actualDeliveryDate", "village", "taluk"])}>
-                  PDF
+                <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" onClick={() => exportToPDF(deliveredOrders, "Delivered_Orders", ["Customer", "Variety", "Qty", "Total", "Exp. Date", "Actual Date", "Village", "Taluk"], ["customerName", "varietyName", "bookedQty", "totalAmount", "deliveryDate", "actualDeliveryDate", "village", "taluk"])}>
+                  <FileDown className="w-3.5 h-3.5" /> PDF
                 </Button>
-                <Button size="sm" onClick={() => exportToExcel(deliveredOrders, "Delivered_Orders")}>
-                  <FileSpreadsheet className="w-4 h-4 mr-2" /> Excel
+                <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => exportToExcel(deliveredOrders, "Delivered_Orders")}>
+                  <FileSpreadsheet className="w-3.5 h-3.5" /> Excel
                 </Button>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Variety</TableHead>
-                    <TableHead className="text-right">Qty</TableHead>
-                    <TableHead className="text-right">Total</TableHead>
-                    <TableHead>Exp. Date</TableHead>
-                    <TableHead>Actual Date</TableHead>
-                    <TableHead>Village</TableHead>
-                    <TableHead>Taluk</TableHead>
+                  <TableRow className="bg-muted/30 hover:bg-muted/30">
+                    <TableHead className="pl-5 font-semibold text-xs uppercase tracking-wider">Customer</TableHead>
+                    <TableHead className="font-semibold text-xs uppercase tracking-wider">Variety</TableHead>
+                    <TableHead className="text-right font-semibold text-xs uppercase tracking-wider">Qty</TableHead>
+                    <TableHead className="text-right font-semibold text-xs uppercase tracking-wider">Total</TableHead>
+                    <TableHead className="font-semibold text-xs uppercase tracking-wider">Exp. Date</TableHead>
+                    <TableHead className="font-semibold text-xs uppercase tracking-wider">Actual Date</TableHead>
+                    <TableHead className="font-semibold text-xs uppercase tracking-wider">Village</TableHead>
+                    <TableHead className="pr-5 font-semibold text-xs uppercase tracking-wider">Taluk</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {deliveredOrders.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No delivered orders found.</TableCell>
+                      <TableCell colSpan={8} className="py-16 text-center">
+                        <EmptyState icon={<CheckCircle className="w-8 h-8" />} message="No delivered orders found" sub="Try adjusting your filters or date range" />
+                      </TableCell>
                     </TableRow>
                   ) : (
                     deliveredOrders.map((order: any) => (
-                      <TableRow key={order.id}>
-                        <TableCell className="font-medium">{order.customerName}</TableCell>
-                        <TableCell>{order.varietyName}</TableCell>
-                        <TableCell className="text-right">{order.bookedQty}</TableCell>
-                        <TableCell className="text-right">₹{Number(order.totalAmount).toLocaleString()}</TableCell>
-                        <TableCell>{order.deliveryDate}</TableCell>
-                        <TableCell>{order.actualDeliveryDate || "N/A"}</TableCell>
-                        <TableCell className="font-black text-base">{order.village}</TableCell>
-                        <TableCell>{order.taluk || "N/A"}</TableCell>
+                      <TableRow key={order.id} className="hover:bg-muted/20 transition-colors">
+                        <TableCell className="pl-5">
+                          <div className="font-semibold text-sm">{order.customerName}</div>
+                          <div className="text-xs text-muted-foreground">{order.phone}</div>
+                        </TableCell>
+                        <TableCell className="text-sm">{order.varietyName}</TableCell>
+                        <TableCell className="text-right font-bold text-primary">{order.bookedQty}</TableCell>
+                        <TableCell className="text-right text-sm font-semibold">₹{Number(order.totalAmount).toLocaleString()}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">{order.deliveryDate}</TableCell>
+                        <TableCell className="text-sm">
+                          {order.actualDeliveryDate ? (
+                            <span className="inline-flex items-center gap-1 text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full text-xs font-medium">
+                              <CheckCircle className="w-3 h-3" /> {order.actualDeliveryDate}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">N/A</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="font-semibold text-sm">{order.village}</TableCell>
+                        <TableCell className="pr-5 text-sm text-muted-foreground">{order.taluk || "N/A"}</TableCell>
                       </TableRow>
                     ))
                   )}
@@ -650,59 +705,88 @@ export default function DeliveryReportsPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="analysis">
+        {/* Analysis Tab */}
+        <TabsContent value="analysis" className="mt-0">
           <Tabs defaultValue="variety">
-            <TabsList className="flex w-full mb-4 overflow-x-auto scrollbar-hide">
-              <TabsTrigger value="variety" className="flex-1 min-w-[120px]">Variety-wise</TabsTrigger>
-              <TabsTrigger value="village" className="flex-1 min-w-[120px]">Village-wise</TabsTrigger>
+            <TabsList className="w-full grid grid-cols-2 mb-4 h-10">
+              <TabsTrigger value="variety" className="text-sm" data-testid="tab-variety-analysis">Variety-wise</TabsTrigger>
+              <TabsTrigger value="village" className="text-sm" data-testid="tab-village-analysis">Village-wise</TabsTrigger>
             </TabsList>
-            <TabsContent value="variety">
+            <TabsContent value="variety" className="mt-0">
               <Card>
+                <CardHeader className="py-4 px-5">
+                  <CardTitle className="text-base">Delivery by Variety</CardTitle>
+                  <p className="text-xs text-muted-foreground">Breakdown of delivered orders per variety</p>
+                </CardHeader>
                 <CardContent className="p-0">
                   <Table>
                     <TableHeader>
-                      <TableRow>
-                        <TableHead>Variety</TableHead>
-                        <TableHead className="text-right">Orders</TableHead>
-                        <TableHead className="text-right">Total Qty</TableHead>
-                        <TableHead className="text-right">Total Value</TableHead>
+                      <TableRow className="bg-muted/30 hover:bg-muted/30">
+                        <TableHead className="pl-5 font-semibold text-xs uppercase tracking-wider">Variety</TableHead>
+                        <TableHead className="text-right font-semibold text-xs uppercase tracking-wider">Orders</TableHead>
+                        <TableHead className="text-right font-semibold text-xs uppercase tracking-wider">Total Qty</TableHead>
+                        <TableHead className="pr-5 text-right font-semibold text-xs uppercase tracking-wider">Total Value</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {deliveryVarietyReport.map((v: any) => (
-                        <TableRow key={v.name}>
-                          <TableCell className="font-bold">{v.name}</TableCell>
-                          <TableCell className="text-right">{v.orderCount}</TableCell>
-                          <TableCell className="text-right">{v.totalQty}</TableCell>
-                          <TableCell className="text-right">₹{v.totalAmount.toLocaleString()}</TableCell>
+                      {deliveryVarietyReport.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={4} className="py-16 text-center">
+                            <EmptyState icon={<BarChart3 className="w-8 h-8" />} message="No data available" sub="No delivered orders in selected range" />
+                          </TableCell>
                         </TableRow>
-                      ))}
+                      ) : (
+                        deliveryVarietyReport.map((v: any) => (
+                          <TableRow key={v.name} className="hover:bg-muted/20 transition-colors">
+                            <TableCell className="pl-5 font-semibold text-sm">{v.name}</TableCell>
+                            <TableCell className="text-right">
+                              <Badge variant="secondary" className="font-mono">{v.orderCount}</Badge>
+                            </TableCell>
+                            <TableCell className="text-right font-bold text-primary">{v.totalQty}</TableCell>
+                            <TableCell className="pr-5 text-right font-semibold text-sm">₹{v.totalAmount.toLocaleString()}</TableCell>
+                          </TableRow>
+                        ))
+                      )}
                     </TableBody>
                   </Table>
                 </CardContent>
               </Card>
             </TabsContent>
-            <TabsContent value="village">
+            <TabsContent value="village" className="mt-0">
               <Card>
+                <CardHeader className="py-4 px-5">
+                  <CardTitle className="text-base">Delivery by Village</CardTitle>
+                  <p className="text-xs text-muted-foreground">Payment summary per village</p>
+                </CardHeader>
                 <CardContent className="p-0">
                   <Table>
                     <TableHeader>
-                      <TableRow>
-                        <TableHead>Village</TableHead>
-                        <TableHead className="text-right">Orders</TableHead>
-                        <TableHead className="text-right">Collected</TableHead>
-                        <TableHead className="text-right">Pending</TableHead>
+                      <TableRow className="bg-muted/30 hover:bg-muted/30">
+                        <TableHead className="pl-5 font-semibold text-xs uppercase tracking-wider">Village</TableHead>
+                        <TableHead className="text-right font-semibold text-xs uppercase tracking-wider">Orders</TableHead>
+                        <TableHead className="text-right font-semibold text-xs uppercase tracking-wider">Collected</TableHead>
+                        <TableHead className="pr-5 text-right font-semibold text-xs uppercase tracking-wider">Pending</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {deliveryVillageReport.map((v: any) => (
-                        <TableRow key={v.village}>
-                          <TableCell className="font-bold">{v.village}</TableCell>
-                          <TableCell className="text-right">{v.orderCount}</TableCell>
-                          <TableCell className="text-right text-green-600">₹{v.paymentCollected.toLocaleString()}</TableCell>
-                          <TableCell className="text-right text-orange-600">₹{v.pendingBalance.toLocaleString()}</TableCell>
+                      {deliveryVillageReport.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={4} className="py-16 text-center">
+                            <EmptyState icon={<MapPin className="w-8 h-8" />} message="No data available" sub="No delivered orders in selected range" />
+                          </TableCell>
                         </TableRow>
-                      ))}
+                      ) : (
+                        deliveryVillageReport.map((v: any) => (
+                          <TableRow key={v.village} className="hover:bg-muted/20 transition-colors">
+                            <TableCell className="pl-5 font-semibold text-sm">{v.village}</TableCell>
+                            <TableCell className="text-right">
+                              <Badge variant="secondary" className="font-mono">{v.orderCount}</Badge>
+                            </TableCell>
+                            <TableCell className="text-right font-semibold text-green-700">₹{v.paymentCollected.toLocaleString()}</TableCell>
+                            <TableCell className="pr-5 text-right font-semibold text-orange-600">₹{v.pendingBalance.toLocaleString()}</TableCell>
+                          </TableRow>
+                        ))
+                      )}
                     </TableBody>
                   </Table>
                 </CardContent>
@@ -711,6 +795,26 @@ export default function DeliveryReportsPage() {
           </Tabs>
         </TabsContent>
       </Tabs>
+    </div>
+  );
+}
+
+function Layers({ className }: { className?: string }) {
+  return (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/>
+      <path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/>
+      <path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/>
+    </svg>
+  );
+}
+
+function EmptyState({ icon, message, sub }: { icon: ReactNode; message: string; sub?: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
+      <div className="text-muted-foreground/30">{icon}</div>
+      <p className="font-medium text-sm">{message}</p>
+      {sub && <p className="text-xs text-muted-foreground/70">{sub}</p>}
     </div>
   );
 }
