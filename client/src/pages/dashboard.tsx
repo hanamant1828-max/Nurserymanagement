@@ -231,65 +231,68 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Main Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
-        {mainStats.map((stat, idx) => (
-          <motion.div 
-            key={stat.label}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.1 }}
-          >
-            <Link href={stat.href} data-testid={`link-stat-${stat.label.toLowerCase().replace(/\s+/g, '-')}`}>
-              <Card className={cn("border-none shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden group", stat.bg)}>
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className={cn("p-3 rounded-2xl shadow-sm group-hover:scale-110 transition-transform duration-300", "bg-white", stat.color)}>
+      {/* Staff Overview */}
+      <div>
+        <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/50 mb-3 px-1">Staff Overview</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {mainStats.map((stat, idx) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.08 }}
+            >
+              <Link href={stat.href} data-testid={`link-stat-${stat.label.toLowerCase().replace(/\s+/g, '-')}`}>
+                <Card className={cn("border-none shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group overflow-hidden", stat.bg)}>
+                  <CardContent className="p-5 flex items-center gap-4">
+                    <div className={cn("p-3 rounded-2xl bg-white shadow-sm shrink-0 group-hover:scale-105 transition-transform duration-200", stat.color)}>
                       <stat.icon className="w-6 h-6" />
                     </div>
-                    {stat.trend && (
-                      <div className={cn("flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full", stat.isPositive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700")}>
-                        {stat.isPositive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                        {stat.trend}
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">{stat.label}</p>
-                  <h3 className="text-3xl font-black tracking-tight" data-testid={`text-stat-value-${stat.label.toLowerCase().replace(/\s+/g, '-')}`}>{stat.value}</h3>
-                </CardContent>
-              </Card>
-            </Link>
-          </motion.div>
-        ))}
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 leading-none mb-1.5">{stat.label}</p>
+                      <h3 className="text-3xl font-black tracking-tight leading-none" data-testid={`text-stat-value-${stat.label.toLowerCase().replace(/\s+/g, '-')}`}>{stat.value}</h3>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            </motion.div>
+          ))}
+        </div>
       </div>
 
-      {/* Secondary Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {subStats.map((stat, idx) => (
-          <motion.div 
-            key={stat.label}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 + idx * 0.1 }}
-          >
-            <Link href={stat.href} data-testid={`link-substat-${stat.label.toLowerCase().replace(/\s+/g, '-')}`}>
-              <Card className={cn("border-none shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden group", stat.bg)}>
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className={cn("p-3 rounded-2xl shadow-sm group-hover:scale-110 transition-transform duration-300", "bg-white", stat.color)}>
+      {/* Operations Today */}
+      <div>
+        <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/50 mb-3 px-1">Operations Today</p>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {subStats.map((stat, idx) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.24 + idx * 0.08 }}
+            >
+              <Link href={stat.href} data-testid={`link-substat-${stat.label.toLowerCase().replace(/\s+/g, '-')}`}>
+                <Card className={cn("border-none shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group overflow-hidden", stat.bg)}>
+                  <CardContent className="p-5 flex items-center gap-4">
+                    <div className={cn("p-3 rounded-2xl bg-white shadow-sm shrink-0 group-hover:scale-105 transition-transform duration-200", stat.color)}>
                       <stat.icon className="w-6 h-6" />
                     </div>
-                  </div>
-                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">{stat.label}</p>
-                  <h3 className="text-3xl font-black tracking-tight" data-testid={`text-substat-value-${stat.label.toLowerCase().replace(/\s+/g, '-')}`}>{stat.value}</h3>
-                </CardContent>
-              </Card>
-            </Link>
-          </motion.div>
-        ))}
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 leading-none mb-1.5">{stat.label}</p>
+                      <h3 className="text-3xl font-black tracking-tight leading-none" data-testid={`text-substat-value-${stat.label.toLowerCase().replace(/\s+/g, '-')}`}>{stat.value}</h3>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            </motion.div>
+          ))}
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      {/* Quantity Overview */}
+      <div>
+        <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/50 mb-3 px-1">Quantity Overview</p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Pending Quantity Speedometer */}
         <Link href="/pending-lot-reports">
           <Card className="border-none shadow-lg rounded-[2rem] overflow-hidden flex flex-col cursor-pointer hover:shadow-xl transition-shadow">
@@ -404,8 +407,12 @@ export default function Dashboard() {
           </Card>
         </Link>
       </div>
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      {/* Analytics & Lists */}
+      <div>
+        <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/50 mb-3 px-1">Analytics & Lists</p>
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
         {/* Chart Section */}
         <Card className="lg:col-span-2 border-none shadow-lg rounded-[2rem] overflow-hidden">
           <CardHeader className="bg-muted/5 border-b border-muted/20 pb-6">
@@ -591,6 +598,7 @@ export default function Dashboard() {
             </div>
           )}
         </Card>
+      </div>
       </div>
     </div>
   );
