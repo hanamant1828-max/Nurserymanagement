@@ -616,6 +616,52 @@ export async function registerRoutes(
     res.json({ count });
   });
 
+  // Database Backup
+  app.get("/api/backup", async (req, res) => {
+    if (!req.isAuthenticated() || (req.user as any).role !== "admin") return res.sendStatus(403);
+    try {
+      const [
+        allCategories,
+        allVarieties,
+        allLots,
+        allOrders,
+        allSeedInward,
+        allEmployees,
+        allAuditLogs,
+      ] = await Promise.all([
+        storage.getCategories(),
+        storage.getVarieties(),
+        storage.getLots(),
+        storage.getOrders(1, 100000).then(r => r.orders),
+        storage.getSeedInward(),
+        storage.getEmployees(),
+        storage.getAuditLogs(),
+      ]);
+
+      const backup = {
+        exportedAt: new Date().toISOString(),
+        version: "1.0",
+        data: {
+          categories: allCategories,
+          varieties: allVarieties,
+          lots: allLots,
+          orders: allOrders,
+          seedInward: allSeedInward,
+          employees: allEmployees,
+          auditLogs: allAuditLogs,
+        },
+      };
+
+      const filename = `kisan-nursery-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+      res.setHeader("Content-Type", "application/json");
+      res.json(backup);
+    } catch (err) {
+      console.error("Backup error:", err);
+      res.status(500).json({ message: "Failed to generate backup" });
+    }
+  });
+
   return httpServer;
 }
 
