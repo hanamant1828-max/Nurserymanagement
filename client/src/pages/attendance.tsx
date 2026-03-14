@@ -173,6 +173,7 @@ export default function AttendancePage() {
 
   const stats = {
     present: attendanceData?.filter(a => a.status === "PRESENT").length || 0,
+    halfDay: attendanceData?.filter(a => a.status === "HALF_DAY").length || 0,
     absent: attendanceData?.filter(a => a.status === "ABSENT").length || 0,
     leave: attendanceData?.filter(a => a.status === "LEAVE").length || 0,
     pending: activeEmployees.length - (attendanceData?.length || 0)
@@ -205,11 +206,12 @@ export default function AttendancePage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {[
-          { label: "Present", value: stats.present, color: "text-emerald-600", bg: "bg-emerald-50" },
+          { label: "Present", value: stats.present, color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-950/30" },
+          { label: "Half Day", value: stats.halfDay, color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-950/30" },
           { label: "Absent", value: stats.absent, color: "text-destructive", bg: "bg-destructive/5" },
-          { label: "Leave", value: stats.leave, color: "text-amber-600", bg: "bg-amber-50" },
+          { label: "Leave", value: stats.leave, color: "text-amber-600", bg: "bg-amber-50 dark:bg-amber-950/30" },
           { label: "Pending", value: stats.pending, color: "text-muted-foreground", bg: "bg-muted/50" }
         ].map((stat) => (
           <div key={stat.label} className={cn("p-4 rounded-2xl border shadow-sm", stat.bg)}>
@@ -292,15 +294,17 @@ export default function AttendancePage() {
                       >
                         <SelectTrigger className={cn(
                           "h-10 rounded-lg font-medium",
-                          status === "PRESENT" && "bg-emerald-50 text-emerald-700 border-emerald-200",
+                          status === "PRESENT" && "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400",
+                          status === "HALF_DAY" && "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400",
                           status === "ABSENT" && "bg-destructive/5 text-destructive border-destructive/10",
-                          status === "LEAVE" && "bg-amber-50 text-amber-700 border-amber-200",
+                          status === "LEAVE" && "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400",
                           status === "PENDING" && "bg-muted text-muted-foreground"
                         )}>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="PRESENT">Present</SelectItem>
+                          <SelectItem value="PRESENT">Present (Full Day)</SelectItem>
+                          <SelectItem value="HALF_DAY">Half Day</SelectItem>
                           <SelectItem value="ABSENT">Absent</SelectItem>
                           <SelectItem value="LEAVE">Leave</SelectItem>
                         </SelectContent>
@@ -322,6 +326,7 @@ export default function AttendancePage() {
                         </Button>
                       )}
                       {status === "PRESENT" && <CheckCircle2 className="w-5 h-5 text-emerald-500" />}
+                      {status === "HALF_DAY" && <span className="text-xs font-bold text-blue-500 border border-blue-300 rounded px-1">½</span>}
                       {status === "ABSENT" && <XCircle className="w-5 h-5 text-destructive" />}
                       {status === "LEAVE" && <Clock className="w-5 h-5 text-amber-500" />}
                       {status === "PENDING" && <div className="w-2 h-2 rounded-full bg-muted-foreground/30" />}

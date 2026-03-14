@@ -159,6 +159,7 @@ export const employees = pgTable("employees", {
   joiningDate: text("joining_date"),
   salary: text("salary"),
   hourlyRate: text("hourly_rate"),
+  workHours: text("work_hours").default("8"), // Standard working hours per day
   faceDescriptor: text("face_descriptor"), // Store as Base64 encoded string or JSON string
   active: boolean("active").default(true).notNull(),
 });

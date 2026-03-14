@@ -70,18 +70,32 @@ export default function EmployeesPage() {
       joiningDate: new Date().toISOString().split('T')[0],
       salary: "",
       hourlyRate: "",
+      workHours: "8",
       active: true 
     },
   });
 
+  const watchedSalary = form.watch("salary");
+  const watchedWorkHours = form.watch("workHours");
+  const autoHourlyRate = (() => {
+    const s = parseFloat(watchedSalary || "0");
+    const h = parseFloat(watchedWorkHours || "8");
+    if (s > 0 && h > 0) return (s / h).toFixed(2);
+    return null;
+  })();
+
   const onSubmit = (data: z.infer<typeof formSchema>) => {
+    const wh = parseFloat(data.workHours || "8");
+    const sal = parseFloat(data.salary || "0");
+    const computedHourlyRate = sal > 0 && wh > 0 ? (sal / wh).toFixed(2) : null;
     const submitData = {
       ...data,
       email: data.email || null,
       address: data.address || null,
       joiningDate: data.joiningDate || null,
       salary: data.salary || null,
-      hourlyRate: data.hourlyRate || null,
+      workHours: data.workHours || "8",
+      hourlyRate: computedHourlyRate,
     };
 
     if (editingId) {
@@ -132,6 +146,7 @@ export default function EmployeesPage() {
       joiningDate: employee.joiningDate || "",
       salary: employee.salary || "",
       hourlyRate: (employee as any).hourlyRate || "",
+      workHours: (employee as any).workHours || "8",
       active: employee.active,
     });
     setOpen(true);
@@ -148,6 +163,7 @@ export default function EmployeesPage() {
       joiningDate: new Date().toISOString().split('T')[0],
       salary: "",
       hourlyRate: "",
+      workHours: "8",
       active: true 
     });
   };
@@ -278,12 +294,12 @@ export default function EmployeesPage() {
                       />
                       <FormField
                         control={form.control}
-                        name="hourlyRate"
+                        name="workHours"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="font-semibold text-xs">Hour Wage (₹)</FormLabel>
+                            <FormLabel className="font-semibold text-xs">Work Hrs/Day</FormLabel>
                             <FormControl>
-                              <Input placeholder="e.g. 60" className="h-11 rounded-lg" {...field} value={field.value || ""} data-testid="input-hourly-rate" />
+                              <Input placeholder="8" type="number" min="1" max="24" className="h-11 rounded-lg" {...field} value={field.value || "8"} data-testid="input-work-hours" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -291,9 +307,20 @@ export default function EmployeesPage() {
                       />
                     </div>
                   </div>
-                  <p className="text-xs text-muted-foreground -mt-2 px-1">
-                    Set <span className="font-semibold">Daily Wage</span> for fixed-day workers or <span className="font-semibold">Hour Wage</span> for hourly workers. If both are set, Hour Wage is used.
-                  </p>
+                  <div className="rounded-xl border bg-muted/20 p-3 -mt-2 flex items-center gap-3">
+                    <div className="flex-1">
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        Hourly rate is <span className="font-semibold text-foreground">auto-calculated</span> from Daily Wage ÷ Work Hours/Day.
+                        Half day and early departure pay will be calculated automatically in attendance.
+                      </p>
+                    </div>
+                    {autoHourlyRate && (
+                      <div className="text-right shrink-0">
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Hourly Rate</p>
+                        <p className="text-lg font-bold text-green-600">₹{autoHourlyRate}</p>
+                      </div>
+                    )}
+                  </div>
 
                   <FormField
                     control={form.control}

@@ -104,9 +104,14 @@ export default function SalaryPage() {
 
     return employees.map(employee => {
       const employeeAttendance = allAttendance.filter(a => a.employeeId === employee.id);
+      const stdHours = parseFloat((employee as any).workHours || "8");
 
       let autoHoursWorked = 0;
       for (const record of employeeAttendance) {
+        if (record.status === "HALF_DAY") {
+          autoHoursWorked += stdHours / 2;
+          continue;
+        }
         if (record.status !== "PRESENT") continue;
         if (record.inTime && record.outTime && record.inTime !== record.outTime) {
           const [inH, inM, inS = 0] = record.inTime.split(":").map(Number);
@@ -115,19 +120,19 @@ export default function SalaryPage() {
           const outMinutes = outH * 60 + outM + outS / 60;
           const workedMinutes = outMinutes - inMinutes;
           if (workedMinutes >= 30) {
-            autoHoursWorked += Math.min(workedMinutes / 60, 8);
+            autoHoursWorked += Math.min(workedMinutes / 60, stdHours);
           } else {
-            autoHoursWorked += 8;
+            autoHoursWorked += stdHours;
           }
         } else {
-          autoHoursWorked += 8;
+          autoHoursWorked += stdHours;
         }
       }
 
       const overrideVal = hoursOverrides[employee.id];
       const totalHoursWorked = overrideVal !== undefined && overrideVal !== "" ? parseFloat(overrideVal) || 0 : autoHoursWorked;
 
-      const totalDaysWorked = totalHoursWorked / 8;
+      const totalDaysWorked = totalHoursWorked / stdHours;
       const dailyRate = parseFloat(employee.salary || "0");
       const hourlyRate = parseFloat((employee as any).hourlyRate || "0");
       const isHourly = hourlyRate > 0;
