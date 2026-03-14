@@ -23,9 +23,22 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
   const today = format(new Date(), "dd/MM/yyyy");
   
   if (employee) {
-    const presentDays = attendance?.filter(a => a.status === "PRESENT").length || 0;
+    let totalHoursWorked = 0;
+    for (const record of attendance || []) {
+      if (record.inTime && record.outTime) {
+        const [inH, inM, inS = 0] = record.inTime.split(":").map(Number);
+        const [outH, outM, outS = 0] = record.outTime.split(":").map(Number);
+        const inMinutes = inH * 60 + inM + inS / 60;
+        const outMinutes = outH * 60 + outM + outS / 60;
+        const workedMinutes = outMinutes - inMinutes;
+        if (workedMinutes > 0) totalHoursWorked += workedMinutes / 60;
+      } else if (record.status === "PRESENT") {
+        totalHoursWorked += 8;
+      }
+    }
+    const presentDays = totalHoursWorked / 8;
     const dailyRate = parseFloat(employee.salary || "0");
-    const totalSalary = presentDays * dailyRate;
+    const totalSalary = dailyRate * presentDays;
     const period = startDate && endDate ? `${format(new Date(startDate), "dd/MM/yyyy")} to ${format(new Date(endDate), "dd/MM/yyyy")}` : today;
 
     return (
@@ -96,7 +109,7 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
               <tr className="border-b border-black">
                 <td className="border-r-2 border-black p-3 text-center text-[14px]">1</td>
                 <td className="border-r-2 border-black p-3 text-[14px] font-medium">ಮಾಸಿಕ ವೇತನ (Monthly Salary)</td>
-                <td className="border-r-2 border-black p-3 text-center text-[14px] font-medium">{presentDays}</td>
+                <td className="border-r-2 border-black p-3 text-center text-[14px] font-medium">{presentDays % 1 === 0 ? presentDays.toFixed(0) : presentDays.toFixed(2)}</td>
                 <td className="border-r-2 border-black p-3 text-center text-[14px] font-medium">{dailyRate.toFixed(2)}</td>
                 <td className="border-r-2 border-black p-3 text-right text-[14px] font-bold">{totalSalary.toFixed(2)}</td>
               </tr>

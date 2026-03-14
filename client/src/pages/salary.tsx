@@ -54,18 +54,34 @@ export default function SalaryPage() {
 
     return employees.map(employee => {
       const employeeAttendance = allAttendance.filter(a => a.employeeId === employee.id);
-      const presentDays = employeeAttendance.filter(a => a.status === "PRESENT").length;
+
+      let totalHoursWorked = 0;
+      for (const record of employeeAttendance) {
+        if (record.inTime && record.outTime) {
+          const [inH, inM, inS = 0] = record.inTime.split(":").map(Number);
+          const [outH, outM, outS = 0] = record.outTime.split(":").map(Number);
+          const inMinutes = inH * 60 + inM + inS / 60;
+          const outMinutes = outH * 60 + outM + outS / 60;
+          const workedMinutes = outMinutes - inMinutes;
+          if (workedMinutes > 0) totalHoursWorked += workedMinutes / 60;
+        } else if (record.status === "PRESENT") {
+          totalHoursWorked += 8;
+        }
+      }
+
+      const totalDaysWorked = totalHoursWorked / 8;
       const dailyRate = parseFloat(employee.salary || "0");
-      const totalSalary = presentDays * dailyRate;
+      const totalSalary = dailyRate * totalDaysWorked;
 
       return {
         id: employee.id,
         name: employee.name,
         designation: employee.designation,
         dailyRate,
-        presentDays,
+        presentDays: totalDaysWorked,
         daysInMonth,
-        totalSalary
+        totalSalary,
+        totalHoursWorked
       };
     });
   }, [employees, allAttendance, selectedDate]);
@@ -218,11 +234,11 @@ export default function SalaryPage() {
                     <TableCell className="py-4 text-right font-semibold text-primary">₹{item.dailyRate.toLocaleString('en-IN')}</TableCell>
                     <TableCell className="py-4 text-center">
                       <span className="inline-flex items-center gap-1 bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-300 px-3 py-1 rounded-full text-sm font-bold">
-                        {item.presentDays}/{item.daysInMonth}
+                        {item.presentDays % 1 === 0 ? item.presentDays.toFixed(0) : item.presentDays.toFixed(2)}/{item.daysInMonth}
                       </span>
                     </TableCell>
                     <TableCell className="py-4 text-center text-xs font-mono text-muted-foreground bg-muted/20 rounded px-2 py-1">
-                      ₹{item.dailyRate.toLocaleString('en-IN')} × {item.presentDays}
+                      ₹{item.dailyRate.toLocaleString('en-IN')} × {item.presentDays % 1 === 0 ? item.presentDays.toFixed(0) : item.presentDays.toFixed(2)}
                     </TableCell>
                     <TableCell className="py-4 text-right font-bold text-primary text-lg">₹{item.totalSalary.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                     <TableCell className="py-4 pr-6 text-center">
@@ -302,7 +318,7 @@ export default function SalaryPage() {
                   </div>
                   <div className="bg-green-50 dark:bg-green-950/20 rounded-xl p-2.5 text-center">
                     <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest mb-1">Days</p>
-                    <p className="font-bold text-sm text-green-600">{item.presentDays}/{item.daysInMonth}</p>
+                    <p className="font-bold text-sm text-green-600">{item.presentDays % 1 === 0 ? item.presentDays.toFixed(0) : item.presentDays.toFixed(2)}/{item.daysInMonth}</p>
                   </div>
                   <div className="bg-primary/5 rounded-xl p-2.5 text-center">
                     <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest mb-1">Salary</p>
@@ -312,7 +328,7 @@ export default function SalaryPage() {
 
                 <div className="bg-muted/30 rounded-lg p-2.5 text-center">
                   <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest mb-1">Calculation</p>
-                  <p className="text-sm font-mono font-semibold">₹{item.dailyRate.toLocaleString('en-IN')} × {item.presentDays}</p>
+                  <p className="text-sm font-mono font-semibold">₹{item.dailyRate.toLocaleString('en-IN')} × {item.presentDays % 1 === 0 ? item.presentDays.toFixed(0) : item.presentDays.toFixed(2)}</p>
                 </div>
 
                 <div className="flex items-center gap-2 pt-1">
@@ -340,7 +356,7 @@ export default function SalaryPage() {
                       <div className="mt-4 space-y-2 text-sm">
                         <div className="flex justify-between">
                           <span>Days Worked:</span>
-                          <span className="font-bold">{item.presentDays}/{item.daysInMonth}</span>
+                          <span className="font-bold">{item.presentDays % 1 === 0 ? item.presentDays.toFixed(0) : item.presentDays.toFixed(2)}/{item.daysInMonth}</span>
                         </div>
                         <div className="flex justify-between">
                           <span>Daily Rate:</span>
