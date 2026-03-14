@@ -437,6 +437,16 @@ export async function registerRoutes(
     res.json(result);
   });
 
+  app.get("/api/employees/check-phone", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const phone = (req.query.phone as string || "").trim();
+    const excludeId = req.query.excludeId ? Number(req.query.excludeId) : null;
+    if (!phone) return res.json({ exists: false });
+    const all = await storage.getEmployees();
+    const exists = all.some(e => e.phoneNumber === phone && e.id !== excludeId);
+    res.json({ exists });
+  });
+
   app.post("/api/face/register", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const { employeeId, faceImage, faceDescriptor } = req.body;

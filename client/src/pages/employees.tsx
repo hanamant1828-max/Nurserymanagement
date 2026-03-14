@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useEmployees, useCreateEmployee, useUpdateEmployee, useDeleteEmployee } from "@/hooks/use-employees";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,7 +30,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Edit2, Users, Trash2, Phone, Mail, MapPin, Briefcase, Camera, Search } from "lucide-react";
+import { Plus, Edit2, Users, Trash2, Phone, Mail, MapPin, Briefcase, Camera, Search, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -147,6 +147,7 @@ export default function EmployeesPage() {
   const resetForm = () => {
     setEditingId(null);
     setPayType("daily");
+    setPhoneStatus("idle");
     form.reset({ 
       name: "", 
       designation: "", 
@@ -162,6 +163,39 @@ export default function EmployeesPage() {
   };
 
   const activeCount = filteredEmployees.filter(e => e.active).length;
+
+  // ── Phone uniqueness live check ──
+  type PhoneStatus = "idle" | "checking" | "available" | "taken";
+  const [phoneStatus, setPhoneStatus] = useState<PhoneStatus>("idle");
+  const phoneDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const watchedPhone = form.watch("phoneNumber");
+
+  useEffect(() => {
+    const phone = (watchedPhone || "").trim();
+    if (!open) { setPhoneStatus("idle"); return; }
+    if (phone.length < 10) { setPhoneStatus("idle"); form.clearErrors("phoneNumber"); return; }
+
+    setPhoneStatus("checking");
+    if (phoneDebounceRef.current) clearTimeout(phoneDebounceRef.current);
+    phoneDebounceRef.current = setTimeout(async () => {
+      try {
+        const url = `/api/employees/check-phone?phone=${encodeURIComponent(phone)}${editingId ? `&excludeId=${editingId}` : ""}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.exists) {
+          setPhoneStatus("taken");
+          form.setError("phoneNumber", { type: "manual", message: "This phone number is already registered to another employee." });
+        } else {
+          setPhoneStatus("available");
+          form.clearErrors("phoneNumber");
+        }
+      } catch {
+        setPhoneStatus("idle");
+      }
+    }, 500);
+
+    return () => { if (phoneDebounceRef.current) clearTimeout(phoneDebounceRef.current); };
+  }, [watchedPhone, open, editingId]);
 
   return (
     <div className="space-y-6 px-4 md:px-8 py-6">
@@ -222,8 +256,29 @@ export default function EmployeesPage() {
                         <FormItem>
                           <FormLabel className="font-semibold">Phone Number</FormLabel>
                           <FormControl>
-                            <Input placeholder="10 digit number" className="h-11 rounded-lg" {...field} />
+                            <div className="relative">
+                              <Input
+                                placeholder="10 digit number"
+                                className={`h-11 rounded-lg pr-10 ${phoneStatus === "taken" ? "border-red-500 focus-visible:ring-red-400" : phoneStatus === "available" ? "border-green-500 focus-visible:ring-green-400" : ""}`}
+                                {...field}
+                                data-testid="input-phone-number"
+                              />
+                              {phoneStatus === "checking" && (
+                                <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground animate-spin" />
+                              )}
+                              {phoneStatus === "available" && (
+                                <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500" />
+                              )}
+                              {phoneStatus === "taken" && (
+                                <XCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-red-500" />
+                              )}
+                            </div>
                           </FormControl>
+                          {phoneStatus === "available" && (
+                            <p className="text-xs text-green-600 font-medium flex items-center gap-1 mt-1">
+                              <CheckCircle2 className="w-3 h-3" /> Phone number is available
+                            </p>
+                          )}
                           <FormMessage />
                         </FormItem>
                       )}
@@ -373,7 +428,7 @@ export default function EmployeesPage() {
                   />
                   <div className="flex gap-3 pt-2">
                     <Button type="button" variant="ghost" onClick={() => setOpen(false)} className="flex-1 h-11 rounded-xl">Cancel</Button>
-                    <Button type="submit" data-testid="button-save-employee" className="flex-[2] h-11 rounded-xl font-bold" disabled={creating || updating}>
+                    <Button type="submit" data-testid="button-save-employee" className="flex-[2] h-11 rounded-xl font-bold" disabled={creating || updating || phoneStatus === "taken" || phoneStatus === "checking"}>
                       {editingId ? "Update Employee" : "Save Employee"}
                     </Button>
                   </div>
