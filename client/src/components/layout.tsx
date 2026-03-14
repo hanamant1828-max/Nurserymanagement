@@ -17,6 +17,7 @@ import {
   UserCheck,
   Banknote,
   IndianRupee,
+  ClipboardList,
   X
 } from "lucide-react";
 import { useState } from "react";
@@ -53,6 +54,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/attendance", label: "Attendance", icon: CalendarCheck },
     { href: "/salary", label: "Salary", icon: Banknote },
     { href: "/advances", label: "Advances", icon: IndianRupee },
+    { href: "/hr-report", label: "HR Report", icon: ClipboardList },
     { href: "/face-attendance", label: "Facial Check-in", icon: UserCheck },
     { href: "/face-registration", label: "Face Registration", icon: Camera },
     { href: "/delivery-reports", label: "Delivery Reports", icon: Truck },
