@@ -29,6 +29,7 @@ import { InvoicePrint } from "@/components/invoice-print";
 export default function SalaryPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [search, setSearch] = useState("");
+  const [hoursOverrides, setHoursOverrides] = useState<Record<number, string>>({});
   const { data: employees, isLoading: employeesLoading } = useEmployees();
 
   const monthStr = format(selectedDate, "yyyy-MM");
@@ -55,7 +56,7 @@ export default function SalaryPage() {
     return employees.map(employee => {
       const employeeAttendance = allAttendance.filter(a => a.employeeId === employee.id);
 
-      let totalHoursWorked = 0;
+      let autoHoursWorked = 0;
       for (const record of employeeAttendance) {
         if (record.status !== "PRESENT") continue;
         if (record.inTime && record.outTime && record.inTime !== record.outTime) {
@@ -65,14 +66,17 @@ export default function SalaryPage() {
           const outMinutes = outH * 60 + outM + outS / 60;
           const workedMinutes = outMinutes - inMinutes;
           if (workedMinutes >= 30) {
-            totalHoursWorked += Math.min(workedMinutes / 60, 8);
+            autoHoursWorked += Math.min(workedMinutes / 60, 8);
           } else {
-            totalHoursWorked += 8;
+            autoHoursWorked += 8;
           }
         } else {
-          totalHoursWorked += 8;
+          autoHoursWorked += 8;
         }
       }
+
+      const overrideVal = hoursOverrides[employee.id];
+      const totalHoursWorked = overrideVal !== undefined && overrideVal !== "" ? parseFloat(overrideVal) || 0 : autoHoursWorked;
 
       const totalDaysWorked = totalHoursWorked / 8;
       const dailyRate = parseFloat(employee.salary || "0");
@@ -90,10 +94,11 @@ export default function SalaryPage() {
         presentDays: totalDaysWorked,
         daysInMonth,
         totalSalary,
-        totalHoursWorked
+        totalHoursWorked,
+        autoHoursWorked
       };
     });
-  }, [employees, allAttendance, selectedDate]);
+  }, [employees, allAttendance, selectedDate, hoursOverrides]);
 
   const filteredSalaryData = useMemo(() => {
     if (!search) return salaryData;
@@ -209,6 +214,7 @@ export default function SalaryPage() {
                 <TableHead className="py-4 font-bold text-xs uppercase tracking-wider">Designation</TableHead>
                 <TableHead className="py-4 font-bold text-xs uppercase tracking-wider text-right">Rate</TableHead>
                 <TableHead className="py-4 font-bold text-xs uppercase tracking-wider text-center">Days / Hours</TableHead>
+                <TableHead className="py-4 font-bold text-xs uppercase tracking-wider text-center">Hours</TableHead>
                 <TableHead className="py-4 font-bold text-xs uppercase tracking-wider text-center">Calculation</TableHead>
                 <TableHead className="py-4 font-bold text-xs uppercase tracking-wider text-right">Net Salary</TableHead>
                 <TableHead className="py-4 pr-6 font-bold text-xs uppercase tracking-wider text-center">Slip</TableHead>
@@ -217,7 +223,7 @@ export default function SalaryPage() {
             <TableBody>
               {filteredSalaryData.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-48 text-center">
+                  <TableCell colSpan={8} className="h-48 text-center">
                     <div className="flex flex-col items-center justify-center gap-3 text-muted-foreground">
                       <Users className="w-12 h-12 opacity-10" />
                       <p className="text-sm font-medium">No employees found</p>
@@ -264,6 +270,23 @@ export default function SalaryPage() {
                         </span>
                       )}
                     </TableCell>
+                    <TableCell className="py-4 text-center">
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.5"
+                        value={hoursOverrides[item.id] !== undefined ? hoursOverrides[item.id] : (item.autoHoursWorked % 1 === 0 ? item.autoHoursWorked.toFixed(0) : item.autoHoursWorked.toFixed(2))}
+                        onChange={(e) => setHoursOverrides(prev => ({ ...prev, [item.id]: e.target.value }))}
+                        onBlur={(e) => {
+                          const val = e.target.value;
+                          if (val === "" || isNaN(parseFloat(val))) {
+                            setHoursOverrides(prev => { const n = { ...prev }; delete n[item.id]; return n; });
+                          }
+                        }}
+                        className="w-20 text-center text-sm font-semibold border border-primary/30 rounded-lg px-2 py-1 bg-primary/5 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
+                        data-testid={`input-hours-${item.id}`}
+                      />
+                    </TableCell>
                     <TableCell className="py-4 text-center text-xs font-mono text-muted-foreground bg-muted/20 rounded px-2 py-1">
                       {item.isHourly
                         ? `₹${item.hourlyRate.toLocaleString('en-IN')} × ${item.totalHoursWorked % 1 === 0 ? item.totalHoursWorked.toFixed(0) : item.totalHoursWorked.toFixed(2)} hrs`
@@ -309,7 +332,7 @@ export default function SalaryPage() {
             {filteredSalaryData.length > 0 && (
               <TableFooter>
                 <TableRow className="bg-primary/5 border-t-2">
-                  <TableCell colSpan={5} className="pl-6 py-6 font-bold text-sm uppercase tracking-wider">Grand Total Monthly Payout</TableCell>
+                  <TableCell colSpan={6} className="pl-6 py-6 font-bold text-sm uppercase tracking-wider">Grand Total Monthly Payout</TableCell>
                   <TableCell className="py-6 text-right font-bold text-2xl text-primary">₹{grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                   <TableCell className="pr-6"></TableCell>
                 </TableRow>
@@ -357,6 +380,25 @@ export default function SalaryPage() {
                     <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest mb-1">Salary</p>
                     <p className="font-bold text-sm text-primary">₹{(item.totalSalary / 1000).toFixed(1)}K</p>
                   </div>
+                </div>
+
+                <div className="flex items-center gap-2 bg-muted/30 rounded-xl px-3 py-2">
+                  <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider flex-1">Hours (editable)</p>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.5"
+                    value={hoursOverrides[item.id] !== undefined ? hoursOverrides[item.id] : (item.autoHoursWorked % 1 === 0 ? item.autoHoursWorked.toFixed(0) : item.autoHoursWorked.toFixed(2))}
+                    onChange={(e) => setHoursOverrides(prev => ({ ...prev, [item.id]: e.target.value }))}
+                    onBlur={(e) => {
+                      const val = e.target.value;
+                      if (val === "" || isNaN(parseFloat(val))) {
+                        setHoursOverrides(prev => { const n = { ...prev }; delete n[item.id]; return n; });
+                      }
+                    }}
+                    className="w-20 text-center text-sm font-semibold border border-primary/30 rounded-lg px-2 py-1 bg-white dark:bg-background focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
+                    data-testid={`input-hours-mobile-${item.id}`}
+                  />
                 </div>
 
                 <div className="bg-muted/30 rounded-lg p-2.5 text-center">
