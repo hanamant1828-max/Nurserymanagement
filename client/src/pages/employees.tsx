@@ -47,6 +47,7 @@ export default function EmployeesPage() {
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
+  const [payType, setPayType] = useState<"daily" | "hourly">("daily");
   const { toast } = useToast();
 
   const { mutate: create, isPending: creating } = useCreateEmployee();
@@ -75,27 +76,15 @@ export default function EmployeesPage() {
     },
   });
 
-  const watchedSalary = form.watch("salary");
-  const watchedWorkHours = form.watch("workHours");
-  const autoHourlyRate = (() => {
-    const s = parseFloat(watchedSalary || "0");
-    const h = parseFloat(watchedWorkHours || "8");
-    if (s > 0 && h > 0) return (s / h).toFixed(2);
-    return null;
-  })();
-
   const onSubmit = (data: z.infer<typeof formSchema>) => {
-    const wh = parseFloat(data.workHours || "8");
-    const sal = parseFloat(data.salary || "0");
-    const computedHourlyRate = sal > 0 && wh > 0 ? (sal / wh).toFixed(2) : null;
     const submitData = {
       ...data,
       email: data.email || null,
       address: data.address || null,
       joiningDate: data.joiningDate || null,
-      salary: data.salary || null,
-      workHours: data.workHours || "8",
-      hourlyRate: computedHourlyRate,
+      salary: payType === "daily" ? (data.salary || null) : null,
+      hourlyRate: payType === "hourly" ? (data.hourlyRate || null) : null,
+      workHours: "8",
     };
 
     if (editingId) {
@@ -137,6 +126,9 @@ export default function EmployeesPage() {
 
   const handleEdit = (employee: Employee) => {
     setEditingId(employee.id);
+    const empHourlyRate = parseFloat((employee as any).hourlyRate || "0");
+    const detectedPayType: "daily" | "hourly" = empHourlyRate > 0 ? "hourly" : "daily";
+    setPayType(detectedPayType);
     form.reset({ 
       name: employee.name, 
       designation: employee.designation,
@@ -154,6 +146,7 @@ export default function EmployeesPage() {
 
   const resetForm = () => {
     setEditingId(null);
+    setPayType("daily");
     form.reset({ 
       name: "", 
       designation: "", 
@@ -264,61 +257,97 @@ export default function EmployeesPage() {
                     )}
                   />
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="joiningDate"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="font-semibold">Joining Date</FormLabel>
-                          <FormControl>
-                            <Input type="date" className="h-11 rounded-lg" {...field} value={field.value || ""} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                  <FormField
+                    control={form.control}
+                    name="joiningDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="font-semibold">Joining Date</FormLabel>
+                        <FormControl>
+                          <Input type="date" className="h-11 rounded-lg" {...field} value={field.value || ""} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="space-y-3">
+                    <p className="font-semibold text-sm">Pay Type</p>
                     <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setPayType("daily")}
+                        data-testid="button-pay-type-daily"
+                        className={`h-12 rounded-xl border-2 text-sm font-semibold transition-all ${
+                          payType === "daily"
+                            ? "border-green-500 bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400"
+                            : "border-muted bg-muted/20 text-muted-foreground hover:border-muted-foreground/30"
+                        }`}
+                      >
+                        Per Day
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPayType("hourly")}
+                        data-testid="button-pay-type-hourly"
+                        className={`h-12 rounded-xl border-2 text-sm font-semibold transition-all ${
+                          payType === "hourly"
+                            ? "border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400"
+                            : "border-muted bg-muted/20 text-muted-foreground hover:border-muted-foreground/30"
+                        }`}
+                      >
+                        Per Hour
+                      </button>
+                    </div>
+
+                    {payType === "daily" ? (
                       <FormField
                         control={form.control}
                         name="salary"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="font-semibold text-xs">Daily Wage (₹)</FormLabel>
+                            <FormLabel className="font-semibold text-sm">Daily Wage (₹)</FormLabel>
                             <FormControl>
-                              <Input placeholder="e.g. 500" className="h-11 rounded-lg" {...field} value={field.value || ""} data-testid="input-daily-wage" />
+                              <Input
+                                placeholder="e.g. 500"
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                className="h-11 rounded-lg"
+                                {...field}
+                                value={field.value || ""}
+                                data-testid="input-daily-wage"
+                              />
                             </FormControl>
+                            <p className="text-xs text-muted-foreground">Amount paid per full working day</p>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
+                    ) : (
                       <FormField
                         control={form.control}
-                        name="workHours"
+                        name="hourlyRate"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="font-semibold text-xs">Work Hrs/Day</FormLabel>
+                            <FormLabel className="font-semibold text-sm">Hourly Rate (₹)</FormLabel>
                             <FormControl>
-                              <Input placeholder="8" type="number" min="1" max="24" className="h-11 rounded-lg" {...field} value={field.value || "8"} data-testid="input-work-hours" />
+                              <Input
+                                placeholder="e.g. 60"
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                className="h-11 rounded-lg"
+                                {...field}
+                                value={field.value || ""}
+                                data-testid="input-hourly-rate"
+                              />
                             </FormControl>
+                            <p className="text-xs text-muted-foreground">Amount paid per hour worked</p>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                    </div>
-                  </div>
-                  <div className="rounded-xl border bg-muted/20 p-3 -mt-2 flex items-center gap-3">
-                    <div className="flex-1">
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        Hourly rate is <span className="font-semibold text-foreground">auto-calculated</span> from Daily Wage ÷ Work Hours/Day.
-                        Half day and early departure pay will be calculated automatically in attendance.
-                      </p>
-                    </div>
-                    {autoHourlyRate && (
-                      <div className="text-right shrink-0">
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Hourly Rate</p>
-                        <p className="text-lg font-bold text-green-600">₹{autoHourlyRate}</p>
-                      </div>
                     )}
                   </div>
 
