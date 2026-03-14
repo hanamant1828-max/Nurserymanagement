@@ -94,6 +94,11 @@ export default function TodayDeliveriesPage() {
   const [varietySearch, setVarietySearch] = useState("");
   const [lotSearch, setLotSearch] = useState("");
 
+  // Open states for filter popovers
+  const [categoryOpen, setCategoryOpen] = useState(false);
+  const [varietyOpen, setVarietyOpen] = useState(false);
+  const [lotOpen, setLotOpen] = useState(false);
+
   const sortedCategories = useMemo(() => {
     if (!categories) return [];
     return [...categories].sort((a, b) => a.name.localeCompare(b.name));
@@ -330,7 +335,7 @@ export default function TodayDeliveriesPage() {
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">
               Category Filter
             </label>
-            <Popover>
+            <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
@@ -390,6 +395,7 @@ export default function TodayDeliveriesPage() {
                           setPageCategoryId("all");
                           setPageVarietyId("all");
                           setPageLotId("all");
+                          setCategoryOpen(false);
                         }}
                         className="flex items-center gap-3 py-2 cursor-pointer"
                       >
@@ -411,6 +417,7 @@ export default function TodayDeliveriesPage() {
                             setPageCategoryId(c.id.toString());
                             setPageVarietyId("all");
                             setPageLotId("all");
+                            setCategoryOpen(false);
                           }}
                           className="flex items-center gap-3 py-2 cursor-pointer"
                         >
@@ -444,7 +451,7 @@ export default function TodayDeliveriesPage() {
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">
               Variety Filter
             </label>
-            <Popover>
+            <Popover open={varietyOpen} onOpenChange={setVarietyOpen}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
@@ -485,6 +492,7 @@ export default function TodayDeliveriesPage() {
                         onSelect={() => {
                           setPageVarietyId("all");
                           setPageLotId("all");
+                          setVarietyOpen(false);
                         }}
                         className="flex items-center gap-3 py-2 cursor-pointer"
                       >
@@ -500,6 +508,7 @@ export default function TodayDeliveriesPage() {
                           onSelect={() => {
                             setPageVarietyId(v.id.toString());
                             setPageLotId("all");
+                            setVarietyOpen(false);
                           }}
                           className="flex items-center gap-3 py-2 cursor-pointer"
                         >
@@ -520,7 +529,7 @@ export default function TodayDeliveriesPage() {
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">
               Lot Filter
             </label>
-            <Popover>
+            <Popover open={lotOpen} onOpenChange={setLotOpen}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
@@ -559,6 +568,7 @@ export default function TodayDeliveriesPage() {
                         value="all"
                         onSelect={() => {
                           setPageLotId("all");
+                          setLotOpen(false);
                         }}
                         className="flex items-center gap-3 py-2 cursor-pointer"
                       >
@@ -573,6 +583,7 @@ export default function TodayDeliveriesPage() {
                           value={l.lotNumber}
                           onSelect={() => {
                             setPageLotId(l.id.toString());
+                            setLotOpen(false);
                           }}
                           className="flex items-center gap-3 py-2 cursor-pointer"
                         >
