@@ -9,6 +9,8 @@ interface InvoicePrintProps {
   attendance?: Attendance[];
   startDate?: string;
   endDate?: string;
+  overriddenHours?: number;
+  advanceTaken?: number;
 }
 
 export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({ 
@@ -16,15 +18,23 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
   employee, 
   attendance, 
   startDate, 
-  endDate 
+  endDate,
+  overriddenHours,
+  advanceTaken = 0,
 }, ref) => {
   if (!order && !employee) return null;
 
   const today = format(new Date(), "dd/MM/yyyy");
   
   if (employee) {
-    let totalHoursWorked = 0;
+    const stdHours = parseFloat((employee as any).workHours || "8");
+
+    let autoHoursWorked = 0;
     for (const record of attendance || []) {
+      if (record.status === "HALF_DAY") {
+        autoHoursWorked += stdHours / 2;
+        continue;
+      }
       if (record.status !== "PRESENT") continue;
       if (record.inTime && record.outTime && record.inTime !== record.outTime) {
         const [inH, inM, inS = 0] = record.inTime.split(":").map(Number);
@@ -33,20 +43,23 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
         const outMinutes = outH * 60 + outM + outS / 60;
         const workedMinutes = outMinutes - inMinutes;
         if (workedMinutes >= 30) {
-          totalHoursWorked += Math.min(workedMinutes / 60, 8);
+          autoHoursWorked += Math.min(workedMinutes / 60, stdHours);
         } else {
-          totalHoursWorked += 8;
+          autoHoursWorked += stdHours;
         }
       } else {
-        totalHoursWorked += 8;
+        autoHoursWorked += stdHours;
       }
     }
-    const presentDays = totalHoursWorked / 8;
+
+    const totalHoursWorked = overriddenHours !== undefined ? overriddenHours : autoHoursWorked;
+    const presentDays = totalHoursWorked / stdHours;
     const dailyRate = parseFloat(employee.salary || "0");
     const hourlyRate = parseFloat((employee as any).hourlyRate || "0");
     const isHourly = hourlyRate > 0;
     const effectiveRate = isHourly ? hourlyRate : dailyRate;
-    const totalSalary = isHourly ? hourlyRate * totalHoursWorked : dailyRate * presentDays;
+    const grossSalary = isHourly ? hourlyRate * totalHoursWorked : dailyRate * presentDays;
+    const netPayable = Math.max(0, grossSalary - advanceTaken);
     const period = startDate && endDate ? `${format(new Date(startDate), "dd/MM/yyyy")} to ${format(new Date(endDate), "dd/MM/yyyy")}` : today;
 
     return (
@@ -125,9 +138,18 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
                 <td className="border-r-2 border-black p-3 text-center text-[14px] font-medium">
                   {effectiveRate.toFixed(2)}{isHourly ? "/hr" : "/day"}
                 </td>
-                <td className="border-r-2 border-black p-3 text-right text-[14px] font-bold">{totalSalary.toFixed(2)}</td>
+                <td className="border-r-2 border-black p-3 text-right text-[14px] font-bold">{grossSalary.toFixed(2)}</td>
               </tr>
-              {[...Array(8)].map((_, i) => (
+              {advanceTaken > 0 && (
+                <tr className="border-b border-black">
+                  <td className="border-r-2 border-black p-3 text-center text-[14px]">2</td>
+                  <td className="border-r-2 border-black p-3 text-[14px] font-medium">ಮುಂಗಡ ಕಡಿತ (Advance Deduction)</td>
+                  <td className="border-r-2 border-black p-3 text-center text-[14px]">—</td>
+                  <td className="border-r-2 border-black p-3 text-center text-[14px]">—</td>
+                  <td className="border-r-2 border-black p-3 text-right text-[14px] font-bold text-red-700">-{advanceTaken.toFixed(2)}</td>
+                </tr>
+              )}
+              {[...Array(advanceTaken > 0 ? 7 : 8)].map((_, i) => (
                 <tr key={i} className="h-10 border-b border-black/10 last:border-b-0">
                   <td className="border-r-2 border-black"></td>
                   <td className="border-r-2 border-black"></td>
@@ -143,9 +165,23 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
           <div className="flex justify-end">
             <div className="w-1/2 border-2 border-black divide-y-2 divide-black">
               <div className="flex justify-between items-center p-3">
-                <span className="font-bold text-[15px]">ಒಟ್ಟು ವೇತನ (Total Salary):</span>
+                <span className="font-bold text-[15px]">ಒಟ್ಟು ವೇತನ (Gross Salary):</span>
+                <span className="font-semibold text-[15px] min-w-[100px] text-right">
+                  {grossSalary.toFixed(2)}
+                </span>
+              </div>
+              {advanceTaken > 0 && (
+                <div className="flex justify-between items-center p-3 bg-red-50/50">
+                  <span className="font-bold text-[15px]">ಮುಂಗಡ ಕಡಿತ (Advance):</span>
+                  <span className="font-semibold text-[15px] text-red-700 min-w-[100px] text-right">
+                    -{advanceTaken.toFixed(2)}
+                  </span>
+                </div>
+              )}
+              <div className="flex justify-between items-center p-3">
+                <span className="font-bold text-[15px]">ನಿವ್ವಳ ವೇತನ (Net Payable):</span>
                 <span className="font-bold text-[18px] border-b-4 border-double border-black min-w-[100px] text-right">
-                  {totalSalary.toFixed(2)}
+                  {netPayable.toFixed(2)}
                 </span>
               </div>
             </div>
