@@ -57,14 +57,19 @@ export default function SalaryPage() {
 
       let totalHoursWorked = 0;
       for (const record of employeeAttendance) {
-        if (record.inTime && record.outTime) {
+        if (record.status !== "PRESENT") continue;
+        if (record.inTime && record.outTime && record.inTime !== record.outTime) {
           const [inH, inM, inS = 0] = record.inTime.split(":").map(Number);
           const [outH, outM, outS = 0] = record.outTime.split(":").map(Number);
           const inMinutes = inH * 60 + inM + inS / 60;
           const outMinutes = outH * 60 + outM + outS / 60;
           const workedMinutes = outMinutes - inMinutes;
-          if (workedMinutes > 0) totalHoursWorked += workedMinutes / 60;
-        } else if (record.status === "PRESENT") {
+          if (workedMinutes >= 30) {
+            totalHoursWorked += Math.min(workedMinutes / 60, 8);
+          } else {
+            totalHoursWorked += 8;
+          }
+        } else {
           totalHoursWorked += 8;
         }
       }

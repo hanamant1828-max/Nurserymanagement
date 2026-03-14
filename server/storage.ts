@@ -3,7 +3,7 @@ import {
   type User, type RolePermission, type Category, type Variety, type Lot, type Order, type AuditLog, type SeedInward, type Employee, type Attendance,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, sql, and, desc } from "drizzle-orm";
+import { eq, sql, and, desc, gte, lte } from "drizzle-orm";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import { insertUserSchema, insertRolePermissionSchema, insertCategorySchema, insertVarietySchema, insertLotSchema, insertOrderSchema, insertAuditLogSchema, insertSeedInwardSchema, insertEmployeeSchema, insertAttendanceSchema } from "@shared/schema";
@@ -732,8 +732,8 @@ export class DatabaseStorage implements IStorage {
   async getAttendanceRange(startDate: string, endDate: string): Promise<Attendance[]> {
     return await db.select().from(attendance).where(
       and(
-        sql`${attendance.date} >= ${startDate}`,
-        sql`${attendance.date} <= ${endDate}`
+        gte(attendance.date, startDate),
+        lte(attendance.date, endDate)
       )
     ).orderBy(attendance.date);
   }

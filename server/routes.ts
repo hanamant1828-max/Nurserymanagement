@@ -552,6 +552,15 @@ export async function registerRoutes(
     res.json(result);
   });
 
+  app.get("/api/attendance/range", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const startDate = req.query.startDate as string;
+    const endDate = req.query.endDate as string;
+    if (!startDate || !endDate) return res.status(400).json({ message: "startDate and endDate are required" });
+    const result = await storage.getAttendanceRange(startDate, endDate);
+    res.json(result);
+  });
+
   app.get("/api/attendance/:date", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const date = req.params.date;
@@ -562,15 +571,6 @@ export async function registerRoutes(
   app.post("/api/attendance", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const result = await storage.recordAttendance(req.body);
-    res.json(result);
-  });
-
-  app.get("/api/attendance/range", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-    const startDate = req.query.startDate as string;
-    const endDate = req.query.endDate as string;
-    if (!startDate || !endDate) return res.status(400).json({ message: "startDate and endDate are required" });
-    const result = await storage.getAttendanceRange(startDate, endDate);
     res.json(result);
   });
 
