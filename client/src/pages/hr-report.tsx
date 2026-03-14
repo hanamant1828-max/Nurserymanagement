@@ -1,20 +1,63 @@
 import { useState, useMemo, useRef } from "react";
 import { useEmployees } from "@/hooks/use-employees";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Printer, FileDown, Users, IndianRupee, TrendingDown, Wallet, Loader2 } from "lucide-react";
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+  Legend, ResponsiveContainer, PieChart, Pie, Cell,
+  LineChart, Line, RadialBarChart, RadialBar
+} from "recharts";
+import { Printer, FileDown, Users, TrendingUp, TrendingDown, Wallet, Loader2, BarChart3, PieChart as PieIcon } from "lucide-react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
 import { Attendance, EmployeeAdvance } from "@shared/schema";
 import * as XLSX from "xlsx";
+
+const COLORS = {
+  present: "#22c55e",
+  halfDay: "#f59e0b",
+  absent: "#ef4444",
+  gross: "#3b82f6",
+  net: "#8b5cf6",
+  advance: "#f43f5e",
+};
+
+const PIE_COLORS = ["#8b5cf6", "#f43f5e", "#22c55e", "#3b82f6", "#f59e0b", "#06b6d4", "#ec4899"];
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-card border rounded-xl shadow-lg px-4 py-3 text-sm">
+      <p className="font-bold mb-2 text-foreground">{label}</p>
+      {payload.map((p: any) => (
+        <p key={p.name} style={{ color: p.color }} className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full inline-block" style={{ background: p.color }} />
+          {p.name}: <span className="font-semibold ml-1">
+            {typeof p.value === "number" && p.name?.toLowerCase().includes("₹")
+              ? `₹${p.value.toLocaleString("en-IN")}`
+              : p.value}
+          </span>
+        </p>
+      ))}
+    </div>
+  );
+};
+
+const SalaryTooltip = ({ active, payload, label }: any) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-card border rounded-xl shadow-lg px-4 py-3 text-sm">
+      <p className="font-bold mb-2 text-foreground">{label}</p>
+      {payload.map((p: any) => (
+        <p key={p.name} style={{ color: p.color }} className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full inline-block" style={{ background: p.color }} />
+          {p.name}: <span className="font-semibold ml-1">₹{Number(p.value).toLocaleString("en-IN", { minimumFractionDigits: 0 })}</span>
+        </p>
+      ))}
+    </div>
+  );
+};
 
 export default function HrReportPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -90,10 +133,12 @@ export default function HrReportPage() {
       const grossSalary = isHourly ? hourlyRate * totalHours : dailyRate * totalDays;
       const advanceTaken = advanceByEmployee[emp.id] || 0;
       const netPayable = grossSalary - advanceTaken;
+      const attendanceRate = daysInMonth > 0 ? Math.round(((present + halfDay * 0.5) / daysInMonth) * 100) : 0;
 
       return {
         id: emp.id,
         name: emp.name,
+        shortName: emp.name.length > 8 ? emp.name.slice(0, 8) + "…" : emp.name,
         designation: emp.designation,
         present,
         halfDay,
@@ -103,9 +148,10 @@ export default function HrReportPage() {
         rate: isHourly ? hourlyRate : dailyRate,
         rateLabel: isHourly ? "/hr" : "/day",
         isHourly,
-        grossSalary,
-        advanceTaken,
-        netPayable,
+        grossSalary: Math.round(grossSalary),
+        advanceTaken: Math.round(advanceTaken),
+        netPayable: Math.round(netPayable),
+        attendanceRate,
       };
     });
   }, [employees, allAttendance, advances, daysInMonth, advanceByEmployee]);
@@ -118,6 +164,37 @@ export default function HrReportPage() {
     net: reportRows.reduce((s, r) => s + r.netPayable, 0),
   }), [reportRows]);
 
+  // Chart data
+  const attendanceChartData = reportRows.map(r => ({
+    name: r.shortName,
+    "Present": r.present,
+    "Half Day": r.halfDay,
+    "Absent": r.absent,
+  }));
+
+  const salaryChartData = reportRows.map(r => ({
+    name: r.shortName,
+    "Gross ₹": r.grossSalary,
+    "Net ₹": r.netPayable,
+    "Advance ₹": r.advanceTaken,
+  }));
+
+  const payoutDonutData = [
+    { name: "Net Payable", value: totals.net > 0 ? totals.net : 0 },
+    { name: "Advance", value: totals.advance > 0 ? totals.advance : 0 },
+  ].filter(d => d.value > 0);
+
+  const attendanceRateData = reportRows.map(r => ({
+    name: r.shortName,
+    "Attendance %": r.attendanceRate,
+  }));
+
+  const designationData = useMemo(() => {
+    const map: Record<string, number> = {};
+    reportRows.forEach(r => { map[r.designation] = (map[r.designation] || 0) + 1; });
+    return Object.entries(map).map(([name, value]) => ({ name, value }));
+  }, [reportRows]);
+
   const handlePrint = () => window.print();
 
   const handleExcel = () => {
@@ -126,20 +203,13 @@ export default function HrReportPage() {
       [],
       ["#", "Employee", "Designation", "Present", "Half Day", "Absent", "Days/Hrs Worked", "Rate", "Gross Salary (₹)", "Advance (₹)", "Net Payable (₹)"],
       ...reportRows.map((r, i) => [
-        i + 1,
-        r.name,
-        r.designation,
-        r.present,
-        r.halfDay,
-        r.absent,
+        i + 1, r.name, r.designation, r.present, r.halfDay, r.absent,
         r.isHourly ? `${r.totalHours} hrs` : `${r.totalDays} days`,
         `₹${r.rate.toLocaleString("en-IN")}${r.rateLabel}`,
-        r.grossSalary.toFixed(2),
-        r.advanceTaken.toFixed(2),
-        r.netPayable.toFixed(2),
+        r.grossSalary, r.advanceTaken, r.netPayable,
       ]),
       [],
-      ["", "", "", "", "", "", "", "TOTAL", totals.gross.toFixed(2), totals.advance.toFixed(2), totals.net.toFixed(2)],
+      ["", "", "", "", "", "", "", "TOTAL", totals.gross, totals.advance, totals.net],
     ];
     const ws = XLSX.utils.aoa_to_sheet(wsData);
     ws["!cols"] = [{ wch: 4 }, { wch: 22 }, { wch: 18 }, { wch: 8 }, { wch: 9 }, { wch: 8 }, { wch: 14 }, { wch: 14 }, { wch: 16 }, { wch: 14 }, { wch: 14 }];
@@ -149,31 +219,26 @@ export default function HrReportPage() {
   };
 
   const fmt = (n: number) => n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fmtK = (n: number) => n >= 1000 ? `₹${(n / 1000).toFixed(1)}K` : `₹${n}`;
 
   return (
     <>
-      {/* Print styles injected inline */}
       <style>{`
         @media print {
           body > * { display: none !important; }
-          #hr-report-printable { display: block !important; }
-          #hr-report-printable { position: fixed; top: 0; left: 0; width: 100%; }
-        }
-        @media screen {
-          #hr-report-printable { display: block; }
+          #hr-report-printable { display: block !important; position: fixed; top: 0; left: 0; width: 100%; }
+          .no-print { display: none !important; }
         }
       `}</style>
 
       <div className="space-y-6 px-4 md:px-8 py-6">
-        {/* Page Header */}
+        {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">HR Report</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Monthly employee attendance, salary & advance summary.
-            </p>
+            <p className="text-sm text-muted-foreground mt-1">Monthly employee attendance, salary & advance summary with analytics.</p>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap no-print">
             <input
               type="month"
               value={monthStr}
@@ -220,9 +285,206 @@ export default function HrReportPage() {
           </Card>
         </div>
 
-        {/* Report Table */}
+        {/* ── CHARTS SECTION ── */}
+        {isLoading ? (
+          <div className="flex items-center justify-center h-48">
+            <Loader2 className="w-7 h-7 animate-spin text-muted-foreground" />
+          </div>
+        ) : reportRows.length > 0 && (
+          <div className="space-y-4 no-print">
+
+            {/* Row 1: Attendance breakdown (full width stacked bar) */}
+            <Card className="border shadow-sm">
+              <CardHeader className="pb-2 pt-5 px-6">
+                <CardTitle className="text-base font-bold flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4 text-primary" />
+                  Attendance Breakdown — {format(selectedDate, "MMMM yyyy")}
+                </CardTitle>
+                <p className="text-xs text-muted-foreground">Days present, half-day, and absent per employee</p>
+              </CardHeader>
+              <CardContent className="px-2 pb-4">
+                <ResponsiveContainer width="100%" height={260}>
+                  <BarChart data={attendanceChartData} margin={{ top: 4, right: 24, left: 0, bottom: 4 }} barSize={20}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" vertical={false} />
+                    <XAxis dataKey="name" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} allowDecimals={false} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
+                    <Bar dataKey="Present" stackId="a" fill={COLORS.present} radius={[0, 0, 0, 0]} />
+                    <Bar dataKey="Half Day" stackId="a" fill={COLORS.halfDay} radius={[0, 0, 0, 0]} />
+                    <Bar dataKey="Absent" stackId="a" fill={COLORS.absent} radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            {/* Row 2: Salary comparison + Payout donut */}
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+              {/* Salary Comparison — grouped bar */}
+              <Card className="lg:col-span-3 border shadow-sm">
+                <CardHeader className="pb-2 pt-5 px-6">
+                  <CardTitle className="text-base font-bold flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4 text-blue-500" />
+                    Gross vs Net Payable
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground">Blue = Gross earned, Purple = Net after advance deduction</p>
+                </CardHeader>
+                <CardContent className="px-2 pb-4">
+                  <ResponsiveContainer width="100%" height={240}>
+                    <BarChart data={salaryChartData} margin={{ top: 4, right: 24, left: 0, bottom: 4 }} barSize={14} barGap={4}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" vertical={false} />
+                      <XAxis dataKey="name" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} tickFormatter={v => `₹${v >= 1000 ? (v / 1000).toFixed(0) + "K" : v}`} />
+                      <Tooltip content={<SalaryTooltip />} />
+                      <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
+                      <Bar dataKey="Gross ₹" fill={COLORS.gross} radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="Net ₹" fill={COLORS.net} radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="Advance ₹" fill={COLORS.advance} radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              {/* Payout split donut */}
+              <Card className="lg:col-span-2 border shadow-sm">
+                <CardHeader className="pb-2 pt-5 px-6">
+                  <CardTitle className="text-base font-bold flex items-center gap-2">
+                    <PieIcon className="w-4 h-4 text-purple-500" />
+                    Payout Split
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground">Net payable vs advances this month</p>
+                </CardHeader>
+                <CardContent className="flex flex-col items-center pb-4">
+                  {payoutDonutData.length > 0 ? (
+                    <>
+                      <ResponsiveContainer width="100%" height={180}>
+                        <PieChart>
+                          <Pie
+                            data={payoutDonutData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={55}
+                            outerRadius={80}
+                            paddingAngle={3}
+                            dataKey="value"
+                          >
+                            {payoutDonutData.map((_, i) => (
+                              <Cell key={i} fill={i === 0 ? COLORS.net : COLORS.advance} stroke="none" />
+                            ))}
+                          </Pie>
+                          <Tooltip formatter={(v: any) => [`₹${Number(v).toLocaleString("en-IN")}`, ""]} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                      <div className="flex flex-col gap-1.5 w-full px-4 mt-1">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="flex items-center gap-2">
+                            <span className="w-3 h-3 rounded-full inline-block" style={{ background: COLORS.net }} />
+                            Net Payable
+                          </span>
+                          <span className="font-bold text-purple-600">₹{totals.net.toLocaleString("en-IN")}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="flex items-center gap-2">
+                            <span className="w-3 h-3 rounded-full inline-block" style={{ background: COLORS.advance }} />
+                            Advance
+                          </span>
+                          <span className="font-bold text-red-500">₹{totals.advance.toLocaleString("en-IN")}</span>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-40 text-muted-foreground text-sm">
+                      <PieIcon className="w-8 h-8 opacity-20 mb-2" />
+                      No payout data
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Row 3: Attendance rate bar + Team composition donut */}
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+              {/* Attendance rate */}
+              <Card className="lg:col-span-3 border shadow-sm">
+                <CardHeader className="pb-2 pt-5 px-6">
+                  <CardTitle className="text-base font-bold flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4 text-green-500" />
+                    Attendance Rate %
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground">Percentage of days each employee was present or half-day</p>
+                </CardHeader>
+                <CardContent className="px-2 pb-4">
+                  <ResponsiveContainer width="100%" height={220}>
+                    <BarChart data={attendanceRateData} margin={{ top: 4, right: 24, left: 0, bottom: 4 }} barSize={22}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" vertical={false} />
+                      <XAxis dataKey="name" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                      <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} tickFormatter={v => `${v}%`} />
+                      <Tooltip formatter={(v: any) => [`${v}%`, "Attendance"]} labelStyle={{ fontWeight: "bold" }} contentStyle={{ borderRadius: "12px", border: "1px solid hsl(var(--border))" }} />
+                      <Bar dataKey="Attendance %" radius={[4, 4, 0, 0]}>
+                        {attendanceRateData.map((entry, i) => (
+                          <Cell
+                            key={i}
+                            fill={entry["Attendance %"] >= 80 ? COLORS.present : entry["Attendance %"] >= 50 ? COLORS.halfDay : COLORS.absent}
+                          />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                  <div className="flex items-center justify-center gap-6 mt-2 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block" /> ≥80% Good</span>
+                    <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block" /> 50-79% Average</span>
+                    <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block" /> &lt;50% Poor</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Team composition by designation */}
+              <Card className="lg:col-span-2 border shadow-sm">
+                <CardHeader className="pb-2 pt-5 px-6">
+                  <CardTitle className="text-base font-bold flex items-center gap-2">
+                    <Users className="w-4 h-4 text-blue-500" />
+                    Team by Role
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground">Employee count by designation</p>
+                </CardHeader>
+                <CardContent className="flex flex-col items-center pb-4">
+                  <ResponsiveContainer width="100%" height={160}>
+                    <PieChart>
+                      <Pie
+                        data={designationData}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={65}
+                        dataKey="value"
+                        label={({ name, value }) => `${value}`}
+                        labelLine={false}
+                      >
+                        {designationData.map((_, i) => (
+                          <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} stroke="none" />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(v: any, name: any) => [v, name]} contentStyle={{ borderRadius: "12px", border: "1px solid hsl(var(--border))" }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="flex flex-col gap-1 w-full px-4 mt-1 max-h-24 overflow-y-auto">
+                    {designationData.map((d, i) => (
+                      <div key={d.name} className="flex items-center justify-between text-xs">
+                        <span className="flex items-center gap-2">
+                          <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ background: PIE_COLORS[i % PIE_COLORS.length] }} />
+                          <span className="truncate max-w-[120px]">{d.name}</span>
+                        </span>
+                        <span className="font-bold">{d.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
+
+        {/* ── PRINTABLE REPORT TABLE ── */}
         <div id="hr-report-printable" ref={printRef} className="rounded-2xl border bg-card shadow-sm overflow-hidden">
-          {/* Print Header — visible only when printing */}
           <div className="hidden print:block px-8 pt-8 pb-4 border-b">
             <div className="text-center">
               <h2 className="text-2xl font-bold">Kisan Hi-Tech Nursery</h2>
@@ -232,7 +494,6 @@ export default function HrReportPage() {
             </div>
           </div>
 
-          {/* Screen header row */}
           <div className="px-6 py-4 border-b bg-muted/20 flex items-center justify-between print:hidden">
             <div>
               <p className="font-bold text-base">{format(selectedDate, "MMMM yyyy")} — Employee Summary</p>
@@ -274,7 +535,12 @@ export default function HrReportPage() {
                       <tr key={row.id} className="hover:bg-muted/10 transition-colors" data-testid={`row-hr-report-${row.id}`}>
                         <td className="py-3.5 pl-6 text-xs text-muted-foreground font-medium">{idx + 1}</td>
                         <td className="py-3.5">
-                          <p className="font-semibold text-sm">{row.name}</p>
+                          <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary shrink-0">
+                              {row.name.charAt(0).toUpperCase()}
+                            </div>
+                            <p className="font-semibold text-sm">{row.name}</p>
+                          </div>
                         </td>
                         <td className="py-3.5">
                           <Badge variant="secondary" className="text-xs font-normal">{row.designation}</Badge>
@@ -315,9 +581,7 @@ export default function HrReportPage() {
                         </td>
                         <td className="py-3.5 text-right">
                           {row.advanceTaken > 0 ? (
-                            <span className="font-semibold text-red-600 dark:text-red-400">
-                              ₹{fmt(row.advanceTaken)}
-                            </span>
+                            <span className="font-semibold text-red-600 dark:text-red-400">₹{fmt(row.advanceTaken)}</span>
                           ) : (
                             <span className="text-muted-foreground text-xs">—</span>
                           )}
@@ -356,21 +620,11 @@ export default function HrReportPage() {
             </div>
           )}
 
-          {/* Print footer */}
           <div className="hidden print:block px-8 py-6 border-t mt-4">
             <div className="grid grid-cols-3 gap-8 text-xs text-muted-foreground">
-              <div>
-                <p className="font-bold mb-6">Prepared By</p>
-                <div className="border-t border-foreground pt-1">Signature</div>
-              </div>
-              <div>
-                <p className="font-bold mb-6">Checked By</p>
-                <div className="border-t border-foreground pt-1">Signature</div>
-              </div>
-              <div>
-                <p className="font-bold mb-6">Approved By</p>
-                <div className="border-t border-foreground pt-1">Signature</div>
-              </div>
+              <div><p className="font-bold mb-6">Prepared By</p><div className="border-t border-foreground pt-1">Signature</div></div>
+              <div><p className="font-bold mb-6">Checked By</p><div className="border-t border-foreground pt-1">Signature</div></div>
+              <div><p className="font-bold mb-6">Approved By</p><div className="border-t border-foreground pt-1">Signature</div></div>
             </div>
           </div>
         </div>
