@@ -586,9 +586,13 @@ export async function registerRoutes(
   // Employee Advances
   app.get("/api/employee-advances", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
-    const month = req.query.month as string;
-    if (!month) return res.status(400).json({ message: "month query param required" });
-    const advances = await storage.getAdvancesByMonth(month);
+    const month = req.query.month as string | undefined;
+    const employeeId = req.query.employeeId ? Number(req.query.employeeId) : undefined;
+    if (month) {
+      const advances = await storage.getAdvancesByMonth(month);
+      return res.json(advances);
+    }
+    const advances = await storage.getAllAdvances(employeeId);
     res.json(advances);
   });
 
@@ -600,6 +604,17 @@ export async function registerRoutes(
     }
     const advance = await storage.createEmployeeAdvance({ employeeId, amount: String(amount), date, month, note: note || null });
     res.status(201).json(advance);
+  });
+
+  app.put("/api/employee-advances/:id", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const id = Number(req.params.id);
+    const { employeeId, amount, date, month, note } = req.body;
+    if (!employeeId || !amount || !date || !month) {
+      return res.status(400).json({ message: "employeeId, amount, date, and month are required" });
+    }
+    const advance = await storage.updateEmployeeAdvance(id, { employeeId, amount: String(amount), date, month, note: note || null });
+    res.json(advance);
   });
 
   app.delete("/api/employee-advances/:id", async (req, res) => {

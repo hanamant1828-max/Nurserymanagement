@@ -92,7 +92,9 @@ export interface IStorage {
 
   // Employee Advances
   getAdvancesByMonth(month: string): Promise<EmployeeAdvance[]>;
+  getAllAdvances(employeeId?: number): Promise<EmployeeAdvance[]>;
   createEmployeeAdvance(advance: InsertEmployeeAdvance): Promise<EmployeeAdvance>;
+  updateEmployeeAdvance(id: number, data: Partial<InsertEmployeeAdvance>): Promise<EmployeeAdvance>;
   deleteEmployeeAdvance(id: number): Promise<void>;
 
   // Audit Logs
@@ -750,6 +752,16 @@ export class DatabaseStorage implements IStorage {
       .orderBy(employeeAdvances.date);
   }
 
+  async getAllAdvances(employeeId?: number): Promise<EmployeeAdvance[]> {
+    if (employeeId) {
+      return await db.select().from(employeeAdvances)
+        .where(eq(employeeAdvances.employeeId, employeeId))
+        .orderBy(desc(employeeAdvances.date));
+    }
+    return await db.select().from(employeeAdvances)
+      .orderBy(desc(employeeAdvances.date));
+  }
+
   async createEmployeeAdvance(advance: InsertEmployeeAdvance): Promise<EmployeeAdvance> {
     const [newAdvance] = await db.insert(employeeAdvances).values({
       employeeId: advance.employeeId,
@@ -759,6 +771,20 @@ export class DatabaseStorage implements IStorage {
       note: advance.note || null,
     }).returning();
     return newAdvance;
+  }
+
+  async updateEmployeeAdvance(id: number, data: Partial<InsertEmployeeAdvance>): Promise<EmployeeAdvance> {
+    const [updated] = await db.update(employeeAdvances)
+      .set({
+        ...(data.employeeId !== undefined && { employeeId: data.employeeId }),
+        ...(data.amount !== undefined && { amount: data.amount }),
+        ...(data.date !== undefined && { date: data.date }),
+        ...(data.month !== undefined && { month: data.month }),
+        ...(data.note !== undefined && { note: data.note }),
+      })
+      .where(eq(employeeAdvances.id, id))
+      .returning();
+    return updated;
   }
 
   async deleteEmployeeAdvance(id: number): Promise<void> {
