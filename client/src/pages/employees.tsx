@@ -69,6 +69,7 @@ export default function EmployeesPage() {
       address: "", 
       joiningDate: new Date().toISOString().split('T')[0],
       salary: "",
+      hourlyRate: "",
       active: true 
     },
   });
@@ -80,6 +81,7 @@ export default function EmployeesPage() {
       address: data.address || null,
       joiningDate: data.joiningDate || null,
       salary: data.salary || null,
+      hourlyRate: data.hourlyRate || null,
     };
 
     if (editingId) {
@@ -129,6 +131,7 @@ export default function EmployeesPage() {
       address: employee.address || "",
       joiningDate: employee.joiningDate || "",
       salary: employee.salary || "",
+      hourlyRate: (employee as any).hourlyRate || "",
       active: employee.active,
     });
     setOpen(true);
@@ -144,6 +147,7 @@ export default function EmployeesPage() {
       address: "", 
       joiningDate: new Date().toISOString().split('T')[0],
       salary: "",
+      hourlyRate: "",
       active: true 
     });
   };
@@ -258,20 +262,38 @@ export default function EmployeesPage() {
                         </FormItem>
                       )}
                     />
-                    <FormField
-                      control={form.control}
-                      name="salary"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="font-semibold">Daily Wage (₹)</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g. 100" className="h-11 rounded-lg" {...field} value={field.value || ""} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    <div className="grid grid-cols-2 gap-2">
+                      <FormField
+                        control={form.control}
+                        name="salary"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="font-semibold text-xs">Daily Wage (₹)</FormLabel>
+                            <FormControl>
+                              <Input placeholder="e.g. 500" className="h-11 rounded-lg" {...field} value={field.value || ""} data-testid="input-daily-wage" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="hourlyRate"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="font-semibold text-xs">Hour Wage (₹)</FormLabel>
+                            <FormControl>
+                              <Input placeholder="e.g. 60" className="h-11 rounded-lg" {...field} value={field.value || ""} data-testid="input-hourly-rate" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                   </div>
+                  <p className="text-xs text-muted-foreground -mt-2 px-1">
+                    Set <span className="font-semibold">Daily Wage</span> for fixed-day workers or <span className="font-semibold">Hour Wage</span> for hourly workers. If both are set, Hour Wage is used.
+                  </p>
 
                   <FormField
                     control={form.control}

@@ -43,7 +43,10 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
     }
     const presentDays = totalHoursWorked / 8;
     const dailyRate = parseFloat(employee.salary || "0");
-    const totalSalary = dailyRate * presentDays;
+    const hourlyRate = parseFloat((employee as any).hourlyRate || "0");
+    const isHourly = hourlyRate > 0;
+    const effectiveRate = isHourly ? hourlyRate : dailyRate;
+    const totalSalary = isHourly ? hourlyRate * totalHoursWorked : dailyRate * presentDays;
     const period = startDate && endDate ? `${format(new Date(startDate), "dd/MM/yyyy")} to ${format(new Date(endDate), "dd/MM/yyyy")}` : today;
 
     return (
@@ -114,8 +117,14 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
               <tr className="border-b border-black">
                 <td className="border-r-2 border-black p-3 text-center text-[14px]">1</td>
                 <td className="border-r-2 border-black p-3 text-[14px] font-medium">ಮಾಸಿಕ ವೇತನ (Monthly Salary)</td>
-                <td className="border-r-2 border-black p-3 text-center text-[14px] font-medium">{presentDays % 1 === 0 ? presentDays.toFixed(0) : presentDays.toFixed(2)}</td>
-                <td className="border-r-2 border-black p-3 text-center text-[14px] font-medium">{dailyRate.toFixed(2)}</td>
+                <td className="border-r-2 border-black p-3 text-center text-[14px] font-medium">
+                  {isHourly
+                    ? `${totalHoursWorked % 1 === 0 ? totalHoursWorked.toFixed(0) : totalHoursWorked.toFixed(2)} hrs`
+                    : `${presentDays % 1 === 0 ? presentDays.toFixed(0) : presentDays.toFixed(2)} days`}
+                </td>
+                <td className="border-r-2 border-black p-3 text-center text-[14px] font-medium">
+                  {effectiveRate.toFixed(2)}{isHourly ? "/hr" : "/day"}
+                </td>
                 <td className="border-r-2 border-black p-3 text-right text-[14px] font-bold">{totalSalary.toFixed(2)}</td>
               </tr>
               {[...Array(8)].map((_, i) => (

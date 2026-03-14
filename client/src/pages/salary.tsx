@@ -76,13 +76,17 @@ export default function SalaryPage() {
 
       const totalDaysWorked = totalHoursWorked / 8;
       const dailyRate = parseFloat(employee.salary || "0");
-      const totalSalary = dailyRate * totalDaysWorked;
+      const hourlyRate = parseFloat((employee as any).hourlyRate || "0");
+      const isHourly = hourlyRate > 0;
+      const totalSalary = isHourly ? hourlyRate * totalHoursWorked : dailyRate * totalDaysWorked;
 
       return {
         id: employee.id,
         name: employee.name,
         designation: employee.designation,
         dailyRate,
+        hourlyRate,
+        isHourly,
         presentDays: totalDaysWorked,
         daysInMonth,
         totalSalary,
@@ -203,8 +207,8 @@ export default function SalaryPage() {
               <TableRow>
                 <TableHead className="py-4 pl-6 font-bold text-xs uppercase tracking-wider">Name</TableHead>
                 <TableHead className="py-4 font-bold text-xs uppercase tracking-wider">Designation</TableHead>
-                <TableHead className="py-4 font-bold text-xs uppercase tracking-wider text-right">Daily Rate</TableHead>
-                <TableHead className="py-4 font-bold text-xs uppercase tracking-wider text-center">Days Worked</TableHead>
+                <TableHead className="py-4 font-bold text-xs uppercase tracking-wider text-right">Rate</TableHead>
+                <TableHead className="py-4 font-bold text-xs uppercase tracking-wider text-center">Days / Hours</TableHead>
                 <TableHead className="py-4 font-bold text-xs uppercase tracking-wider text-center">Calculation</TableHead>
                 <TableHead className="py-4 font-bold text-xs uppercase tracking-wider text-right">Net Salary</TableHead>
                 <TableHead className="py-4 pr-6 font-bold text-xs uppercase tracking-wider text-center">Slip</TableHead>
@@ -236,14 +240,34 @@ export default function SalaryPage() {
                     <TableCell className="py-4">
                       <Badge variant="secondary" className="text-xs">{item.designation}</Badge>
                     </TableCell>
-                    <TableCell className="py-4 text-right font-semibold text-primary">₹{item.dailyRate.toLocaleString('en-IN')}</TableCell>
+                    <TableCell className="py-4 text-right">
+                      {item.isHourly ? (
+                        <div className="flex flex-col items-end gap-0.5">
+                          <span className="font-semibold text-primary">₹{item.hourlyRate.toLocaleString('en-IN')}</span>
+                          <span className="text-[10px] text-muted-foreground uppercase tracking-wider">per hour</span>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-end gap-0.5">
+                          <span className="font-semibold text-primary">₹{item.dailyRate.toLocaleString('en-IN')}</span>
+                          <span className="text-[10px] text-muted-foreground uppercase tracking-wider">per day</span>
+                        </div>
+                      )}
+                    </TableCell>
                     <TableCell className="py-4 text-center">
-                      <span className="inline-flex items-center gap-1 bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-300 px-3 py-1 rounded-full text-sm font-bold">
-                        {item.presentDays % 1 === 0 ? item.presentDays.toFixed(0) : item.presentDays.toFixed(2)}/{item.daysInMonth}
-                      </span>
+                      {item.isHourly ? (
+                        <span className="inline-flex items-center gap-1 bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-full text-sm font-bold">
+                          {item.totalHoursWorked % 1 === 0 ? item.totalHoursWorked.toFixed(0) : item.totalHoursWorked.toFixed(2)} hrs
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-300 px-3 py-1 rounded-full text-sm font-bold">
+                          {item.presentDays % 1 === 0 ? item.presentDays.toFixed(0) : item.presentDays.toFixed(2)}/{item.daysInMonth}
+                        </span>
+                      )}
                     </TableCell>
                     <TableCell className="py-4 text-center text-xs font-mono text-muted-foreground bg-muted/20 rounded px-2 py-1">
-                      ₹{item.dailyRate.toLocaleString('en-IN')} × {item.presentDays % 1 === 0 ? item.presentDays.toFixed(0) : item.presentDays.toFixed(2)}
+                      {item.isHourly
+                        ? `₹${item.hourlyRate.toLocaleString('en-IN')} × ${item.totalHoursWorked % 1 === 0 ? item.totalHoursWorked.toFixed(0) : item.totalHoursWorked.toFixed(2)} hrs`
+                        : `₹${item.dailyRate.toLocaleString('en-IN')} × ${item.presentDays % 1 === 0 ? item.presentDays.toFixed(0) : item.presentDays.toFixed(2)}`}
                     </TableCell>
                     <TableCell className="py-4 text-right font-bold text-primary text-lg">₹{item.totalSalary.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                     <TableCell className="py-4 pr-6 text-center">
@@ -318,22 +342,30 @@ export default function SalaryPage() {
 
                 <div className="grid grid-cols-3 gap-2">
                   <div className="bg-muted/40 rounded-xl p-2.5 text-center">
-                    <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest mb-1">Daily Rate</p>
-                    <p className="font-bold text-sm text-primary">₹{(item.dailyRate / 100).toFixed(0)}×100</p>
+                    <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest mb-1">{item.isHourly ? "Hour Rate" : "Day Rate"}</p>
+                    <p className="font-bold text-sm text-primary">₹{(item.isHourly ? item.hourlyRate : item.dailyRate).toLocaleString('en-IN')}</p>
                   </div>
-                  <div className="bg-green-50 dark:bg-green-950/20 rounded-xl p-2.5 text-center">
-                    <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest mb-1">Days</p>
-                    <p className="font-bold text-sm text-green-600">{item.presentDays % 1 === 0 ? item.presentDays.toFixed(0) : item.presentDays.toFixed(2)}/{item.daysInMonth}</p>
+                  <div className={`${item.isHourly ? "bg-blue-50 dark:bg-blue-950/20" : "bg-green-50 dark:bg-green-950/20"} rounded-xl p-2.5 text-center`}>
+                    <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest mb-1">{item.isHourly ? "Hours" : "Days"}</p>
+                    <p className={`font-bold text-sm ${item.isHourly ? "text-blue-600" : "text-green-600"}`}>
+                      {item.isHourly
+                        ? `${item.totalHoursWorked % 1 === 0 ? item.totalHoursWorked.toFixed(0) : item.totalHoursWorked.toFixed(2)} h`
+                        : `${item.presentDays % 1 === 0 ? item.presentDays.toFixed(0) : item.presentDays.toFixed(2)}/${item.daysInMonth}`}
+                    </p>
                   </div>
                   <div className="bg-primary/5 rounded-xl p-2.5 text-center">
                     <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest mb-1">Salary</p>
-                    <p className="font-bold text-sm text-primary">₹{(item.totalSalary / 1000).toFixed(0)}K</p>
+                    <p className="font-bold text-sm text-primary">₹{(item.totalSalary / 1000).toFixed(1)}K</p>
                   </div>
                 </div>
 
                 <div className="bg-muted/30 rounded-lg p-2.5 text-center">
                   <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest mb-1">Calculation</p>
-                  <p className="text-sm font-mono font-semibold">₹{item.dailyRate.toLocaleString('en-IN')} × {item.presentDays % 1 === 0 ? item.presentDays.toFixed(0) : item.presentDays.toFixed(2)}</p>
+                  <p className="text-sm font-mono font-semibold">
+                    {item.isHourly
+                      ? `₹${item.hourlyRate.toLocaleString('en-IN')} × ${item.totalHoursWorked % 1 === 0 ? item.totalHoursWorked.toFixed(0) : item.totalHoursWorked.toFixed(2)} hrs`
+                      : `₹${item.dailyRate.toLocaleString('en-IN')} × ${item.presentDays % 1 === 0 ? item.presentDays.toFixed(0) : item.presentDays.toFixed(2)}`}
+                  </p>
                 </div>
 
                 <div className="flex items-center gap-2 pt-1">
@@ -360,12 +392,16 @@ export default function SalaryPage() {
                       <div className="text-xs text-muted-foreground">{item.designation}</div>
                       <div className="mt-4 space-y-2 text-sm">
                         <div className="flex justify-between">
-                          <span>Days Worked:</span>
-                          <span className="font-bold">{item.presentDays % 1 === 0 ? item.presentDays.toFixed(0) : item.presentDays.toFixed(2)}/{item.daysInMonth}</span>
+                          <span>{item.isHourly ? "Hours Worked:" : "Days Worked:"}</span>
+                          <span className="font-bold">
+                            {item.isHourly
+                              ? `${item.totalHoursWorked % 1 === 0 ? item.totalHoursWorked.toFixed(0) : item.totalHoursWorked.toFixed(2)} hrs`
+                              : `${item.presentDays % 1 === 0 ? item.presentDays.toFixed(0) : item.presentDays.toFixed(2)}/${item.daysInMonth}`}
+                          </span>
                         </div>
                         <div className="flex justify-between">
-                          <span>Daily Rate:</span>
-                          <span className="font-bold">₹{item.dailyRate.toLocaleString('en-IN')}</span>
+                          <span>{item.isHourly ? "Hour Rate:" : "Daily Rate:"}</span>
+                          <span className="font-bold">₹{(item.isHourly ? item.hourlyRate : item.dailyRate).toLocaleString('en-IN')}</span>
                         </div>
                         <div className="flex justify-between border-t pt-2">
                           <span className="font-bold">Total Salary:</span>
