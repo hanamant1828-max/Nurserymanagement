@@ -39,7 +39,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Plus, Edit2, Trash2, IndianRupee, Clock, User, ChevronRight } from "lucide-react";
+import { Plus, Edit2, Trash2, IndianRupee, Clock, ChevronRight, ArrowUpDown } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -63,6 +63,7 @@ export default function AdvancesPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingAdvance, setEditingAdvance] = useState<EmployeeAdvance | null>(null);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(null);
+  const [sortBy, setSortBy] = useState<"date-desc" | "date-asc" | "amount-desc" | "amount-asc" | "month-desc" | "month-asc">("date-desc");
 
   const { data: employees } = useEmployees();
 
@@ -174,16 +175,27 @@ export default function AdvancesPage() {
       .sort((a, b) => b.lastDate.localeCompare(a.lastDate));
   }, [advanceByEmployee, employeeMap]);
 
+  const sortFn = (a: EmployeeAdvance, b: EmployeeAdvance) => {
+    switch (sortBy) {
+      case "date-desc":  return b.date.localeCompare(a.date);
+      case "date-asc":   return a.date.localeCompare(b.date);
+      case "amount-desc": return parseFloat(b.amount) - parseFloat(a.amount);
+      case "amount-asc":  return parseFloat(a.amount) - parseFloat(b.amount);
+      case "month-desc": return b.month.localeCompare(a.month);
+      case "month-asc":  return a.month.localeCompare(b.month);
+      default: return 0;
+    }
+  };
+
   // Visible advances on right panel
   const visibleAdvances = useMemo(() => {
     if (selectedEmployeeId !== null) {
       return advances
         .filter(a => a.employeeId === selectedEmployeeId)
-        .sort((a, b) => b.date.localeCompare(a.date));
+        .sort(sortFn);
     }
-    // "Recent" view: latest 20 across all employees
-    return [...advances].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 20);
-  }, [advances, selectedEmployeeId]);
+    return [...advances].sort(sortFn).slice(0, 20);
+  }, [advances, selectedEmployeeId, sortBy]);
 
   const selectedEmployee = selectedEmployeeId !== null
     ? employees?.find(e => e.id === selectedEmployeeId)
@@ -333,44 +345,95 @@ export default function AdvancesPage() {
           <div className="rounded-2xl border bg-card shadow-sm overflow-hidden h-full">
 
             {/* Panel header */}
-            <div className="px-6 py-4 border-b bg-muted/20 flex items-center justify-between gap-4">
-              <div>
-                {selectedEmployee ? (
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-lg">
-                      {selectedEmployee.name.charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                      <h2 className="font-bold text-lg leading-tight">{selectedEmployee.name}</h2>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-xs text-muted-foreground">{selectedEmployee.designation}</span>
-                        <span className="text-xs font-bold text-red-600 dark:text-red-400">
-                          Total: ₹{(selectedTotal || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
-                        </span>
+            <div className="px-5 py-4 border-b bg-muted/20 space-y-3">
+              {/* Employee info row */}
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  {selectedEmployee ? (
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold">
+                        {selectedEmployee.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <h2 className="font-bold text-base leading-tight">{selectedEmployee.name}</h2>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-xs text-muted-foreground">{selectedEmployee.designation}</span>
+                          <span className="text-xs font-bold text-red-600 dark:text-red-400">
+                            Total: ₹{(selectedTotal || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-                      <Clock className="w-5 h-5 text-muted-foreground" />
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
+                        <Clock className="w-4 h-4 text-muted-foreground" />
+                      </div>
+                      <div>
+                        <h2 className="font-bold text-base">Recent Advances</h2>
+                        <p className="text-xs text-muted-foreground">Latest 20 entries across all employees</p>
+                      </div>
                     </div>
-                    <div>
-                      <h2 className="font-bold text-lg">Recent Advances</h2>
-                      <p className="text-xs text-muted-foreground mt-0.5">Latest 20 entries across all employees</p>
-                    </div>
-                  </div>
-                )}
+                  )}
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => openAdd(selectedEmployeeId || undefined)}
+                  className="bg-green-600 hover:bg-green-700 shrink-0"
+                  data-testid="button-add-advance-panel"
+                >
+                  <Plus className="mr-1.5 h-3.5 w-3.5" />
+                  Add
+                </Button>
               </div>
-              <Button
-                size="sm"
-                onClick={() => openAdd(selectedEmployeeId || undefined)}
-                className="bg-green-600 hover:bg-green-700 shrink-0"
-                data-testid="button-add-advance-panel"
-              >
-                <Plus className="mr-1.5 h-3.5 w-3.5" />
-                Add
-              </Button>
+
+              {/* Toolbar row — employee dropdown + sort */}
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Select
+                  value={selectedEmployeeId !== null ? String(selectedEmployeeId) : "all"}
+                  onValueChange={v => setSelectedEmployeeId(v === "all" ? null : Number(v))}
+                >
+                  <SelectTrigger className="h-9 text-sm flex-1 rounded-lg" data-testid="select-filter-employee-dropdown">
+                    <SelectValue placeholder="All Employees" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">
+                      <span className="flex items-center gap-2">
+                        <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+                        All Recent
+                      </span>
+                    </SelectItem>
+                    {employeesWithAdvances.map(emp => (
+                      <SelectItem key={emp.id} value={String(emp.id)}>
+                        <span className="flex items-center gap-2">
+                          <span className="w-5 h-5 rounded-full bg-muted inline-flex items-center justify-center text-[10px] font-bold">
+                            {emp.name.charAt(0).toUpperCase()}
+                          </span>
+                          {emp.name}
+                          <span className="text-xs text-red-500 font-semibold ml-1">
+                            ₹{emp.total.toLocaleString("en-IN")}
+                          </span>
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={sortBy} onValueChange={v => setSortBy(v as typeof sortBy)}>
+                  <SelectTrigger className="h-9 text-sm w-full sm:w-[190px] rounded-lg" data-testid="select-sort-by">
+                    <ArrowUpDown className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="date-desc">Date — Newest First</SelectItem>
+                    <SelectItem value="date-asc">Date — Oldest First</SelectItem>
+                    <SelectItem value="amount-desc">Amount — High to Low</SelectItem>
+                    <SelectItem value="amount-asc">Amount — Low to High</SelectItem>
+                    <SelectItem value="month-desc">Month — Latest First</SelectItem>
+                    <SelectItem value="month-asc">Month — Earliest First</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {/* Table */}
