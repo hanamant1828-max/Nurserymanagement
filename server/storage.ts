@@ -1,12 +1,12 @@
 import {
-  users, rolePermissions, categories, varieties, lots, orders, auditLogs, seedInward, employees, attendance,
-  type User, type RolePermission, type Category, type Variety, type Lot, type Order, type AuditLog, type SeedInward, type Employee, type Attendance,
+  users, rolePermissions, categories, varieties, lots, orders, auditLogs, seedInward, employees, attendance, employeeAdvances,
+  type User, type RolePermission, type Category, type Variety, type Lot, type Order, type AuditLog, type SeedInward, type Employee, type Attendance, type EmployeeAdvance,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, sql, and, desc, gte, lte } from "drizzle-orm";
 import session from "express-session";
 import createMemoryStore from "memorystore";
-import { insertUserSchema, insertRolePermissionSchema, insertCategorySchema, insertVarietySchema, insertLotSchema, insertOrderSchema, insertAuditLogSchema, insertSeedInwardSchema, insertEmployeeSchema, insertAttendanceSchema } from "@shared/schema";
+import { insertUserSchema, insertRolePermissionSchema, insertCategorySchema, insertVarietySchema, insertLotSchema, insertOrderSchema, insertAuditLogSchema, insertSeedInwardSchema, insertEmployeeSchema, insertAttendanceSchema, insertEmployeeAdvanceSchema } from "@shared/schema";
 import { z } from "zod";
 
 const MemoryStore = createMemoryStore(session);
@@ -20,6 +20,7 @@ export type InsertOrder = z.infer<typeof insertOrderSchema>;
 export type InsertSeedInward = z.infer<typeof insertSeedInwardSchema>;
 export type InsertEmployee = z.infer<typeof insertEmployeeSchema>;
 export type InsertAttendance = z.infer<typeof insertAttendanceSchema>;
+export type InsertEmployeeAdvance = z.infer<typeof insertEmployeeAdvanceSchema>;
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -88,6 +89,11 @@ export interface IStorage {
   recordAttendance(attendance: InsertAttendance): Promise<Attendance>;
   getEmployeeAttendance(employeeId: number, startDate: string, endDate: string): Promise<Attendance[]>;
   getAttendanceRange(startDate: string, endDate: string): Promise<Attendance[]>;
+
+  // Employee Advances
+  getAdvancesByMonth(month: string): Promise<EmployeeAdvance[]>;
+  createEmployeeAdvance(advance: InsertEmployeeAdvance): Promise<EmployeeAdvance>;
+  deleteEmployeeAdvance(id: number): Promise<void>;
 
   // Audit Logs
   createAuditLog(log: z.infer<typeof insertAuditLogSchema>): Promise<AuditLog>;
@@ -736,6 +742,27 @@ export class DatabaseStorage implements IStorage {
         lte(attendance.date, endDate)
       )
     ).orderBy(attendance.date);
+  }
+
+  async getAdvancesByMonth(month: string): Promise<EmployeeAdvance[]> {
+    return await db.select().from(employeeAdvances)
+      .where(eq(employeeAdvances.month, month))
+      .orderBy(employeeAdvances.date);
+  }
+
+  async createEmployeeAdvance(advance: InsertEmployeeAdvance): Promise<EmployeeAdvance> {
+    const [newAdvance] = await db.insert(employeeAdvances).values({
+      employeeId: advance.employeeId,
+      amount: advance.amount,
+      date: advance.date,
+      month: advance.month,
+      note: advance.note || null,
+    }).returning();
+    return newAdvance;
+  }
+
+  async deleteEmployeeAdvance(id: number): Promise<void> {
+    await db.delete(employeeAdvances).where(eq(employeeAdvances.id, id));
   }
 }
 

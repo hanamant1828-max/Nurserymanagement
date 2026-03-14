@@ -583,6 +583,32 @@ export async function registerRoutes(
     res.json(result);
   });
 
+  // Employee Advances
+  app.get("/api/employee-advances", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const month = req.query.month as string;
+    if (!month) return res.status(400).json({ message: "month query param required" });
+    const advances = await storage.getAdvancesByMonth(month);
+    res.json(advances);
+  });
+
+  app.post("/api/employee-advances", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const { employeeId, amount, date, month, note } = req.body;
+    if (!employeeId || !amount || !date || !month) {
+      return res.status(400).json({ message: "employeeId, amount, date, and month are required" });
+    }
+    const advance = await storage.createEmployeeAdvance({ employeeId, amount: String(amount), date, month, note: note || null });
+    res.status(201).json(advance);
+  });
+
+  app.delete("/api/employee-advances/:id", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const id = Number(req.params.id);
+    await storage.deleteEmployeeAdvance(id);
+    res.sendStatus(204);
+  });
+
   // Audit Logs
   app.get("/api/audit-logs", async (req, res) => {
     if (!req.isAuthenticated() || (req.user as any).role !== "admin") return res.sendStatus(403);

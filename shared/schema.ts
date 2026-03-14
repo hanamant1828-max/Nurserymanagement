@@ -178,6 +178,16 @@ export const attendance = pgTable("attendance", {
   };
 });
 
+// 12. Employee Advances
+export const employeeAdvances = pgTable("employee_advances", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  employeeId: integer("employee_id").notNull(),
+  amount: text("amount").notNull(),
+  date: text("date").notNull(), // YYYY-MM-DD
+  month: text("month").notNull(), // YYYY-MM
+  note: text("note"),
+});
+
 // Relations
 export const categoriesRelations = relations(categories, ({ many }) => ({
   varieties: many(varieties),
@@ -228,6 +238,7 @@ export const insertAuditLogSchema = createInsertSchema(auditLogs).omit({ id: tru
 export const insertSeedInwardSchema = createInsertSchema(seedInward).omit({ id: true });
 export const insertEmployeeSchema = createInsertSchema(employees).omit({ id: true });
 export const insertAttendanceSchema = createInsertSchema(attendance).omit({ id: true });
+export const insertEmployeeAdvanceSchema = createInsertSchema(employeeAdvances).omit({ id: true });
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -240,3 +251,4 @@ export type AuditLog = typeof auditLogs.$inferSelect;
 export type SeedInward = typeof seedInward.$inferSelect;
 export type Employee = typeof employees.$inferSelect;
 export type Attendance = typeof attendance.$inferSelect;
+export type EmployeeAdvance = typeof employeeAdvances.$inferSelect;

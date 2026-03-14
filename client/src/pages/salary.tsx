@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useEmployees } from "@/hooks/use-employees";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { 
   Table, 
   TableBody, 
@@ -21,15 +21,22 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Loader2, DollarSign, Users, Calendar as CalendarIcon, Download, FileText, Search } from "lucide-react";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, parseISO } from "date-fns";
-import { Attendance, Employee } from "@shared/schema";
+import { Loader2, FileText, Search, PlusCircle, Trash2 } from "lucide-react";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
+import { Attendance, Employee, EmployeeAdvance } from "@shared/schema";
 import { InvoicePrint } from "@/components/invoice-print";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export default function SalaryPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [search, setSearch] = useState("");
   const [hoursOverrides, setHoursOverrides] = useState<Record<number, string>>({});
+  const [advanceDialog, setAdvanceDialog] = useState<{ open: boolean; employeeId: number; employeeName: string } | null>(null);
+  const [advanceAmount, setAdvanceAmount] = useState("");
+  const [advanceDate, setAdvanceDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [advanceNote, setAdvanceNote] = useState("");
+  const { toast } = useToast();
   const { data: employees, isLoading: employeesLoading } = useEmployees();
 
   const monthStr = format(selectedDate, "yyyy-MM");
@@ -44,6 +51,48 @@ export default function SalaryPage() {
       return res.json();
     }
   });
+
+  const { data: advances = [] } = useQuery<EmployeeAdvance[]>({
+    queryKey: ["/api/employee-advances", monthStr],
+    queryFn: async () => {
+      const res = await fetch(`/api/employee-advances?month=${monthStr}`);
+      if (!res.ok) throw new Error("Failed to fetch advances");
+      return res.json();
+    }
+  });
+
+  const addAdvanceMutation = useMutation({
+    mutationFn: async (data: { employeeId: number; amount: string; date: string; month: string; note?: string }) => {
+      return apiRequest("POST", "/api/employee-advances", data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/employee-advances", monthStr] });
+      setAdvanceDialog(null);
+      setAdvanceAmount("");
+      setAdvanceNote("");
+      toast({ title: "Advance recorded successfully" });
+    },
+    onError: () => toast({ title: "Failed to record advance", variant: "destructive" }),
+  });
+
+  const deleteAdvanceMutation = useMutation({
+    mutationFn: async (id: number) => apiRequest("DELETE", `/api/employee-advances/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/employee-advances", monthStr] });
+      toast({ title: "Advance deleted" });
+    },
+    onError: () => toast({ title: "Failed to delete advance", variant: "destructive" }),
+  });
+
+  const advanceByEmployee = useMemo(() => {
+    const map: Record<number, { total: number; records: EmployeeAdvance[] }> = {};
+    for (const adv of advances) {
+      if (!map[adv.employeeId]) map[adv.employeeId] = { total: 0, records: [] };
+      map[adv.employeeId].total += parseFloat(adv.amount || "0");
+      map[adv.employeeId].records.push(adv);
+    }
+    return map;
+  }, [advances]);
 
   const salaryData = useMemo(() => {
     if (!employees || !allAttendance) return [];
@@ -84,6 +133,8 @@ export default function SalaryPage() {
       const isHourly = hourlyRate > 0;
       const totalSalary = isHourly ? hourlyRate * totalHoursWorked : dailyRate * totalDaysWorked;
 
+      const advanceTaken = advanceByEmployee[employee.id]?.total || 0;
+
       return {
         id: employee.id,
         name: employee.name,
@@ -95,10 +146,11 @@ export default function SalaryPage() {
         daysInMonth,
         totalSalary,
         totalHoursWorked,
-        autoHoursWorked
+        autoHoursWorked,
+        advanceTaken
       };
     });
-  }, [employees, allAttendance, selectedDate, hoursOverrides]);
+  }, [employees, allAttendance, selectedDate, hoursOverrides, advanceByEmployee]);
 
   const filteredSalaryData = useMemo(() => {
     if (!search) return salaryData;
@@ -217,13 +269,14 @@ export default function SalaryPage() {
                 <TableHead className="py-4 font-bold text-xs uppercase tracking-wider text-center">Hours</TableHead>
                 <TableHead className="py-4 font-bold text-xs uppercase tracking-wider text-center">Calculation</TableHead>
                 <TableHead className="py-4 font-bold text-xs uppercase tracking-wider text-right">Net Salary</TableHead>
+                <TableHead className="py-4 font-bold text-xs uppercase tracking-wider text-center">Advance Taken</TableHead>
                 <TableHead className="py-4 pr-6 font-bold text-xs uppercase tracking-wider text-center">Slip</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredSalaryData.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="h-48 text-center">
+                  <TableCell colSpan={9} className="h-48 text-center">
                     <div className="flex flex-col items-center justify-center gap-3 text-muted-foreground">
                       <Users className="w-12 h-12 opacity-10" />
                       <p className="text-sm font-medium">No employees found</p>
@@ -293,6 +346,46 @@ export default function SalaryPage() {
                         : `₹${item.dailyRate.toLocaleString('en-IN')} × ${item.presentDays % 1 === 0 ? item.presentDays.toFixed(0) : item.presentDays.toFixed(2)}`}
                     </TableCell>
                     <TableCell className="py-4 text-right font-bold text-primary text-lg">₹{item.totalSalary.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                    <TableCell className="py-4 text-center">
+                      <div className="flex flex-col items-center gap-1">
+                        {item.advanceTaken > 0 ? (
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <button className="inline-flex items-center gap-1 bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 px-3 py-1 rounded-full text-sm font-bold hover:bg-red-100 transition-colors cursor-pointer">
+                                ₹{item.advanceTaken.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              </button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-sm rounded-2xl">
+                              <DialogHeader>
+                                <DialogTitle>Advances — {item.name}</DialogTitle>
+                              </DialogHeader>
+                              <div className="space-y-2 mt-2">
+                                {(advanceByEmployee[item.id]?.records || []).map(adv => (
+                                  <div key={adv.id} className="flex items-center justify-between gap-2 bg-muted/30 rounded-lg px-3 py-2">
+                                    <div>
+                                      <p className="font-semibold text-sm">₹{parseFloat(adv.amount).toLocaleString('en-IN')}</p>
+                                      <p className="text-xs text-muted-foreground">{adv.date}{adv.note ? ` • ${adv.note}` : ""}</p>
+                                    </div>
+                                    <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:bg-red-50 hover:text-red-600" onClick={() => deleteAdvanceMutation.mutate(adv.id)} disabled={deleteAdvanceMutation.isPending}>
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </Button>
+                                  </div>
+                                ))}
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
+                        <button
+                          onClick={() => { setAdvanceDialog({ open: true, employeeId: item.id, employeeName: item.name }); setAdvanceDate(format(new Date(), "yyyy-MM-dd")); }}
+                          className="text-[10px] text-primary hover:underline flex items-center gap-0.5"
+                          data-testid={`button-add-advance-${item.id}`}
+                        >
+                          <PlusCircle className="w-3 h-3" /> Add
+                        </button>
+                      </div>
+                    </TableCell>
                     <TableCell className="py-4 pr-6 text-center">
                       <Dialog>
                         <DialogTrigger asChild>
@@ -332,8 +425,9 @@ export default function SalaryPage() {
             {filteredSalaryData.length > 0 && (
               <TableFooter>
                 <TableRow className="bg-primary/5 border-t-2">
-                  <TableCell colSpan={6} className="pl-6 py-6 font-bold text-sm uppercase tracking-wider">Grand Total Monthly Payout</TableCell>
+                  <TableCell colSpan={7} className="pl-6 py-6 font-bold text-sm uppercase tracking-wider">Grand Total Monthly Payout</TableCell>
                   <TableCell className="py-6 text-right font-bold text-2xl text-primary">₹{grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                  <TableCell className="py-6"></TableCell>
                   <TableCell className="pr-6"></TableCell>
                 </TableRow>
               </TableFooter>
@@ -449,9 +543,24 @@ export default function SalaryPage() {
                           <span className="font-bold">Total Salary:</span>
                           <span className="font-bold text-primary text-lg">₹{item.totalSalary.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </div>
+                        {item.advanceTaken > 0 && (
+                          <div className="flex justify-between border-t pt-2">
+                            <span className="text-red-600 font-semibold">Advance Taken:</span>
+                            <span className="font-bold text-red-600">₹{item.advanceTaken.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                          </div>
+                        )}
                       </div>
                     </DialogContent>
                   </Dialog>
+
+                  <button
+                    onClick={() => { setAdvanceDialog({ open: true, employeeId: item.id, employeeName: item.name }); setAdvanceDate(format(new Date(), "yyyy-MM-dd")); }}
+                    className="h-10 px-3 rounded-xl bg-red-50 border-transparent text-red-600 hover:bg-red-100 transition-all text-xs font-semibold flex items-center gap-1"
+                    data-testid={`button-add-advance-mobile-${item.id}`}
+                  >
+                    <PlusCircle className="w-3.5 h-3.5" /> Advance
+                    {item.advanceTaken > 0 && <span className="ml-1 font-bold">₹{item.advanceTaken.toLocaleString('en-IN')}</span>}
+                  </button>
                 </div>
               </div>
             </div>
@@ -474,6 +583,65 @@ export default function SalaryPage() {
       <div className="text-center text-[10px] text-muted-foreground italic px-4">
         <p>Computer-generated salary report • Daily Wage Basis • No PF/ESI deductions</p>
       </div>
+
+      {/* Add Advance Dialog */}
+      {advanceDialog && (
+        <Dialog open={advanceDialog.open} onOpenChange={(open) => { if (!open) setAdvanceDialog(null); }}>
+          <DialogContent className="max-w-sm rounded-2xl">
+            <DialogHeader>
+              <DialogTitle>Record Advance — {advanceDialog.employeeName}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 mt-2">
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Amount (₹)</label>
+                <Input
+                  type="number"
+                  min="1"
+                  placeholder="Enter advance amount"
+                  value={advanceAmount}
+                  onChange={(e) => setAdvanceAmount(e.target.value)}
+                  data-testid="input-advance-amount"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Date</label>
+                <Input
+                  type="date"
+                  value={advanceDate}
+                  onChange={(e) => setAdvanceDate(e.target.value)}
+                  data-testid="input-advance-date"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Note (optional)</label>
+                <Input
+                  placeholder="e.g. Festival advance"
+                  value={advanceNote}
+                  onChange={(e) => setAdvanceNote(e.target.value)}
+                  data-testid="input-advance-note"
+                />
+              </div>
+              <Button
+                className="w-full"
+                disabled={!advanceAmount || parseFloat(advanceAmount) <= 0 || addAdvanceMutation.isPending}
+                onClick={() => {
+                  if (!advanceAmount || !advanceDate) return;
+                  addAdvanceMutation.mutate({
+                    employeeId: advanceDialog.employeeId,
+                    amount: advanceAmount,
+                    date: advanceDate,
+                    month: monthStr,
+                    note: advanceNote || undefined,
+                  });
+                }}
+                data-testid="button-save-advance"
+              >
+                {addAdvanceMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Advance"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
