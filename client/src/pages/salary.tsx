@@ -21,7 +21,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Loader2, FileText, Search, Users } from "lucide-react";
+import { Loader2, FileText, Search, Users, Printer } from "lucide-react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
 import { Attendance, Employee, EmployeeAdvance } from "@shared/schema";
 import { InvoicePrint } from "@/components/invoice-print";
@@ -30,6 +30,12 @@ export default function SalaryPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [search, setSearch] = useState("");
   const [hoursOverrides, setHoursOverrides] = useState<Record<number, string>>({});
+  const [printSlipItem, setPrintSlipItem] = useState<any>(null);
+
+  const handlePrintSlip = (item: any) => {
+    setPrintSlipItem(item);
+    setTimeout(() => window.print(), 150);
+  };
   const { data: employees, isLoading: employeesLoading } = useEmployees();
 
   const monthStr = format(selectedDate, "yyyy-MM");
@@ -164,6 +170,26 @@ export default function SalaryPage() {
 
   return (
     <div className="space-y-6 px-4 md:px-8 py-6">
+      {/* Hidden salary slip for printing */}
+      {printSlipItem && (
+        <div id="invoice-print" className="hidden print:block">
+          <InvoicePrint
+            employee={{
+              id: printSlipItem.id,
+              name: printSlipItem.name,
+              designation: printSlipItem.designation,
+              salary: printSlipItem.dailyRate.toString(),
+              hourlyRate: printSlipItem.hourlyRate.toString(),
+              workHours: printSlipItem.stdHours.toString(),
+            } as Employee}
+            attendance={printSlipItem.employeeAttendance}
+            startDate={startDate}
+            endDate={endDate}
+            overriddenHours={printSlipItem.totalHoursWorked}
+            advanceTaken={printSlipItem.advanceTaken}
+          />
+        </div>
+      )}
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -449,39 +475,58 @@ export default function SalaryPage() {
                         <FileText className="w-4 h-4" />
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="w-[95vw] max-w-[380px] rounded-2xl p-6">
-                      <DialogHeader>
-                        <DialogTitle className="text-lg">Salary Slip</DialogTitle>
-                      </DialogHeader>
-                      <div className="text-sm font-semibold text-foreground mt-2">{item.name}</div>
-                      <div className="text-xs text-muted-foreground">{item.designation} • {format(selectedDate, "MMMM yyyy")}</div>
-                      <div className="mt-4 space-y-2 text-sm border rounded-xl p-4 bg-muted/30">
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">{item.isHourly ? "Hours Worked:" : "Days Worked:"}</span>
-                          <span className="font-semibold">
-                            {item.isHourly
-                              ? `${item.totalHoursWorked % 1 === 0 ? item.totalHoursWorked.toFixed(0) : item.totalHoursWorked.toFixed(2)} hrs`
-                              : `${item.presentDays % 1 === 0 ? item.presentDays.toFixed(0) : item.presentDays.toFixed(2)} / ${item.daysInMonth} days`}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">{item.isHourly ? "Hourly Rate:" : "Daily Rate:"}</span>
-                          <span className="font-semibold">₹{(item.isHourly ? item.hourlyRate : item.dailyRate).toLocaleString('en-IN')}</span>
-                        </div>
-                        <div className="flex justify-between border-t pt-2">
-                          <span className="text-muted-foreground">Gross Salary:</span>
-                          <span className="font-semibold">₹{item.grossSalary.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                        </div>
-                        {item.advanceTaken > 0 && (
-                          <div className="flex justify-between">
-                            <span className="text-red-600 font-semibold">Advance Deducted:</span>
-                            <span className="font-bold text-red-600">− ₹{item.advanceTaken.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    <DialogContent className="w-[95vw] max-w-[400px] rounded-2xl p-0 overflow-hidden">
+                      {/* Slip Header */}
+                      <div className="bg-[#1a5c3a] px-5 py-4 text-white">
+                        <div className="text-[10px] font-semibold uppercase tracking-wider opacity-75 mb-0.5">Kisan Hi-Tech Nursery</div>
+                        <div className="text-lg font-bold leading-tight">{item.name}</div>
+                        <div className="text-xs opacity-80 mt-0.5">{item.designation} • {format(selectedDate, "MMMM yyyy")}</div>
+                      </div>
+
+                      {/* Slip Body */}
+                      <div className="px-5 py-4 space-y-3">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="bg-muted/40 rounded-xl p-3 text-center">
+                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-1">{item.isHourly ? "Hours Worked" : "Days Worked"}</p>
+                            <p className="text-xl font-black text-foreground">
+                              {item.isHourly
+                                ? `${item.totalHoursWorked % 1 === 0 ? item.totalHoursWorked.toFixed(0) : item.totalHoursWorked.toFixed(2)}`
+                                : `${item.presentDays % 1 === 0 ? item.presentDays.toFixed(0) : item.presentDays.toFixed(2)}`}
+                            </p>
+                            <p className="text-[10px] text-muted-foreground">{item.isHourly ? "hrs" : `of ${item.daysInMonth} days`}</p>
                           </div>
-                        )}
-                        <div className="flex justify-between border-t pt-2 bg-primary/5 rounded-lg px-2 py-1">
-                          <span className="font-bold text-primary">Net Payable:</span>
-                          <span className="font-bold text-primary text-lg">₹{item.netPayable.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                          <div className="bg-muted/40 rounded-xl p-3 text-center">
+                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-1">{item.isHourly ? "Hourly Rate" : "Daily Rate"}</p>
+                            <p className="text-xl font-black text-foreground">₹{(item.isHourly ? item.hourlyRate : item.dailyRate).toLocaleString('en-IN')}</p>
+                            <p className="text-[10px] text-muted-foreground">per {item.isHourly ? "hr" : "day"}</p>
+                          </div>
                         </div>
+
+                        <div className="rounded-xl border overflow-hidden">
+                          <div className="flex justify-between items-center px-4 py-2.5 bg-muted/20 border-b">
+                            <span className="text-sm text-muted-foreground">Gross Salary</span>
+                            <span className="font-semibold text-sm">₹{item.grossSalary.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                          </div>
+                          {item.advanceTaken > 0 && (
+                            <div className="flex justify-between items-center px-4 py-2.5 bg-red-50 dark:bg-red-950/20 border-b">
+                              <span className="text-sm text-red-600 font-medium">Advance Deducted</span>
+                              <span className="font-semibold text-sm text-red-600">− ₹{item.advanceTaken.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                            </div>
+                          )}
+                          <div className="flex justify-between items-center px-4 py-3 bg-[#1a5c3a]">
+                            <span className="text-sm font-bold text-white">Net Payable</span>
+                            <span className="font-black text-lg text-white">₹{item.netPayable.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                          </div>
+                        </div>
+
+                        <Button
+                          className="w-full bg-[#1a5c3a] hover:bg-[#164d30] text-white font-bold h-11 gap-2"
+                          onClick={() => handlePrintSlip(item)}
+                          data-testid={`button-print-slip-mobile-${item.id}`}
+                        >
+                          <Printer className="w-4 h-4" />
+                          Print Salary Slip
+                        </Button>
                       </div>
                     </DialogContent>
                   </Dialog>

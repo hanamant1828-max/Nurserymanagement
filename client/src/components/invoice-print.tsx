@@ -13,11 +13,11 @@ interface InvoicePrintProps {
   advanceTaken?: number;
 }
 
-export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({ 
-  order, 
-  employee, 
-  attendance, 
-  startDate, 
+export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
+  order,
+  employee,
+  attendance,
+  startDate,
   endDate,
   overriddenHours,
   advanceTaken = 0,
@@ -25,7 +25,8 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
   if (!order && !employee) return null;
 
   const today = format(new Date(), "dd/MM/yyyy");
-  
+
+  /* ─── SALARY SLIP ─────────────────────────────────────────────────── */
   if (employee) {
     const stdHours = parseFloat((employee as any).workHours || "8");
     const hourlyRate = parseFloat((employee as any).hourlyRate || "0");
@@ -33,20 +34,13 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
 
     let autoHoursWorked = 0;
     for (const record of attendance || []) {
-      if (record.status === "HALF_DAY") {
-        autoHoursWorked += stdHours / 2;
-        continue;
-      }
+      if (record.status === "HALF_DAY") { autoHoursWorked += stdHours / 2; continue; }
       if (record.status !== "PRESENT") continue;
       if (record.inTime && record.outTime && record.inTime !== record.outTime) {
         const [inH, inM, inS = 0] = record.inTime.split(":").map(Number);
         const [outH, outM, outS = 0] = record.outTime.split(":").map(Number);
-        const inMinutes = inH * 60 + inM + inS / 60;
-        const outMinutes = outH * 60 + outM + outS / 60;
-        const workedMinutes = outMinutes - inMinutes;
+        const workedMinutes = (outH * 60 + outM + outS / 60) - (inH * 60 + inM + inS / 60);
         if (workedMinutes >= 30) {
-          // Hourly employees: count every actual hour (no cap)
-          // Daily employees: cap at stdHours since they are paid per day
           autoHoursWorked += isHourly ? workedMinutes / 60 : Math.min(workedMinutes / 60, stdHours);
         } else {
           autoHoursWorked += stdHours;
@@ -62,368 +56,352 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
     const effectiveRate = isHourly ? hourlyRate : dailyRate;
     const grossSalary = isHourly ? hourlyRate * totalHoursWorked : dailyRate * presentDays;
     const netPayable = Math.max(0, grossSalary - advanceTaken);
-    const period = startDate && endDate ? `${format(new Date(startDate), "dd/MM/yyyy")} to ${format(new Date(endDate), "dd/MM/yyyy")}` : today;
+    const period = startDate && endDate
+      ? `${format(new Date(startDate), "dd/MM/yyyy")} – ${format(new Date(endDate), "dd/MM/yyyy")}`
+      : today;
+
+    const workedLabel = isHourly
+      ? `${totalHoursWorked % 1 === 0 ? totalHoursWorked.toFixed(0) : totalHoursWorked.toFixed(2)} hrs`
+      : `${presentDays % 1 === 0 ? presentDays.toFixed(0) : presentDays.toFixed(2)} days`;
+    const rateLabel = `₹${effectiveRate.toFixed(2)} / ${isHourly ? "hr" : "day"}`;
 
     return (
-      <div ref={ref} id="invoice-print" className="p-0 bg-white text-black font-sans print:p-0 print:m-0 print:static" style={{ width: "210mm", height: "auto", minHeight: "296mm", margin: "0 auto", overflow: "hidden", color: "black" }}>
-        <div className="p-8">
-          {/* Header */}
-          <div className="border-2 border-black p-4 mb-0 relative">
-            <div className="flex justify-between items-start">
-              <div className="text-[12px] font-bold">ಪ್ರೋ: ಕುಂದನವರ ಬ್ರದರ್ಸ್</div>
-              <div className="text-center flex-1">
-                <div className="text-[10px] font-bold">|| ಶ್ರೀ ಆಂಜನೇಯ ಪ್ರಸನ್ನ ||</div>
-                <h1 className="text-3xl font-black mt-1 text-[#1a4d3a]">ಕಿಸಾನ ಹೈಟೆಕ್ ನರ್ಸರಿ</h1>
-                <div className="text-[12px] font-bold mt-1">ಕಲ್ಲೋಳಿ - 591 224</div>
-              </div>
-              <div className="text-right text-[12px] font-bold leading-tight">
-                <div>Mob: 9986589865</div>
-                <div className="mt-1">9663777255</div>
-                <div className="mt-1">7348998635</div>
-              </div>
+      <div
+        ref={ref}
+        id="invoice-print"
+        style={{ width: "210mm", minHeight: "297mm", margin: "0 auto", background: "white", color: "#111", fontFamily: "Arial, sans-serif" }}
+      >
+        {/* ── Letterhead ── */}
+        <div style={{ background: "#1a5c3a", padding: "18px 28px 12px", color: "white" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <div style={{ fontSize: "11px", fontWeight: 700, opacity: 0.85 }}>ಪ್ರೋ: ಕುಂದನವರ ಬ್ರದರ್ಸ್</div>
+            <div style={{ textAlign: "center", flex: 1 }}>
+              <div style={{ fontSize: "9px", fontWeight: 600, letterSpacing: "1px", opacity: 0.8 }}>|| ಶ್ರೀ ಆಂಜನೇಯ ಪ್ರಸನ್ನ ||</div>
+              <div style={{ fontSize: "26px", fontWeight: 900, marginTop: "4px", letterSpacing: "0.5px" }}>ಕಿಸಾನ ಹೈಟೆಕ್ ನರ್ಸರಿ</div>
+              <div style={{ fontSize: "11px", fontWeight: 600, marginTop: "2px", opacity: 0.9 }}>ಕಲ್ಲೋಳಿ – 591 224, ತಾ|| ಮೂಡಲಗಿ, ಜಿ|| ಬೆಳಗಾವಿ</div>
             </div>
-            
-            <div className="flex justify-between text-[14px] font-bold border-t border-black pt-1 mt-4">
-              <div>ತಾ|| ಮೂಡಲಗಿ</div>
-              <div>ಜಿ|| ಬೆಳಗಾವಿ</div>
+            <div style={{ textAlign: "right", fontSize: "11px", fontWeight: 600, opacity: 0.85, lineHeight: "1.6" }}>
+              <div>📞 9986589865</div>
+              <div>9663777255</div>
+              <div>7348998635</div>
             </div>
           </div>
+        </div>
 
-          <div className="text-center my-4">
-            <h2 className="text-xl font-bold border-b-2 border-black inline-block px-4">SALARY SLIP</h2>
-          </div>
+        {/* ── Document Title ── */}
+        <div style={{ background: "#f0f7f2", borderBottom: "2px solid #1a5c3a", padding: "8px 28px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ fontSize: "15px", fontWeight: 900, letterSpacing: "2px", color: "#1a5c3a" }}>SALARY SLIP</div>
+          <div style={{ fontSize: "11px", color: "#555" }}>Date: <strong>{today}</strong></div>
+        </div>
 
-          {/* Employee Details Section */}
-          <div className="border-x-2 border-b-2 border-black grid grid-cols-[1fr_200px] mb-4">
-            <div className="p-4 space-y-3 border-r-2 border-black">
-              <div className="flex items-baseline gap-2">
-                <span className="font-bold text-[14px] whitespace-nowrap">ನೌಕರರ ಹೆಸರು (Name):</span>
-                <span className="flex-1 border-b border-dotted border-black text-[14px] font-medium">{employee.name}</span>
-              </div>
-              <div className="flex items-baseline gap-2">
-                <span className="font-bold text-[14px] whitespace-nowrap">ಹುದ್ದೆ (Designation):</span>
-                <span className="flex-1 border-b border-dotted border-black text-[14px] font-medium">{employee.designation}</span>
-              </div>
-            </div>
-            <div className="p-4 space-y-3">
-              <div className="flex items-baseline gap-2">
-                <span className="font-bold text-[14px] whitespace-nowrap">ದಿನಾಂಕ:</span>
-                <span className="flex-1 border-b border-dotted border-black text-[14px] font-medium">{today}</span>
-              </div>
-              <div className="flex items-baseline gap-2">
-                <span className="font-bold text-[14px] whitespace-nowrap">ಅವಧಿ:</span>
-                <span className="flex-1 border-b border-dotted border-black text-[10px] font-medium">{period}</span>
-              </div>
-            </div>
-          </div>
+        <div style={{ padding: "20px 28px" }}>
+          {/* ── Employee Info ── */}
+          <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "18px", border: "1.5px solid #1a5c3a" }}>
+            <tbody>
+              <tr style={{ background: "#f0f7f2" }}>
+                <td style={{ padding: "8px 12px", width: "30%", fontWeight: 700, fontSize: "12px", color: "#1a5c3a", borderRight: "1px solid #cde4d5" }}>ನೌಕರರ ಹೆಸರು (Name)</td>
+                <td style={{ padding: "8px 12px", fontSize: "13px", fontWeight: 700, borderRight: "1.5px solid #1a5c3a" }}>{employee.name}</td>
+                <td style={{ padding: "8px 12px", width: "22%", fontWeight: 700, fontSize: "12px", color: "#1a5c3a", borderRight: "1px solid #cde4d5" }}>ಅವಧಿ (Period)</td>
+                <td style={{ padding: "8px 12px", fontSize: "11px", fontWeight: 600 }}>{period}</td>
+              </tr>
+              <tr>
+                <td style={{ padding: "8px 12px", fontWeight: 700, fontSize: "12px", color: "#1a5c3a", borderRight: "1px solid #cde4d5", borderTop: "1px solid #cde4d5" }}>ಹುದ್ದೆ (Designation)</td>
+                <td style={{ padding: "8px 12px", fontSize: "12px", fontWeight: 600, borderRight: "1.5px solid #1a5c3a", borderTop: "1px solid #cde4d5" }}>{employee.designation}</td>
+                <td style={{ padding: "8px 12px", fontWeight: 700, fontSize: "12px", color: "#1a5c3a", borderRight: "1px solid #cde4d5", borderTop: "1px solid #cde4d5" }}>ವಿಧ (Type)</td>
+                <td style={{ padding: "8px 12px", fontSize: "12px", fontWeight: 600, borderTop: "1px solid #cde4d5" }}>{isHourly ? "Hourly (ತಾಸಿಗೆ)" : "Daily (ದಿನಕ್ಕೆ)"}</td>
+              </tr>
+            </tbody>
+          </table>
 
-          {/* Salary Table */}
-          <table className="w-full border-collapse border-2 border-black mb-4">
+          {/* ── Earnings Table ── */}
+          <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "18px", border: "1.5px solid #1a5c3a" }}>
             <thead>
-              <tr className="border-b-2 border-black bg-gray-50/50">
-                <th className="border-r-2 border-black p-2 w-16 text-center text-[14px] font-bold">ಅ. ಸಂ.</th>
-                <th className="border-r-2 border-black p-2 text-left text-[14px] font-bold">ವಿವರ (Description)</th>
-                <th className="border-r-2 border-black p-2 w-24 text-center text-[14px] font-bold">ದಿನಗಳು</th>
-                <th className="border-r-2 border-black p-2 w-24 text-center text-[14px] font-bold">ದರ</th>
-                <th className="p-2 w-32 text-center text-[14px] font-bold">ಮೊತ್ತ (Amount)</th>
+              <tr style={{ background: "#1a5c3a", color: "white" }}>
+                <th style={{ padding: "9px 12px", textAlign: "left", fontSize: "12px", fontWeight: 700, width: "8%" }}>ಕ್ರ.ಸಂ</th>
+                <th style={{ padding: "9px 12px", textAlign: "left", fontSize: "12px", fontWeight: 700 }}>ವಿವರ (Description)</th>
+                <th style={{ padding: "9px 12px", textAlign: "center", fontSize: "12px", fontWeight: 700, width: "18%" }}>ದಿನ / ಗಂಟೆ</th>
+                <th style={{ padding: "9px 12px", textAlign: "center", fontSize: "12px", fontWeight: 700, width: "18%" }}>ದರ (Rate)</th>
+                <th style={{ padding: "9px 12px", textAlign: "right", fontSize: "12px", fontWeight: 700, width: "20%" }}>ಮೊತ್ತ (₹)</th>
               </tr>
             </thead>
             <tbody>
-              <tr className="border-b border-black">
-                <td className="border-r-2 border-black p-3 text-center text-[14px]">1</td>
-                <td className="border-r-2 border-black p-3 text-[14px] font-medium">ಮಾಸಿಕ ವೇತನ (Monthly Salary)</td>
-                <td className="border-r-2 border-black p-3 text-center text-[14px] font-medium">
-                  {isHourly
-                    ? `${totalHoursWorked % 1 === 0 ? totalHoursWorked.toFixed(0) : totalHoursWorked.toFixed(2)} hrs`
-                    : `${presentDays % 1 === 0 ? presentDays.toFixed(0) : presentDays.toFixed(2)} days`}
+              <tr style={{ borderBottom: "1px solid #cde4d5" }}>
+                <td style={{ padding: "11px 12px", textAlign: "center", fontSize: "13px", borderRight: "1px solid #cde4d5" }}>1</td>
+                <td style={{ padding: "11px 12px", fontSize: "13px", fontWeight: 600, borderRight: "1px solid #cde4d5" }}>
+                  ಮಾಸಿಕ ವೇತನ (Basic Salary)
                 </td>
-                <td className="border-r-2 border-black p-3 text-center text-[14px] font-medium">
-                  {effectiveRate.toFixed(2)}{isHourly ? "/hr" : "/day"}
+                <td style={{ padding: "11px 12px", textAlign: "center", fontSize: "13px", fontWeight: 600, borderRight: "1px solid #cde4d5" }}>
+                  {workedLabel}
                 </td>
-                <td className="border-r-2 border-black p-3 text-right text-[14px] font-bold">{grossSalary.toFixed(2)}</td>
+                <td style={{ padding: "11px 12px", textAlign: "center", fontSize: "13px", fontWeight: 600, borderRight: "1px solid #cde4d5" }}>
+                  {rateLabel}
+                </td>
+                <td style={{ padding: "11px 12px", textAlign: "right", fontSize: "14px", fontWeight: 800 }}>
+                  {grossSalary.toFixed(2)}
+                </td>
               </tr>
               {advanceTaken > 0 && (
-                <tr className="border-b border-black">
-                  <td className="border-r-2 border-black p-3 text-center text-[14px]">2</td>
-                  <td className="border-r-2 border-black p-3 text-[14px] font-medium">ಮುಂಗಡ ಕಡಿತ (Advance Deduction)</td>
-                  <td className="border-r-2 border-black p-3 text-center text-[14px]">—</td>
-                  <td className="border-r-2 border-black p-3 text-center text-[14px]">—</td>
-                  <td className="border-r-2 border-black p-3 text-right text-[14px] font-bold text-red-700">-{advanceTaken.toFixed(2)}</td>
+                <tr style={{ borderBottom: "1px solid #cde4d5", background: "#fff8f8" }}>
+                  <td style={{ padding: "11px 12px", textAlign: "center", fontSize: "13px", borderRight: "1px solid #cde4d5" }}>2</td>
+                  <td style={{ padding: "11px 12px", fontSize: "13px", fontWeight: 600, color: "#c00", borderRight: "1px solid #cde4d5" }}>
+                    ಮುಂಗಡ ಕಡಿತ (Advance Deduction)
+                  </td>
+                  <td style={{ padding: "11px 12px", textAlign: "center", fontSize: "13px", color: "#999", borderRight: "1px solid #cde4d5" }}>—</td>
+                  <td style={{ padding: "11px 12px", textAlign: "center", fontSize: "13px", color: "#999", borderRight: "1px solid #cde4d5" }}>—</td>
+                  <td style={{ padding: "11px 12px", textAlign: "right", fontSize: "14px", fontWeight: 800, color: "#c00" }}>
+                    ({advanceTaken.toFixed(2)})
+                  </td>
                 </tr>
               )}
-              {[...Array(advanceTaken > 0 ? 7 : 8)].map((_, i) => (
-                <tr key={i} className="h-10 border-b border-black/10 last:border-b-0">
-                  <td className="border-r-2 border-black"></td>
-                  <td className="border-r-2 border-black"></td>
-                  <td className="border-r-2 border-black"></td>
-                  <td className="border-r-2 border-black"></td>
+              {/* Blank filler rows for signature / notes space */}
+              {[...Array(5)].map((_, i) => (
+                <tr key={i} style={{ height: "36px", borderBottom: "1px solid #e8f0eb" }}>
+                  <td style={{ borderRight: "1px solid #cde4d5" }}></td>
+                  <td style={{ borderRight: "1px solid #cde4d5" }}></td>
+                  <td style={{ borderRight: "1px solid #cde4d5" }}></td>
+                  <td style={{ borderRight: "1px solid #cde4d5" }}></td>
                   <td></td>
                 </tr>
               ))}
             </tbody>
           </table>
 
-          {/* Summary */}
-          <div className="flex justify-end">
-            <div className="w-1/2 border-2 border-black divide-y-2 divide-black">
-              <div className="flex justify-between items-center p-3">
-                <span className="font-bold text-[15px]">ಒಟ್ಟು ವೇತನ (Gross Salary):</span>
-                <span className="font-semibold text-[15px] min-w-[100px] text-right">
-                  {grossSalary.toFixed(2)}
-                </span>
-              </div>
-              {advanceTaken > 0 && (
-                <div className="flex justify-between items-center p-3 bg-red-50/50">
-                  <span className="font-bold text-[15px]">ಮುಂಗಡ ಕಡಿತ (Advance):</span>
-                  <span className="font-semibold text-[15px] text-red-700 min-w-[100px] text-right">
-                    -{advanceTaken.toFixed(2)}
-                  </span>
-                </div>
-              )}
-              <div className="flex justify-between items-center p-3">
-                <span className="font-bold text-[15px]">ನಿವ್ವಳ ವೇತನ (Net Payable):</span>
-                <span className="font-bold text-[18px] border-b-4 border-double border-black min-w-[100px] text-right">
-                  {netPayable.toFixed(2)}
-                </span>
-              </div>
+          {/* ── Totals ── */}
+          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "32px" }}>
+            <table style={{ borderCollapse: "collapse", border: "1.5px solid #1a5c3a", minWidth: "260px" }}>
+              <tbody>
+                <tr style={{ background: "#f0f7f2" }}>
+                  <td style={{ padding: "9px 14px", fontSize: "13px", fontWeight: 700, color: "#1a5c3a", borderBottom: "1px solid #cde4d5", borderRight: "1.5px solid #1a5c3a" }}>
+                    ಒಟ್ಟು ವೇತನ (Gross Salary)
+                  </td>
+                  <td style={{ padding: "9px 14px", fontSize: "14px", fontWeight: 700, textAlign: "right", borderBottom: "1px solid #cde4d5", minWidth: "100px" }}>
+                    ₹ {grossSalary.toFixed(2)}
+                  </td>
+                </tr>
+                {advanceTaken > 0 && (
+                  <tr style={{ background: "#fff8f8" }}>
+                    <td style={{ padding: "9px 14px", fontSize: "13px", fontWeight: 700, color: "#c00", borderBottom: "1px solid #cde4d5", borderRight: "1.5px solid #1a5c3a" }}>
+                      ಮುಂಗಡ ಕಡಿತ (Advance)
+                    </td>
+                    <td style={{ padding: "9px 14px", fontSize: "14px", fontWeight: 700, textAlign: "right", color: "#c00", borderBottom: "1px solid #cde4d5" }}>
+                      − ₹ {advanceTaken.toFixed(2)}
+                    </td>
+                  </tr>
+                )}
+                <tr style={{ background: "#1a5c3a" }}>
+                  <td style={{ padding: "11px 14px", fontSize: "14px", fontWeight: 900, color: "white", borderRight: "1.5px solid white" }}>
+                    ನಿವ್ವಳ ವೇತನ (Net Payable)
+                  </td>
+                  <td style={{ padding: "11px 14px", fontSize: "18px", fontWeight: 900, textAlign: "right", color: "white" }}>
+                    ₹ {netPayable.toFixed(2)}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* ── Signatures ── */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: "40px", paddingTop: "16px", borderTop: "1px dashed #aaa" }}>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: "11px", color: "#555", marginBottom: "40px" }}>ನೌಕರರ ಸಹಿ (Employee Signature)</div>
+              <div style={{ borderTop: "1.5px solid #333", width: "130px", margin: "0 auto" }}></div>
+              <div style={{ fontSize: "11px", color: "#555", marginTop: "4px" }}>{employee.name}</div>
+            </div>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: "11px", color: "#555", marginBottom: "40px" }}>ಫಾರ್, ಕಿಸಾನ ಹೈಟೆಕ್ ನರ್ಸರಿ</div>
+              <div style={{ borderTop: "1.5px solid #333", width: "130px", margin: "0 auto" }}></div>
+              <div style={{ fontSize: "11px", color: "#555", marginTop: "4px" }}>Authorised Signatory</div>
             </div>
           </div>
 
-          {/* Signatures */}
-          <div className="mt-20 flex justify-between items-end">
-            <div className="text-center">
-              <div className="font-bold text-[15px] mb-12">ನೌಕರರ ಸಹಿ</div>
-              <div className="inline-block w-32 border-b border-black"></div>
-            </div>
-            <div className="text-right">
-              <div className="font-bold text-[15px] mb-12">ಫಾರ್, ಕಿಸಾನ ಹೈಟೆಕ್ ನರ್ಸರಿ</div>
-              <div className="font-bold text-[15px] flex items-center justify-end gap-2">
-                ಸಹಿ. <span className="inline-block w-32 border-b border-black"></span>
-              </div>
-            </div>
+          <div style={{ marginTop: "20px", textAlign: "center", fontSize: "9px", color: "#999", letterSpacing: "0.5px" }}>
+            Computer generated salary slip • Kisan Hi-Tech Nursery, Kalloli
           </div>
         </div>
+
         <style dangerouslySetInnerHTML={{ __html: `
           @media print {
-            body { 
-              margin: 0; 
-              padding: 0; 
-              background: white !important; 
-              visibility: hidden;
-            }
-            #invoice-print { 
+            body { margin: 0; padding: 0; background: white !important; visibility: hidden; }
+            #invoice-print {
               visibility: visible;
-              position: static !important;
+              position: fixed !important;
+              top: 0; left: 0;
               margin: 0 !important;
               padding: 0 !important;
-              width: 210mm !important; 
-              height: 297mm !important; 
-              max-height: 297mm !important;
-              overflow: hidden !important;
-              background: white !important; 
+              width: 210mm !important;
+              min-height: 297mm !important;
+              background: white !important;
               display: block !important;
-              page-break-after: avoid !important;
-              page-break-before: avoid !important;
-              page-break-inside: avoid !important;
             }
-            header, nav, aside, footer, .no-print, button, [role="button"], .sidebar, .main-content { 
-              display: none !important; 
-            }
+            header, nav, aside, footer, .no-print, button, [role="button"], .sidebar, [data-radix-portal] { display: none !important; }
             @page { size: A4; margin: 0; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
           }
         `}} />
       </div>
     );
   }
 
-  const deliveryDate = order.deliveryDate ? format(new Date(order.deliveryDate), "dd/MM/yyyy") : today;
+  /* ─── CUSTOMER ORDER INVOICE ──────────────────────────────────────── */
+  const deliveryDate = order.deliveryDate
+    ? format(new Date(order.deliveryDate), "dd/MM/yyyy")
+    : today;
 
   return (
-    <div ref={ref} id="invoice-print" className="p-0 bg-white text-black font-sans print:p-0 print:m-0 print:static" style={{ width: "210mm", height: "auto", minHeight: "296mm", margin: "0 auto", overflow: "hidden", color: "black" }}>
-      <div className="p-8">
+    <div
+      ref={ref}
+      id="invoice-print"
+      style={{ width: "210mm", minHeight: "296mm", margin: "0 auto", background: "white", color: "#111", fontFamily: "Arial, sans-serif" }}
+    >
+      <div style={{ padding: "28px 32px" }}>
         {/* Header */}
-        <div className="border-2 border-black p-4 mb-0 relative">
-          <div className="flex justify-between items-start">
-            <div className="text-[12px] font-bold">ಪ್ರೋ: ಕುಂದನವರ ಬ್ರದರ್ಸ್</div>
-            <div className="text-center flex-1">
-              <div className="text-[10px] font-bold">|| ಶ್ರೀ ಆಂಜನೇಯ ಪ್ರಸನ್ನ ||</div>
-              <h1 className="text-3xl font-black mt-1 text-[#1a4d3a]">ಕಿಸಾನ ಹೈಟೆಕ್ ನರ್ಸರಿ</h1>
-              <div className="text-[12px] font-bold mt-1">ಕಲ್ಲೋಳಿ - 591 224</div>
+        <div style={{ border: "2px solid #111", padding: "12px 16px", marginBottom: 0 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <div style={{ fontSize: "12px", fontWeight: 700 }}>ಪ್ರೋ: ಕುಂದನವರ ಬ್ರದರ್ಸ್</div>
+            <div style={{ textAlign: "center", flex: 1 }}>
+              <div style={{ fontSize: "10px", fontWeight: 700 }}>|| ಶ್ರೀ ಆಂಜನೇಯ ಪ್ರಸನ್ನ ||</div>
+              <div style={{ fontSize: "26px", fontWeight: 900, marginTop: "4px", color: "#1a4d3a" }}>ಕಿಸಾನ ಹೈಟೆಕ್ ನರ್ಸರಿ</div>
+              <div style={{ fontSize: "12px", fontWeight: 700, marginTop: "2px" }}>ಕಲ್ಲೋಳಿ - 591 224</div>
             </div>
-            <div className="text-right text-[12px] font-bold leading-tight">
+            <div style={{ textAlign: "right", fontSize: "12px", fontWeight: 700, lineHeight: "1.7" }}>
               <div>Mob: 9986589865</div>
-              <div className="mt-1">9663777255</div>
-              <div className="mt-1">7348998635</div>
+              <div>9663777255</div>
+              <div>7348998635</div>
             </div>
           </div>
-          
-          <div className="flex justify-between text-[14px] font-bold border-t border-black pt-1 mt-4">
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "14px", fontWeight: 700, borderTop: "1px solid #111", paddingTop: "4px", marginTop: "12px" }}>
             <div>ತಾ|| ಮೂಡಲಗಿ</div>
             <div>ಜಿ|| ಬೆಳಗಾವಿ</div>
           </div>
         </div>
 
-        {/* Customer & Invoice Details Section */}
-        <div className="border-x-2 border-b-2 border-black grid grid-cols-[1fr_200px] mb-4">
-          <div className="p-4 space-y-3 border-r-2 border-black">
-            <div className="flex items-baseline gap-2">
-              <span className="font-bold text-[14px] whitespace-nowrap">ಗ್ರಾಹಕರ ಹೆಸರು:</span>
-              <span className="flex-1 border-b border-dotted border-black text-[14px] font-medium">{order.customerName}</span>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="font-bold text-[14px] whitespace-nowrap">ಗ್ರಾಮ:</span>
-              <span className="flex-1 border-b border-dotted border-black text-[14px] font-medium">{order.village}</span>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="font-bold text-[14px] whitespace-nowrap">ಮೊಬೈಲ್ ಸಂಖ್ಯೆ:</span>
-              <span className="flex-1 border-b border-dotted border-black text-[14px] font-medium">{order.phone}</span>
-            </div>
+        {/* Customer & Invoice Details */}
+        <div style={{ border: "2px solid #111", borderTop: "none", display: "grid", gridTemplateColumns: "1fr 200px", marginBottom: "14px" }}>
+          <div style={{ padding: "12px", borderRight: "2px solid #111" }}>
+            {[
+              ["ಗ್ರಾಹಕರ ಹೆಸರು:", order.customerName],
+              ["ಗ್ರಾಮ:", order.village],
+              ["ಮೊಬೈಲ್ ಸಂಖ್ಯೆ:", order.phone],
+            ].map(([label, val]) => (
+              <div key={label} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "baseline" }}>
+                <span style={{ fontWeight: 700, fontSize: "13px", whiteSpace: "nowrap" }}>{label}</span>
+                <span style={{ flex: 1, borderBottom: "1px dotted #999", fontSize: "13px", fontWeight: 500 }}>{val}</span>
+              </div>
+            ))}
           </div>
-          <div className="p-4 space-y-3">
-            <div className="flex items-baseline gap-2">
-              <span className="font-bold text-[14px] whitespace-nowrap">ನಂ:</span>
-              <span className="flex-1 border-b border-dotted border-black text-[14px] font-bold text-red-600">{order.invoiceNumber || `INV-${order.id.toString().padStart(3, '0')}`}</span>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="font-bold text-[14px] whitespace-nowrap">ದಿನಾಂಕ:</span>
-              <span className="flex-1 border-b border-dotted border-black text-[14px] font-medium">{deliveryDate}</span>
-            </div>
+          <div style={{ padding: "12px" }}>
+            {[
+              ["ನಂ:", order.invoiceNumber || `INV-${String(order.id).padStart(3, "0")}`, "#c00"],
+              ["ದಿನಾಂಕ:", deliveryDate, undefined],
+            ].map(([label, val, color]) => (
+              <div key={label} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "baseline" }}>
+                <span style={{ fontWeight: 700, fontSize: "13px", whiteSpace: "nowrap" }}>{label}</span>
+                <span style={{ flex: 1, borderBottom: "1px dotted #999", fontSize: "13px", fontWeight: 700, color: color || "inherit" }}>{val}</span>
+              </div>
+            ))}
           </div>
         </div>
 
         {/* Items Table */}
-        <table className="w-full border-collapse border-2 border-black mb-4">
+        <table style={{ width: "100%", borderCollapse: "collapse", border: "2px solid #111", marginBottom: "14px" }}>
           <thead>
-            <tr className="border-b-2 border-black bg-gray-50/50">
-              <th className="border-r-2 border-black p-2 w-16 text-center text-[14px] font-bold">ಅ. ಸಂ.</th>
-              <th className="border-r-2 border-black p-2 text-left text-[14px] font-bold">ಸಸಿಗಳ ವಿವರ</th>
-              <th className="border-r-2 border-black p-2 w-24 text-center text-[14px] font-bold">ನಗ</th>
-              <th className="border-r-2 border-black p-2 w-24 text-center text-[14px] font-bold">ದರ</th>
-              <th className="p-2 w-32 text-center text-[14px] font-bold">ಮೊತ್ತ</th>
+            <tr style={{ background: "#f5f5f5", borderBottom: "2px solid #111" }}>
+              {["ಅ. ಸಂ.", "ಸಸಿಗಳ ವಿವರ", "ನಗ", "ದರ", "ಮೊತ್ತ"].map((h, i) => (
+                <th key={h} style={{ padding: "8px", fontSize: "13px", fontWeight: 700, textAlign: i === 1 ? "left" : "center", borderRight: i < 4 ? "2px solid #111" : undefined, width: i === 0 ? "48px" : i > 1 ? "80px" : undefined }}>
+                  {h}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
-            <tr className="border-b border-black">
-              <td className="border-r-2 border-black p-3 text-center text-[14px]">1</td>
-              <td className="border-r-2 border-black p-3 text-[14px] font-medium">{order.lot?.variety?.name || "Plant Variety"}</td>
-              <td className="border-r-2 border-black p-3 text-center text-[14px] font-medium">{Number(order.bookedQty).toFixed(2)}</td>
-              <td className="border-r-2 border-black p-3 text-center text-[14px] font-medium">{Number(order.perUnitPrice).toFixed(2)}</td>
-              <td className="border-r-2 border-black p-3 text-right text-[14px] font-bold">{Number(order.totalAmount).toFixed(2)}</td>
+            <tr style={{ borderBottom: "1px solid #ddd" }}>
+              <td style={{ padding: "10px 8px", textAlign: "center", fontSize: "13px", borderRight: "2px solid #111" }}>1</td>
+              <td style={{ padding: "10px 8px", fontSize: "13px", fontWeight: 600, borderRight: "2px solid #111" }}>
+                {order.lot?.variety?.name || "Plant Variety"}
+              </td>
+              <td style={{ padding: "10px 8px", textAlign: "center", fontSize: "13px", fontWeight: 600, borderRight: "2px solid #111" }}>
+                {Number(order.bookedQty).toFixed(2)}
+              </td>
+              <td style={{ padding: "10px 8px", textAlign: "center", fontSize: "13px", fontWeight: 600, borderRight: "2px solid #111" }}>
+                {Number(order.perUnitPrice).toFixed(2)}
+              </td>
+              <td style={{ padding: "10px 8px", textAlign: "right", fontSize: "14px", fontWeight: 800 }}>
+                {Number(order.totalAmount).toFixed(2)}
+              </td>
             </tr>
-            {/* Fill empty space with structured lines */}
-            {[...Array(3)].map((_, i) => (
-              <tr key={i} className="h-8 border-b border-black/10 last:border-b-0">
-                <td className="border-r-2 border-black"></td>
-                <td className="border-r-2 border-black"></td>
-                <td className="border-r-2 border-black"></td>
-                <td className="border-r-2 border-black"></td>
+            {[...Array(4)].map((_, i) => (
+              <tr key={i} style={{ height: "32px", borderBottom: "1px solid #eee" }}>
+                <td style={{ borderRight: "2px solid #111" }}></td>
+                <td style={{ borderRight: "2px solid #111" }}></td>
+                <td style={{ borderRight: "2px solid #111" }}></td>
+                <td style={{ borderRight: "2px solid #111" }}></td>
                 <td></td>
               </tr>
             ))}
-            {/* Ensure minimum table height */}
-            <tr className="h-10">
-              <td className="border-r-2 border-black"></td>
-              <td className="border-r-2 border-black"></td>
-              <td className="border-r-2 border-black"></td>
-              <td className="border-r-2 border-black"></td>
-              <td></td>
-            </tr>
           </tbody>
         </table>
 
-        {/* Footer / Summary Grid */}
-        <div className="grid grid-cols-[1.2fr_1fr] gap-4">
-          {/* Payment & Bank Details */}
-          <div className="border-2 border-black p-4 flex flex-col justify-between">
-            <div>
-              <div className="font-bold text-[14px]">G-Pay / Phone Pe</div>
-              <div className="font-bold text-xl mt-1">9986589865</div>
-            </div>
-            <div className="mt-4 space-y-1">
-              <div className="font-bold text-[10px] uppercase tracking-wider text-gray-600">Bank Details:</div>
-              <div className="text-[11px] font-bold">Kisan Hitech Nursery, Kalloli</div>
-              <div className="text-[11px]">A/c No. 918020082321165</div>
-              <div className="text-[11px]">IFSC: UTIB0000482, Axis Bank, Gokak</div>
+        {/* Footer / Summary */}
+        <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: "14px" }}>
+          <div style={{ border: "2px solid #111", padding: "12px" }}>
+            <div style={{ fontWeight: 700, fontSize: "13px" }}>G-Pay / Phone Pe</div>
+            <div style={{ fontWeight: 900, fontSize: "20px", marginTop: "2px" }}>9986589865</div>
+            <div style={{ marginTop: "12px" }}>
+              <div style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "#666" }}>Bank Details:</div>
+              <div style={{ fontSize: "11px", fontWeight: 700, marginTop: "4px" }}>Kisan Hitech Nursery, Kalloli</div>
+              <div style={{ fontSize: "11px" }}>A/c No. 918020082321165</div>
+              <div style={{ fontSize: "11px" }}>IFSC: UTIB0000482 • Axis Bank, Gokak</div>
             </div>
           </div>
-
-          {/* Totals & Vehicle */}
-          <div className="border-2 border-black divide-y-2 divide-black">
-            <div className="flex justify-between items-center p-2">
-              <span className="font-bold text-[14px]">ಒಟ್ಟು :</span>
-              <span className="font-bold text-[16px] border-b-4 border-double border-black min-w-[100px] text-right">
-                {Number(order.totalAmount).toFixed(2)}
-              </span>
-            </div>
-            <div className="flex justify-between items-center p-2 bg-gray-50/30">
-              <span className="font-bold text-[14px]">ಮುಂಗಡ ಮೊತ್ತ :</span>
-              <span className="font-bold text-[14px] min-w-[100px] text-right">
-                {Number(order.advanceAmount).toFixed(2)}
-              </span>
-            </div>
-            <div className="flex justify-between items-center p-2">
-              <span className="font-bold text-[14px]">ಬಾಕಿ ಮೊತ್ತ :</span>
-              <span className="font-bold text-[16px] border-b-4 border-double border-black min-w-[100px] text-right">
-                {Number(order.remainingBalance).toFixed(2)}
-              </span>
-            </div>
-            <div className="p-2 text-[12px] font-bold text-gray-700">
-               Vehicle Details: <span className="ml-1 font-medium">{order.vehicleDetails || "_________________"}</span>
+          <div style={{ border: "2px solid #111" }}>
+            {[
+              ["ಒಟ್ಟು :", Number(order.totalAmount).toFixed(2), false],
+              ["ಮುಂಗಡ ಮೊತ್ತ :", Number(order.advanceAmount).toFixed(2), false],
+              ["ಬಾಕಿ ಮೊತ್ತ :", Number(order.remainingBalance).toFixed(2), true],
+            ].map(([label, val, bold]) => (
+              <div key={String(label)} style={{ display: "flex", justifyContent: "space-between", padding: "8px 10px", borderBottom: "1.5px solid #111", background: bold ? "#f9f9f9" : "white" }}>
+                <span style={{ fontWeight: 700, fontSize: "13px" }}>{label}</span>
+                <span style={{ fontWeight: bold ? 900 : 700, fontSize: bold ? "15px" : "13px", minWidth: "90px", textAlign: "right", borderBottom: bold ? "3px double #111" : undefined }}>{val}</span>
+              </div>
+            ))}
+            <div style={{ padding: "8px 10px", fontSize: "11px", fontWeight: 700, color: "#555" }}>
+              Vehicle: <span style={{ fontWeight: 500 }}>{order.vehicleDetails || "_________________"}</span>
             </div>
           </div>
         </div>
 
-        {/* Terms & Signatures */}
-        <div className="mt-6 flex justify-between items-end">
-          <div className="text-[10px] max-w-[60%] leading-tight text-gray-600 font-medium">
-            ರೈತರು ಹೇಳಿದ ಸಸಿಗಳನ್ನು ತಯಾರಿಸಿ ಕೊಡಲಾಗುವುದು. ಆದರೆ ತಳಗಳಿಗೆ ಸಂಬಂಧಿಸಿದ ವ್ಯತ್ಯಾಸಗಳಿಗೆ ಮತ್ತು ಇಳುವರಿ, ರೋಗಬಾಧೆ, ಇತ್ಯಾದಿ ವಿಷಯಗಳಿಗೆ ನಾವು ಜವಾಬ್ದಾರರಲ್ಲ, ರೈತ ಬಾಂಧವರು ಸಹಕರಿಸಬೇಕಾಗಿ ಕೋರಿಕೆ.
+        {/* Terms & Signature */}
+        <div style={{ marginTop: "20px", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+          <div style={{ fontSize: "10px", maxWidth: "60%", lineHeight: "1.5", color: "#666" }}>
+            ರೈತರು ಹೇಳಿದ ಸಸಿಗಳನ್ನು ತಯಾರಿಸಿ ಕೊಡಲಾಗುವುದು. ಆದರೆ ತಳಗಳಿಗೆ ಸಂಬಂಧಿಸಿದ ವ್ಯತ್ಯಾಸಗಳಿಗೆ ಮತ್ತು ಇಳುವರಿ, ರೋಗಬಾಧೆ, ಇತ್ಯಾದಿ ವಿಷಯಗಳಿಗೆ ನಾವು ಜವಾಬ್ದಾರರಲ್ಲ.
           </div>
-          <div className="text-right pb-1">
-            <div className="font-bold text-[13px] mb-8">ಫಾರ್, ಕಿಸಾನ ಹೈಟೆಕ್ ನರ್ಸರಿ</div>
-            <div className="font-bold text-[13px] flex items-center justify-end gap-2">
-              ಸಹಿ. <span className="inline-block w-20 border-b border-black"></span>
-            </div>
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontSize: "12px", fontWeight: 700, marginBottom: "32px" }}>ಫಾರ್, ಕಿಸಾನ ಹೈಟೆಕ್ ನರ್ಸರಿ</div>
+            <div style={{ borderTop: "1.5px solid #333", width: "120px", marginLeft: "auto" }}></div>
+            <div style={{ fontSize: "11px", color: "#555", marginTop: "3px" }}>Authorised Signatory</div>
           </div>
         </div>
       </div>
 
-        <style dangerouslySetInnerHTML={{ __html: `
-          @media print {
-            body { 
-              margin: 0; 
-              padding: 0;
-              background: white !important;
-              -webkit-print-color-adjust: exact;
-              visibility: hidden;
-            }
-            #invoice-print { 
-              visibility: visible;
-              position: static !important;
-              margin: 0 !important;
-              padding: 0 !important;
-              width: 210mm !important;
-              height: 297mm !important;
-              max-height: 297mm !important;
-              overflow: hidden !important;
-              background: white !important;
-              display: block !important;
-              page-break-after: avoid !important;
-              page-break-before: avoid !important;
-              page-break-inside: avoid !important;
-            }
-            header, nav, aside, footer, .no-print, button, [role="button"], .sidebar, .main-content { 
-              display: none !important; 
-            }
-            @page {
-              size: A4;
-              margin: 5mm;
-            }
-            * {
-              -webkit-print-color-adjust: exact !important;
-              print-color-adjust: exact !important;
-            }
+      <style dangerouslySetInnerHTML={{ __html: `
+        @media print {
+          body { margin: 0; padding: 0; background: white !important; visibility: hidden; }
+          #invoice-print {
+            visibility: visible;
+            position: fixed !important;
+            top: 0; left: 0;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 210mm !important;
+            min-height: 297mm !important;
+            background: white !important;
+            display: block !important;
           }
-        `}} />
+          header, nav, aside, footer, .no-print, button, [role="button"], .sidebar, [data-radix-portal] { display: none !important; }
+          @page { size: A4; margin: 0; }
+          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
+      `}} />
     </div>
   );
 });
