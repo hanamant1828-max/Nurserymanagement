@@ -250,6 +250,20 @@ export default function TodayDeliveriesPage() {
     }, 100);
   };
 
+  const totalQuantityToDeliver = useMemo(() => {
+    return filteredOrders.reduce((sum: number, order: any) => sum + (Number(order.bookedQty) || 0), 0);
+  }, [filteredOrders]);
+
+  const totalAmount = useMemo(() => {
+    return filteredOrders.reduce((sum: number, order: any) => sum + (Number(order.totalAmount) || 0), 0);
+  }, [filteredOrders]);
+
+  const totalPending = useMemo(() => {
+    return filteredOrders.reduce((sum: number, order: any) => sum + (Number(order.remainingBalance) || 0), 0);
+  }, [filteredOrders]);
+
+  const avgOrderValue = filteredOrders.length > 0 ? totalAmount / filteredOrders.length : 0;
+
   if (isLoading) {
     return (
       <div className="space-y-8 animate-pulse">
@@ -271,20 +285,6 @@ export default function TodayDeliveriesPage() {
       </div>
     );
   }
-
-  const totalQuantityToDeliver = useMemo(() => {
-    return filteredOrders.reduce((sum: number, order: any) => sum + (Number(order.bookedQty) || 0), 0);
-  }, [filteredOrders]);
-
-  const totalAmount = useMemo(() => {
-    return filteredOrders.reduce((sum: number, order: any) => sum + (Number(order.totalAmount) || 0), 0);
-  }, [filteredOrders]);
-
-  const totalPending = useMemo(() => {
-    return filteredOrders.reduce((sum: number, order: any) => sum + (Number(order.remainingBalance) || 0), 0);
-  }, [filteredOrders]);
-
-  const avgOrderValue = filteredOrders.length > 0 ? totalAmount / filteredOrders.length : 0;
 
   return (
     <div className="space-y-6 px-4 md:px-8 py-6">
