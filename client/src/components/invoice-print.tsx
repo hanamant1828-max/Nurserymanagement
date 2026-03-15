@@ -75,6 +75,7 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
         <div style={{ background: "#1a5c3a", padding: "14px 28px 12px", color: "white" }}>
           {/* Title – full width centered */}
           <div style={{ textAlign: "center", marginBottom: "10px" }}>
+            <div style={{ fontSize: "12px", fontWeight: 600, opacity: 0.9, letterSpacing: "1.5px", marginBottom: "4px" }}>|| Sri Anjaneya Prasanna ||</div>
             <div style={{ fontSize: "26px", fontWeight: 900, letterSpacing: "0.5px" }}>Kisan Hi-Tech Nursery</div>
             <div style={{ fontSize: "11px", fontWeight: 600, marginTop: "2px", opacity: 0.9 }}>Kalloli – 591 224, Tq. Mudalagi, Dist. Belagavi</div>
           </div>
