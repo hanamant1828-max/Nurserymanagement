@@ -28,6 +28,8 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
   
   if (employee) {
     const stdHours = parseFloat((employee as any).workHours || "8");
+    const hourlyRate = parseFloat((employee as any).hourlyRate || "0");
+    const isHourly = hourlyRate > 0;
 
     let autoHoursWorked = 0;
     for (const record of attendance || []) {
@@ -43,7 +45,9 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
         const outMinutes = outH * 60 + outM + outS / 60;
         const workedMinutes = outMinutes - inMinutes;
         if (workedMinutes >= 30) {
-          autoHoursWorked += Math.min(workedMinutes / 60, stdHours);
+          // Hourly employees: count every actual hour (no cap)
+          // Daily employees: cap at stdHours since they are paid per day
+          autoHoursWorked += isHourly ? workedMinutes / 60 : Math.min(workedMinutes / 60, stdHours);
         } else {
           autoHoursWorked += stdHours;
         }
@@ -55,8 +59,6 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
     const totalHoursWorked = overriddenHours !== undefined ? overriddenHours : autoHoursWorked;
     const presentDays = totalHoursWorked / stdHours;
     const dailyRate = parseFloat(employee.salary || "0");
-    const hourlyRate = parseFloat((employee as any).hourlyRate || "0");
-    const isHourly = hourlyRate > 0;
     const effectiveRate = isHourly ? hourlyRate : dailyRate;
     const grossSalary = isHourly ? hourlyRate * totalHoursWorked : dailyRate * presentDays;
     const netPayable = Math.max(0, grossSalary - advanceTaken);

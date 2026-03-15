@@ -73,6 +73,8 @@ export default function SalaryPage() {
     return employees.map(employee => {
       const employeeAttendance = allAttendance.filter(a => a.employeeId === employee.id);
       const stdHours = parseFloat((employee as any).workHours || "8");
+      const hourlyRate = parseFloat((employee as any).hourlyRate || "0");
+      const isHourly = hourlyRate > 0;
 
       let autoHoursWorked = 0;
       for (const record of employeeAttendance) {
@@ -88,7 +90,9 @@ export default function SalaryPage() {
           const outMinutes = outH * 60 + outM + outS / 60;
           const workedMinutes = outMinutes - inMinutes;
           if (workedMinutes >= 30) {
-            autoHoursWorked += Math.min(workedMinutes / 60, stdHours);
+            // Hourly employees: count every actual hour worked (no cap)
+            // Daily employees: cap at stdHours since they are paid per day
+            autoHoursWorked += isHourly ? workedMinutes / 60 : Math.min(workedMinutes / 60, stdHours);
           } else {
             autoHoursWorked += stdHours;
           }
@@ -104,8 +108,6 @@ export default function SalaryPage() {
 
       const totalDaysWorked = totalHoursWorked / stdHours;
       const dailyRate = parseFloat(employee.salary || "0");
-      const hourlyRate = parseFloat((employee as any).hourlyRate || "0");
-      const isHourly = hourlyRate > 0;
       const grossSalary = isHourly ? hourlyRate * totalHoursWorked : dailyRate * totalDaysWorked;
       const advanceTaken = advanceByEmployee[employee.id] || 0;
       const netPayable = Math.max(0, grossSalary - advanceTaken);
