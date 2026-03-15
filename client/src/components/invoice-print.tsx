@@ -75,10 +75,10 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
         <div style={{ background: "#1a5c3a", padding: "18px 28px 12px", color: "white" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <div style={{ fontSize: "11px", fontWeight: 700, opacity: 0.85 }}>ಪ್ರೋ: ಕುಂದನವರ ಬ್ರದರ್ಸ್</div>
-            <div style={{ textAlign: "center", flex: 1 }}>
+            <div style={{ textAlign: "center", flex: 1, minWidth: 0, overflow: "visible" }}>
               <div style={{ fontSize: "9px", fontWeight: 600, letterSpacing: "1px", opacity: 0.8 }}>|| ಶ್ರೀ ಆಂಜನೇಯ ಪ್ರಸನ್ನ ||</div>
-              <div style={{ fontSize: "26px", fontWeight: 900, marginTop: "4px", letterSpacing: "0.5px" }}>ಕಿಸಾನ ಹೈಟೆಕ್ ನರ್ಸರಿ</div>
-              <div style={{ fontSize: "11px", fontWeight: 600, marginTop: "2px", opacity: 0.9 }}>ಕಲ್ಲೋಳಿ – 591 224, ತಾ|| ಮೂಡಲಗಿ, ಜಿ|| ಬೆಳಗಾವಿ</div>
+              <div style={{ fontSize: "21px", fontWeight: 900, marginTop: "4px", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>ಕಿಸಾನ ಹೈಟೆಕ್ ನರ್ಸರಿ</div>
+              <div style={{ fontSize: "10px", fontWeight: 600, marginTop: "2px", opacity: 0.9, whiteSpace: "nowrap" }}>ಕಲ್ಲೋಳಿ – 591 224, ತಾ|| ಮೂಡಲಗಿ, ಜಿ|| ಬೆಳಗಾವಿ</div>
             </div>
             <div style={{ textAlign: "right", fontSize: "11px", fontWeight: 600, opacity: 0.85, lineHeight: "1.6" }}>
               <div>📞 9986589865</div>
@@ -221,7 +221,7 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
 
         <style dangerouslySetInnerHTML={{ __html: `
           @media print {
-            body { margin: 0; padding: 0; background: white !important; visibility: hidden; }
+            html, body { margin: 0; padding: 0; height: 0 !important; overflow: hidden !important; background: white !important; visibility: hidden; }
             #invoice-print {
               visibility: visible;
               position: fixed !important;
@@ -385,7 +385,7 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
 
       <style dangerouslySetInnerHTML={{ __html: `
         @media print {
-          body { margin: 0; padding: 0; background: white !important; visibility: hidden; }
+          html, body { margin: 0; padding: 0; height: 0 !important; overflow: hidden !important; background: white !important; visibility: hidden; }
           #invoice-print {
             visibility: visible;
             position: fixed !important;
