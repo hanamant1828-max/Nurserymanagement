@@ -75,12 +75,12 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
         <div style={{ background: "#1a5c3a", padding: "14px 28px 12px", color: "white" }}>
           {/* Title – full width centered */}
           <div style={{ textAlign: "center", marginBottom: "10px" }}>
-            <div style={{ fontSize: "26px", fontWeight: 900, letterSpacing: "0.5px" }}>ಕಿಸಾನ ಹೈಟೆಕ್ ನರ್ಸರಿ</div>
-            <div style={{ fontSize: "11px", fontWeight: 600, marginTop: "2px", opacity: 0.9 }}>ಕಲ್ಲೋಳಿ – 591 224, ತಾ|| ಮೂಡಲಗಿ, ಜಿ|| ಬೆಳಗಾವಿ</div>
+            <div style={{ fontSize: "26px", fontWeight: 900, letterSpacing: "0.5px" }}>Kisan Hi-Tech Nursery</div>
+            <div style={{ fontSize: "11px", fontWeight: 600, marginTop: "2px", opacity: 0.9 }}>Kalloli – 591 224, Tq. Mudalagi, Dist. Belagavi</div>
           </div>
           {/* Proprietor & Phones row */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid rgba(255,255,255,0.25)", paddingTop: "8px" }}>
-            <div style={{ fontSize: "11px", fontWeight: 700, opacity: 0.85 }}>ಪ್ರೋ: ಕುಂದನವರ ಬ್ರದರ್ಸ್</div>
+            <div style={{ fontSize: "11px", fontWeight: 700, opacity: 0.85 }}>Pro: Kundanavar Brothers</div>
             <div style={{ textAlign: "right", fontSize: "11px", fontWeight: 600, opacity: 0.85, lineHeight: "1.6" }}>
               <span>📞 9986589865 / 9663777255 / 7348998635</span>
             </div>
@@ -98,16 +98,16 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
           <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "18px", border: "1.5px solid #1a5c3a" }}>
             <tbody>
               <tr style={{ background: "#f0f7f2" }}>
-                <td style={{ padding: "8px 12px", width: "30%", fontWeight: 700, fontSize: "12px", color: "#1a5c3a", borderRight: "1px solid #cde4d5" }}>ನೌಕರರ ಹೆಸರು (Name)</td>
+                <td style={{ padding: "8px 12px", width: "30%", fontWeight: 700, fontSize: "12px", color: "#1a5c3a", borderRight: "1px solid #cde4d5" }}>Employee Name</td>
                 <td style={{ padding: "8px 12px", fontSize: "13px", fontWeight: 700, borderRight: "1.5px solid #1a5c3a" }}>{employee.name}</td>
-                <td style={{ padding: "8px 12px", width: "22%", fontWeight: 700, fontSize: "12px", color: "#1a5c3a", borderRight: "1px solid #cde4d5" }}>ಅವಧಿ (Period)</td>
+                <td style={{ padding: "8px 12px", width: "22%", fontWeight: 700, fontSize: "12px", color: "#1a5c3a", borderRight: "1px solid #cde4d5" }}>Period</td>
                 <td style={{ padding: "8px 12px", fontSize: "11px", fontWeight: 600 }}>{period}</td>
               </tr>
               <tr>
-                <td style={{ padding: "8px 12px", fontWeight: 700, fontSize: "12px", color: "#1a5c3a", borderRight: "1px solid #cde4d5", borderTop: "1px solid #cde4d5" }}>ಹುದ್ದೆ (Designation)</td>
+                <td style={{ padding: "8px 12px", fontWeight: 700, fontSize: "12px", color: "#1a5c3a", borderRight: "1px solid #cde4d5", borderTop: "1px solid #cde4d5" }}>Designation</td>
                 <td style={{ padding: "8px 12px", fontSize: "12px", fontWeight: 600, borderRight: "1.5px solid #1a5c3a", borderTop: "1px solid #cde4d5" }}>{employee.designation}</td>
-                <td style={{ padding: "8px 12px", fontWeight: 700, fontSize: "12px", color: "#1a5c3a", borderRight: "1px solid #cde4d5", borderTop: "1px solid #cde4d5" }}>ವಿಧ (Type)</td>
-                <td style={{ padding: "8px 12px", fontSize: "12px", fontWeight: 600, borderTop: "1px solid #cde4d5" }}>{isHourly ? "Hourly (ತಾಸಿಗೆ)" : "Daily (ದಿನಕ್ಕೆ)"}</td>
+                <td style={{ padding: "8px 12px", fontWeight: 700, fontSize: "12px", color: "#1a5c3a", borderRight: "1px solid #cde4d5", borderTop: "1px solid #cde4d5" }}>Type</td>
+                <td style={{ padding: "8px 12px", fontSize: "12px", fontWeight: 600, borderTop: "1px solid #cde4d5" }}>{isHourly ? "Hourly" : "Daily"}</td>
               </tr>
             </tbody>
           </table>
@@ -116,18 +116,18 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
           <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "18px", border: "1.5px solid #1a5c3a" }}>
             <thead>
               <tr style={{ background: "#1a5c3a", color: "white" }}>
-                <th style={{ padding: "9px 12px", textAlign: "left", fontSize: "12px", fontWeight: 700, width: "8%" }}>ಕ್ರ.ಸಂ</th>
-                <th style={{ padding: "9px 12px", textAlign: "left", fontSize: "12px", fontWeight: 700 }}>ವಿವರ (Description)</th>
-                <th style={{ padding: "9px 12px", textAlign: "center", fontSize: "12px", fontWeight: 700, width: "18%" }}>ದಿನ / ಗಂಟೆ</th>
-                <th style={{ padding: "9px 12px", textAlign: "center", fontSize: "12px", fontWeight: 700, width: "18%" }}>ದರ (Rate)</th>
-                <th style={{ padding: "9px 12px", textAlign: "right", fontSize: "12px", fontWeight: 700, width: "20%" }}>ಮೊತ್ತ (₹)</th>
+                <th style={{ padding: "9px 12px", textAlign: "left", fontSize: "12px", fontWeight: 700, width: "8%" }}>No.</th>
+                <th style={{ padding: "9px 12px", textAlign: "left", fontSize: "12px", fontWeight: 700 }}>Description</th>
+                <th style={{ padding: "9px 12px", textAlign: "center", fontSize: "12px", fontWeight: 700, width: "18%" }}>Days / Hours</th>
+                <th style={{ padding: "9px 12px", textAlign: "center", fontSize: "12px", fontWeight: 700, width: "18%" }}>Rate</th>
+                <th style={{ padding: "9px 12px", textAlign: "right", fontSize: "12px", fontWeight: 700, width: "20%" }}>Amount (₹)</th>
               </tr>
             </thead>
             <tbody>
               <tr style={{ borderBottom: "1px solid #cde4d5" }}>
                 <td style={{ padding: "11px 12px", textAlign: "center", fontSize: "13px", borderRight: "1px solid #cde4d5" }}>1</td>
                 <td style={{ padding: "11px 12px", fontSize: "13px", fontWeight: 600, borderRight: "1px solid #cde4d5" }}>
-                  ಮಾಸಿಕ ವೇತನ (Basic Salary)
+                  Basic Salary
                 </td>
                 <td style={{ padding: "11px 12px", textAlign: "center", fontSize: "13px", fontWeight: 600, borderRight: "1px solid #cde4d5" }}>
                   {workedLabel}
@@ -143,7 +143,7 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
                 <tr style={{ borderBottom: "1px solid #cde4d5", background: "#fff8f8" }}>
                   <td style={{ padding: "11px 12px", textAlign: "center", fontSize: "13px", borderRight: "1px solid #cde4d5" }}>2</td>
                   <td style={{ padding: "11px 12px", fontSize: "13px", fontWeight: 600, color: "#c00", borderRight: "1px solid #cde4d5" }}>
-                    ಮುಂಗಡ ಕಡಿತ (Advance Deduction)
+                    Advance Deduction
                   </td>
                   <td style={{ padding: "11px 12px", textAlign: "center", fontSize: "13px", color: "#999", borderRight: "1px solid #cde4d5" }}>—</td>
                   <td style={{ padding: "11px 12px", textAlign: "center", fontSize: "13px", color: "#999", borderRight: "1px solid #cde4d5" }}>—</td>
@@ -171,7 +171,7 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
               <tbody>
                 <tr style={{ background: "#f0f7f2" }}>
                   <td style={{ padding: "9px 14px", fontSize: "13px", fontWeight: 700, color: "#1a5c3a", borderBottom: "1px solid #cde4d5", borderRight: "1.5px solid #1a5c3a" }}>
-                    ಒಟ್ಟು ವೇತನ (Gross Salary)
+                    Gross Salary
                   </td>
                   <td style={{ padding: "9px 14px", fontSize: "14px", fontWeight: 700, textAlign: "right", borderBottom: "1px solid #cde4d5", minWidth: "100px" }}>
                     ₹ {grossSalary.toFixed(2)}
@@ -180,7 +180,7 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
                 {advanceTaken > 0 && (
                   <tr style={{ background: "#fff8f8" }}>
                     <td style={{ padding: "9px 14px", fontSize: "13px", fontWeight: 700, color: "#c00", borderBottom: "1px solid #cde4d5", borderRight: "1.5px solid #1a5c3a" }}>
-                      ಮುಂಗಡ ಕಡಿತ (Advance)
+                      Advance Deduction
                     </td>
                     <td style={{ padding: "9px 14px", fontSize: "14px", fontWeight: 700, textAlign: "right", color: "#c00", borderBottom: "1px solid #cde4d5" }}>
                       − ₹ {advanceTaken.toFixed(2)}
@@ -189,7 +189,7 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
                 )}
                 <tr style={{ background: "#1a5c3a" }}>
                   <td style={{ padding: "11px 14px", fontSize: "14px", fontWeight: 900, color: "white", borderRight: "1.5px solid white" }}>
-                    ನಿವ್ವಳ ವೇತನ (Net Payable)
+                    Net Payable
                   </td>
                   <td style={{ padding: "11px 14px", fontSize: "18px", fontWeight: 900, textAlign: "right", color: "white" }}>
                     ₹ {netPayable.toFixed(2)}
@@ -202,12 +202,12 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
           {/* ── Signatures ── */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: "40px", paddingTop: "16px", borderTop: "1px dashed #aaa" }}>
             <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "11px", color: "#555", marginBottom: "40px" }}>ನೌಕರರ ಸಹಿ (Employee Signature)</div>
+              <div style={{ fontSize: "11px", color: "#555", marginBottom: "40px" }}>Employee Signature</div>
               <div style={{ borderTop: "1.5px solid #333", width: "130px", margin: "0 auto" }}></div>
               <div style={{ fontSize: "11px", color: "#555", marginTop: "4px" }}>{employee.name}</div>
             </div>
             <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "11px", color: "#555", marginBottom: "40px" }}>ಫಾರ್, ಕಿಸಾನ ಹೈಟೆಕ್ ನರ್ಸರಿ</div>
+              <div style={{ fontSize: "11px", color: "#555", marginBottom: "40px" }}>For, Kisan Hi-Tech Nursery</div>
               <div style={{ borderTop: "1.5px solid #333", width: "130px", margin: "0 auto" }}></div>
               <div style={{ fontSize: "11px", color: "#555", marginTop: "4px" }}>Authorised Signatory</div>
             </div>
