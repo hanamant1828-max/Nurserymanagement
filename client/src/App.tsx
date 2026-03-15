@@ -28,6 +28,7 @@ import SalaryPage from "@/pages/salary";
 import AdvancesPage from "@/pages/advances";
 import HrReportPage from "@/pages/hr-report";
 import FaceRegistrationPage from "@/pages/face-registration";
+import EmployeeAttendanceReportPage from "@/pages/employee-attendance-report";
 import FaceAttendancePage from "@/pages/face-attendance";
 import UserManagementPage from "@/pages/users";
 import NotFound from "@/pages/not-found";
@@ -155,6 +156,9 @@ function Router() {
       </Route>
       <Route path="/hr-report">
         {() => <ProtectedRoute component={HrReportPage} path="/hr-report" />}
+      </Route>
+      <Route path="/employee-attendance-report">
+        {() => <ProtectedRoute component={EmployeeAttendanceReportPage} path="/employee-attendance-report" />}
       </Route>
       <Route path="/face-attendance">
         {() => <ProtectedRoute component={FaceAttendancePage} path="/face-attendance" />}
