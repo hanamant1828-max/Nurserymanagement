@@ -42,6 +42,14 @@ export default function EmployeeAttendanceReportPage() {
 
   const { data: attendanceRecords, isLoading: attLoading } = useQuery<Attendance[]>({
     queryKey: ["/api/employees", selectedEmployeeId, "attendance", startDate, endDate],
+    queryFn: async () => {
+      const res = await fetch(
+        `/api/employees/${selectedEmployeeId}/attendance?startDate=${startDate}&endDate=${endDate}`,
+        { credentials: "include" }
+      );
+      if (!res.ok) throw new Error("Failed to fetch attendance");
+      return res.json();
+    },
     enabled: !!selectedEmployeeId,
   });
 
