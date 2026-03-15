@@ -75,7 +75,6 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
         <div style={{ background: "#1a5c3a", padding: "14px 28px 12px", color: "white" }}>
           {/* Title – full width centered */}
           <div style={{ textAlign: "center", marginBottom: "10px" }}>
-            <div style={{ fontSize: "14px", fontWeight: 700, fontStyle: "italic", opacity: 1, letterSpacing: "1.5px", marginBottom: "6px", borderBottom: "1px solid rgba(255,255,255,0.35)", paddingBottom: "6px" }}>|| ಶ್ರೀ ಆಂಜನೇಯ ಪ್ರಸನ್ನ ||</div>
             <div style={{ fontSize: "26px", fontWeight: 900, letterSpacing: "0.5px" }}>ಕಿಸಾನ ಹೈಟೆಕ್ ನರ್ಸರಿ</div>
             <div style={{ fontSize: "11px", fontWeight: 600, marginTop: "2px", opacity: 0.9 }}>ಕಲ್ಲೋಳಿ – 591 224, ತಾ|| ಮೂಡಲಗಿ, ಜಿ|| ಬೆಳಗಾವಿ</div>
           </div>
