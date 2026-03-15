@@ -27,8 +27,6 @@ import {
   Calendar as CalendarIcon,
   Layers,
   Loader2,
-  ChevronsUpDown,
-  Check,
   Printer,
   FileSpreadsheet,
 } from "lucide-react";
@@ -56,14 +54,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
 import confetti from "canvas-confetti";
 
 export default function TodayDeliveriesPage() {
@@ -89,39 +79,10 @@ export default function TodayDeliveriesPage() {
   const [pageLotId, setPageLotId] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Search states for dropdowns
-  const [categorySearch, setCategorySearch] = useState("");
-  const [varietySearch, setVarietySearch] = useState("");
-  const [lotSearch, setLotSearch] = useState("");
-
-  // Open states for filter popovers
-  const [categoryOpen, setCategoryOpen] = useState(false);
-  const [varietyOpen, setVarietyOpen] = useState(false);
-  const [lotOpen, setLotOpen] = useState(false);
-
-  const sortedCategories = useMemo(() => {
-    if (!categories) return [];
-    return [...categories].sort((a, b) => a.name.localeCompare(b.name));
-  }, [categories]);
-
-  const filteredCategoriesDropdown = useMemo(() => {
-    if (!sortedCategories) return [];
-    return sortedCategories.filter((c) =>
-      c.name.toLowerCase().includes(categorySearch.toLowerCase()),
-    );
-  }, [sortedCategories, categorySearch]);
-
   const filteredVarietiesPage = varieties?.filter(
     (v) =>
       pageCategoryId === "all" || v.categoryId.toString() === pageCategoryId,
   );
-
-  const filteredVarietiesDropdown = useMemo(() => {
-    if (!filteredVarietiesPage) return [];
-    return filteredVarietiesPage.filter((v) =>
-      v.name.toLowerCase().includes(varietySearch.toLowerCase()),
-    );
-  }, [filteredVarietiesPage, varietySearch]);
 
   const filteredLotsPage = lots?.filter(
     (l) =>
@@ -129,13 +90,6 @@ export default function TodayDeliveriesPage() {
         l.categoryId.toString() === pageCategoryId) &&
       (pageVarietyId === "all" || l.varietyId.toString() === pageVarietyId),
   );
-
-  const filteredLotsDropdown = useMemo(() => {
-    if (!filteredLotsPage) return [];
-    return filteredLotsPage.filter((l) =>
-      l.lotNumber.toLowerCase().includes(lotSearch.toLowerCase()),
-    );
-  }, [filteredLotsPage, lotSearch]);
 
   const filteredOrders = useMemo(() => {
     if (!orders) return [];
@@ -335,271 +289,69 @@ export default function TodayDeliveriesPage() {
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">
               Category Filter
             </label>
-            <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  className="w-full justify-between h-11 bg-background border-muted-foreground/20 font-normal"
-                >
-                  <div className="flex items-center gap-3 truncate">
-                    {pageCategoryId === "all" ? (
-                      <span className="font-bold text-primary">
-                        All Categories
-                      </span>
-                    ) : (
-                      <>
-                        {categories?.find(
-                          (c) => c.id.toString() === pageCategoryId,
-                        )?.image ? (
-                          <img
-                            src={
-                              categories?.find(
-                                (c) => c.id.toString() === pageCategoryId,
-                              )?.image ?? ""
-                            }
-                            className="w-6 h-6 rounded-sm object-cover border"
-                            alt=""
-                          />
-                        ) : (
-                          <Layers className="w-4 h-4 text-muted-foreground/40" />
-                        )}
-                        <span className="font-semibold text-base">
-                          {
-                            categories?.find(
-                              (c) => c.id.toString() === pageCategoryId,
-                            )?.name
-                          }
-                        </span>
-                      </>
-                    )}
-                  </div>
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent
-                className="w-[--radix-popover-trigger-width] p-0"
-                align="start"
-              >
-                <Command>
-                  <CommandInput
-                    placeholder="Search category..."
-                    onValueChange={setCategorySearch}
-                  />
-                  <CommandList className="max-h-[300px] overflow-y-auto">
-                    <CommandEmpty>No category found.</CommandEmpty>
-                    <CommandGroup>
-                      <CommandItem
-                        value="all"
-                        onSelect={() => {
-                          setPageCategoryId("all");
-                          setPageVarietyId("all");
-                          setPageLotId("all");
-                          setCategoryOpen(false);
-                        }}
-                        className="flex items-center gap-3 py-2 cursor-pointer"
-                      >
-                        <div className="w-10 h-10 rounded-md bg-primary/10 flex items-center justify-center border border-primary/20">
-                          <Layers className="w-5 h-5 text-primary" />
-                        </div>
-                        <span className="font-bold text-primary">
-                          All Categories
-                        </span>
-                        {pageCategoryId === "all" && (
-                          <Check className="ml-auto h-4 w-4 text-primary" />
-                        )}
-                      </CommandItem>
-                      {filteredCategoriesDropdown.map((c) => (
-                        <CommandItem
-                          key={c.id}
-                          value={c.name}
-                          onSelect={() => {
-                            setPageCategoryId(c.id.toString());
-                            setPageVarietyId("all");
-                            setPageLotId("all");
-                            setCategoryOpen(false);
-                          }}
-                          className="flex items-center gap-3 py-2 cursor-pointer"
-                        >
-                          {c.image ? (
-                            <img
-                              src={c.image}
-                              className="w-10 h-10 rounded-md object-cover border"
-                              alt=""
-                            />
-                          ) : (
-                            <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center border">
-                              <Layers className="w-5 h-5 text-muted-foreground/40" />
-                            </div>
-                          )}
-                          <span className="font-semibold text-base">
-                            {c.name}
-                          </span>
-                          {pageCategoryId === c.id.toString() && (
-                            <Check className="ml-auto h-4 w-4 text-primary" />
-                          )}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
+            <Select
+              value={pageCategoryId}
+              onValueChange={(val) => {
+                setPageCategoryId(val);
+                setPageVarietyId("all");
+                setPageLotId("all");
+              }}
+            >
+              <SelectTrigger className="h-9 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {categories?.map((c) => (
+                  <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-1.5 flex-1 min-w-[200px]">
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">
               Variety Filter
             </label>
-            <Popover open={varietyOpen} onOpenChange={setVarietyOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  disabled={pageCategoryId === "all"}
-                  className="w-full justify-between h-11 bg-background border-muted-foreground/20 font-normal disabled:opacity-50"
-                >
-                  <span className="truncate">
-                    {pageVarietyId === "all" ? (
-                      <span className="font-bold">All Varieties</span>
-                    ) : (
-                      <span className="font-semibold">
-                        {
-                          varieties?.find(
-                            (v) => v.id.toString() === pageVarietyId,
-                          )?.name
-                        }
-                      </span>
-                    )}
-                  </span>
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent
-                className="w-[--radix-popover-trigger-width] p-0"
-                align="start"
-              >
-                <Command>
-                  <CommandInput
-                    placeholder="Search variety..."
-                    onValueChange={setVarietySearch}
-                  />
-                  <CommandList className="max-h-[300px] overflow-y-auto">
-                    <CommandEmpty>No variety found.</CommandEmpty>
-                    <CommandGroup>
-                      <CommandItem
-                        value="all"
-                        onSelect={() => {
-                          setPageVarietyId("all");
-                          setPageLotId("all");
-                          setVarietyOpen(false);
-                        }}
-                        className="flex items-center gap-3 py-2 cursor-pointer"
-                      >
-                        <span className="font-bold">All Varieties</span>
-                        {pageVarietyId === "all" && (
-                          <Check className="ml-auto h-4 w-4 text-primary" />
-                        )}
-                      </CommandItem>
-                      {filteredVarietiesDropdown.map((v) => (
-                        <CommandItem
-                          key={v.id}
-                          value={v.name}
-                          onSelect={() => {
-                            setPageVarietyId(v.id.toString());
-                            setPageLotId("all");
-                            setVarietyOpen(false);
-                          }}
-                          className="flex items-center gap-3 py-2 cursor-pointer"
-                        >
-                          <span className="font-semibold">{v.name}</span>
-                          {pageVarietyId === v.id.toString() && (
-                            <Check className="ml-auto h-4 w-4 text-primary" />
-                          )}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
+            <Select
+              value={pageVarietyId}
+              onValueChange={(val) => {
+                setPageVarietyId(val);
+                setPageLotId("all");
+              }}
+              disabled={pageCategoryId === "all"}
+            >
+              <SelectTrigger className="h-9 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Varieties</SelectItem>
+                {filteredVarietiesPage?.map((v) => (
+                  <SelectItem key={v.id} value={v.id.toString()}>{v.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-1.5 flex-1 min-w-[200px]">
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">
               Lot Filter
             </label>
-            <Popover open={lotOpen} onOpenChange={setLotOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  disabled={pageVarietyId === "all"}
-                  className="w-full justify-between h-11 bg-background border-muted-foreground/20 font-normal disabled:opacity-50"
-                >
-                  <span className="truncate">
-                    {pageLotId === "all" ? (
-                      <span className="font-bold">All Lots</span>
-                    ) : (
-                      <span className="font-semibold">
-                        {
-                          lots?.find((l) => l.id.toString() === pageLotId)
-                            ?.lotNumber
-                        }
-                      </span>
-                    )}
-                  </span>
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent
-                className="w-[--radix-popover-trigger-width] p-0"
-                align="start"
-              >
-                <Command>
-                  <CommandInput
-                    placeholder="Search lot..."
-                    onValueChange={setLotSearch}
-                  />
-                  <CommandList className="max-h-[300px] overflow-y-auto">
-                    <CommandEmpty>No lot found.</CommandEmpty>
-                    <CommandGroup>
-                      <CommandItem
-                        value="all"
-                        onSelect={() => {
-                          setPageLotId("all");
-                          setLotOpen(false);
-                        }}
-                        className="flex items-center gap-3 py-2 cursor-pointer"
-                      >
-                        <span className="font-bold">All Lots</span>
-                        {pageLotId === "all" && (
-                          <Check className="ml-auto h-4 w-4 text-primary" />
-                        )}
-                      </CommandItem>
-                      {filteredLotsDropdown.map((l) => (
-                        <CommandItem
-                          key={l.id}
-                          value={l.lotNumber}
-                          onSelect={() => {
-                            setPageLotId(l.id.toString());
-                            setLotOpen(false);
-                          }}
-                          className="flex items-center gap-3 py-2 cursor-pointer"
-                        >
-                          <span className="font-semibold font-mono">
-                            {l.lotNumber}
-                          </span>
-                          {pageLotId === l.id.toString() && (
-                            <Check className="ml-auto h-4 w-4 text-primary" />
-                          )}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
+            <Select
+              value={pageLotId}
+              onValueChange={setPageLotId}
+              disabled={pageVarietyId === "all"}
+            >
+              <SelectTrigger className="h-9 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Lots</SelectItem>
+                {filteredLotsPage?.map((l) => (
+                  <SelectItem key={l.id} value={l.id.toString()}>{l.lotNumber}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {(pageCategoryId !== "all" ||
