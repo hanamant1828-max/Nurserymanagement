@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useEmployees } from "@/hooks/use-employees";
 import { useQuery } from "@tanstack/react-query";
 import { 
@@ -21,7 +21,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Loader2, FileText, Search, Users, Printer } from "lucide-react";
+import { Loader2, FileText, Search, Users, Printer, Download } from "lucide-react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
 import { Attendance, Employee, EmployeeAdvance } from "@shared/schema";
 import { InvoicePrint } from "@/components/invoice-print";
@@ -31,11 +31,61 @@ export default function SalaryPage() {
   const [search, setSearch] = useState("");
   const [hoursOverrides, setHoursOverrides] = useState<Record<number, string>>({});
   const [printSlipItem, setPrintSlipItem] = useState<any>(null);
+  const [downloadSlipItem, setDownloadSlipItem] = useState<any>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const downloadRef = useRef<HTMLDivElement>(null);
 
   const handlePrintSlip = (item: any) => {
     setPrintSlipItem(item);
     setTimeout(() => window.print(), 150);
   };
+
+  const handleDownloadSlip = (item: any) => {
+    setDownloadSlipItem(item);
+  };
+
+  useEffect(() => {
+    if (!downloadSlipItem) return;
+    let cancelled = false;
+
+    const doDownload = async () => {
+      setIsDownloading(true);
+      await new Promise((r) => setTimeout(r, 250));
+      if (cancelled || !downloadRef.current) return;
+
+      try {
+        const html2canvas = (await import("html2canvas")).default;
+        const { jsPDF } = await import("jspdf");
+
+        const el = downloadRef.current.firstElementChild as HTMLElement;
+        if (!el) return;
+
+        const canvas = await html2canvas(el, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: "#ffffff",
+          logging: false,
+        });
+
+        const imgData = canvas.toDataURL("image/jpeg", 0.95);
+        const pdf = new jsPDF("p", "mm", "a4");
+        const pdfW = pdf.internal.pageSize.getWidth();
+        const pdfH = (canvas.height * pdfW) / canvas.width;
+        pdf.addImage(imgData, "JPEG", 0, 0, pdfW, pdfH);
+        pdf.save(`Salary-Slip-${downloadSlipItem.name}-${format(selectedDate, "MMMM-yyyy")}.pdf`);
+      } catch (e) {
+        console.error("PDF download failed:", e);
+      } finally {
+        if (!cancelled) {
+          setIsDownloading(false);
+          setDownloadSlipItem(null);
+        }
+      }
+    };
+
+    doDownload();
+    return () => { cancelled = true; };
+  }, [downloadSlipItem]);
   const { data: employees, isLoading: employeesLoading } = useEmployees();
 
   const monthStr = format(selectedDate, "yyyy-MM");
@@ -170,7 +220,7 @@ export default function SalaryPage() {
 
   return (
     <div className="space-y-6 px-4 md:px-8 py-6">
-      {/* Hidden salary slip for printing */}
+      {/* Hidden salary slip for browser print */}
       {printSlipItem && (
         <div id="invoice-print" className="hidden print:block">
           <InvoicePrint
@@ -187,6 +237,30 @@ export default function SalaryPage() {
             endDate={endDate}
             overriddenHours={printSlipItem.totalHoursWorked}
             advanceTaken={printSlipItem.advanceTaken}
+          />
+        </div>
+      )}
+
+      {/* Off-screen InvoicePrint for PDF download (html2canvas needs it visible) */}
+      {downloadSlipItem && (
+        <div
+          ref={downloadRef}
+          style={{ position: "fixed", top: "-99999px", left: 0, zIndex: -1, pointerEvents: "none" }}
+        >
+          <InvoicePrint
+            employee={{
+              id: downloadSlipItem.id,
+              name: downloadSlipItem.name,
+              designation: downloadSlipItem.designation,
+              salary: downloadSlipItem.dailyRate.toString(),
+              hourlyRate: downloadSlipItem.hourlyRate.toString(),
+              workHours: downloadSlipItem.stdHours.toString(),
+            } as Employee}
+            attendance={downloadSlipItem.employeeAttendance}
+            startDate={startDate}
+            endDate={endDate}
+            overriddenHours={downloadSlipItem.totalHoursWorked}
+            advanceTaken={downloadSlipItem.advanceTaken}
           />
         </div>
       )}
@@ -393,6 +467,26 @@ export default function SalaryPage() {
                           <DialogHeader>
                             <DialogTitle className="text-2xl font-bold">Salary Slip — {item.name}</DialogTitle>
                           </DialogHeader>
+                          <div className="flex gap-2 mt-2">
+                            <Button
+                              variant="outline"
+                              className="gap-2"
+                              onClick={() => handlePrintSlip(item)}
+                              data-testid={`button-print-slip-desktop-${item.id}`}
+                            >
+                              <Printer className="w-4 h-4" /> Print
+                            </Button>
+                            <Button
+                              variant="outline"
+                              className="gap-2 text-green-700 border-green-300 hover:bg-green-50"
+                              onClick={() => handleDownloadSlip(item)}
+                              disabled={isDownloading}
+                              data-testid={`button-download-slip-desktop-${item.id}`}
+                            >
+                              {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                              {isDownloading ? "Generating…" : "Download PDF"}
+                            </Button>
+                          </div>
                           <div className="mt-4">
                             <InvoicePrint 
                               employee={{
@@ -519,14 +613,26 @@ export default function SalaryPage() {
                           </div>
                         </div>
 
-                        <Button
-                          className="w-full bg-[#1a5c3a] hover:bg-[#164d30] text-white font-bold h-11 gap-2"
-                          onClick={() => handlePrintSlip(item)}
-                          data-testid={`button-print-slip-mobile-${item.id}`}
-                        >
-                          <Printer className="w-4 h-4" />
-                          Print Salary Slip
-                        </Button>
+                        <div className="grid grid-cols-2 gap-2">
+                          <Button
+                            variant="outline"
+                            className="h-11 gap-2 font-bold border-[#1a5c3a] text-[#1a5c3a] hover:bg-[#1a5c3a] hover:text-white"
+                            onClick={() => handlePrintSlip(item)}
+                            data-testid={`button-print-slip-mobile-${item.id}`}
+                          >
+                            <Printer className="w-4 h-4" />
+                            Print
+                          </Button>
+                          <Button
+                            className="h-11 gap-2 font-bold bg-[#1a5c3a] hover:bg-[#164d30] text-white"
+                            onClick={() => handleDownloadSlip(item)}
+                            disabled={isDownloading}
+                            data-testid={`button-download-slip-mobile-${item.id}`}
+                          >
+                            {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                            {isDownloading ? "Wait…" : "Download"}
+                          </Button>
+                        </div>
                       </div>
                     </DialogContent>
                   </Dialog>
