@@ -72,18 +72,18 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({
         style={{ width: "210mm", minHeight: "297mm", margin: "0 auto", background: "white", color: "#111", fontFamily: "Arial, sans-serif" }}
       >
         {/* ── Letterhead ── */}
-        <div style={{ background: "#1a5c3a", padding: "18px 28px 12px", color: "white" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div style={{ background: "#1a5c3a", padding: "14px 28px 12px", color: "white" }}>
+          {/* Blessing & Title – full width centered */}
+          <div style={{ textAlign: "center", marginBottom: "10px" }}>
+            <div style={{ fontSize: "9px", fontWeight: 600, letterSpacing: "1px", opacity: 0.8 }}>|| ಶ್ರೀ ಆಂಜನೇಯ ಪ್ರಸನ್ನ ||</div>
+            <div style={{ fontSize: "26px", fontWeight: 900, marginTop: "2px", letterSpacing: "0.5px" }}>ಕಿಸಾನ ಹೈಟೆಕ್ ನರ್ಸರಿ</div>
+            <div style={{ fontSize: "11px", fontWeight: 600, marginTop: "2px", opacity: 0.9 }}>ಕಲ್ಲೋಳಿ – 591 224, ತಾ|| ಮೂಡಲಗಿ, ಜಿ|| ಬೆಳಗಾವಿ</div>
+          </div>
+          {/* Proprietor & Phones row */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid rgba(255,255,255,0.25)", paddingTop: "8px" }}>
             <div style={{ fontSize: "11px", fontWeight: 700, opacity: 0.85 }}>ಪ್ರೋ: ಕುಂದನವರ ಬ್ರದರ್ಸ್</div>
-            <div style={{ textAlign: "center", flex: 1, minWidth: 0, overflow: "visible" }}>
-              <div style={{ fontSize: "9px", fontWeight: 600, letterSpacing: "1px", opacity: 0.8 }}>|| ಶ್ರೀ ಆಂಜನೇಯ ಪ್ರಸನ್ನ ||</div>
-              <div style={{ fontSize: "21px", fontWeight: 900, marginTop: "4px", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>ಕಿಸಾನ ಹೈಟೆಕ್ ನರ್ಸರಿ</div>
-              <div style={{ fontSize: "10px", fontWeight: 600, marginTop: "2px", opacity: 0.9, whiteSpace: "nowrap" }}>ಕಲ್ಲೋಳಿ – 591 224, ತಾ|| ಮೂಡಲಗಿ, ಜಿ|| ಬೆಳಗಾವಿ</div>
-            </div>
             <div style={{ textAlign: "right", fontSize: "11px", fontWeight: 600, opacity: 0.85, lineHeight: "1.6" }}>
-              <div>📞 9986589865</div>
-              <div>9663777255</div>
-              <div>7348998635</div>
+              <span>📞 9986589865 / 9663777255 / 7348998635</span>
             </div>
           </div>
         </div>
