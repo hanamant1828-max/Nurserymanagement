@@ -94,13 +94,7 @@ export default function LotsPage() {
           search: parsed.search || "",
           selectedCategory: parsed.selectedCategory || "all",
           selectedVariety: parsed.selectedVariety || "all",
-          dateRange: parsed.dateRange ? {
-            from: parsed.dateRange.from ? new Date(parsed.dateRange.from) : undefined,
-            to: parsed.dateRange.to ? new Date(parsed.dateRange.to) : undefined,
-          } : {
-            from: subDays(new Date(), 15),
-            to: new Date(),
-          },
+          dateRange: undefined,
           currentPage: parsed.currentPage || 1,
         };
       } catch (e) {
@@ -111,10 +105,7 @@ export default function LotsPage() {
       search: "",
       selectedCategory: "all",
       selectedVariety: "all",
-      dateRange: {
-        from: subDays(new Date(), 15),
-        to: new Date(),
-      },
+      dateRange: undefined,
       currentPage: 1,
     };
   };
@@ -148,10 +139,7 @@ export default function LotsPage() {
     setSearch("");
     setSelectedCategory("all");
     setSelectedVariety("all");
-    setDateRange({
-      from: subDays(new Date(), 15),
-      to: new Date(),
-    });
+    setDateRange(undefined);
     setCurrentPage(1);
   };
   const PAGE_SIZE = 15;
