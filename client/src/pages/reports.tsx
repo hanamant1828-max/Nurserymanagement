@@ -222,23 +222,6 @@ export default function ReportsPage() {
     [paymentSummary]
   );
 
-  const isLoading = loadingLots || loadingOrders;
-
-  if (isLoading) {
-    return (
-      <div className="p-4 md:p-8 space-y-6">
-        <div className="h-28 bg-muted/40 rounded-2xl animate-pulse" />
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-24 bg-muted/40 rounded-2xl animate-pulse" />
-          ))}
-        </div>
-        <div className="h-12 bg-muted/40 rounded-2xl animate-pulse" />
-        <div className="h-64 bg-muted/40 rounded-2xl animate-pulse" />
-      </div>
-    );
-  }
-
   const filteredSeedInwards = useMemo(() => {
     if (!seedInwards) return [];
     let data = seedInwards;
@@ -257,6 +240,23 @@ export default function ReportsPage() {
     }
     return data;
   }, [seedInwards, selectedCategory, selectedVariety, searchTerm]);
+
+  const isLoading = loadingLots || loadingOrders;
+
+  if (isLoading) {
+    return (
+      <div className="p-4 md:p-8 space-y-6">
+        <div className="h-28 bg-muted/40 rounded-2xl animate-pulse" />
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-24 bg-muted/40 rounded-2xl animate-pulse" />
+          ))}
+        </div>
+        <div className="h-12 bg-muted/40 rounded-2xl animate-pulse" />
+        <div className="h-64 bg-muted/40 rounded-2xl animate-pulse" />
+      </div>
+    );
+  }
 
   const tabCounts = {
     sowing: dailySowingData.length,
