@@ -1569,7 +1569,7 @@ export default function Orders() {
                 <TableHead className="font-semibold text-xs uppercase tracking-wide">Advance</TableHead>
                 <TableHead className="font-semibold text-xs uppercase tracking-wide">Amount</TableHead>
                 <TableHead className="font-semibold text-xs uppercase tracking-wide">Status</TableHead>
-                <TableHead className="font-semibold text-xs uppercase tracking-wide">Lot</TableHead>
+                <TableHead className="font-semibold text-xs uppercase tracking-wide">Lot / Variety / Category</TableHead>
                 <TableHead className="text-right font-semibold text-xs uppercase tracking-wide">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -1644,17 +1644,25 @@ export default function Orders() {
                       </Badge>
                     </TableCell>
                     <TableCell className="py-4">
-                      {order.lotId ? (
-                        <Badge variant="outline" className="text-xs h-6 bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300 border-green-300 dark:border-green-700 font-semibold px-2" data-testid={`lot-number-${order.id}`}>
-                          Lot {order.lot?.lotNumber}
-                        </Badge>
-                      ) : (order.status !== "DELIVERED" && order.lotStatus === "PENDING_LOT") ? (
-                        <Badge className="bg-red-500 text-white hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-xs h-6 font-bold px-2 animate-pulse" data-testid={`lot-pending-${order.id}`}>
-                          ⚠ Lot Pending
-                        </Badge>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">-</span>
-                      )}
+                      <div className="flex flex-col gap-1">
+                        {order.lotId ? (
+                          <Badge variant="outline" className="text-xs h-6 w-fit bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300 border-green-300 dark:border-green-700 font-semibold px-2" data-testid={`lot-number-${order.id}`}>
+                            Lot {order.lot?.lotNumber}
+                          </Badge>
+                        ) : (order.status !== "DELIVERED" && order.lotStatus === "PENDING_LOT") ? (
+                          <Badge className="bg-red-500 text-white hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-xs h-6 w-fit font-bold px-2 animate-pulse" data-testid={`lot-pending-${order.id}`}>
+                            ⚠ Lot Pending
+                          </Badge>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">-</span>
+                        )}
+                        {(order.lot?.variety?.name || order.variety?.name) && (
+                          <span className="text-xs font-medium text-foreground truncate max-w-[120px]">{order.lot?.variety?.name || order.variety?.name}</span>
+                        )}
+                        {(order.lot?.category?.name || order.category?.name) && (
+                          <span className="text-xs text-muted-foreground truncate max-w-[120px]">{order.lot?.category?.name || order.category?.name}</span>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="py-4">
                       <div className="flex flex-wrap justify-end gap-2">
@@ -1799,7 +1807,12 @@ export default function Orders() {
                       <Badge variant="outline" className="w-fit bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300 border-green-300 dark:border-green-700 py-0 h-6 font-semibold text-xs">
                         Lot {order.lot?.lotNumber}
                       </Badge>
-                      <span className="text-xs font-medium truncate">{order.lot?.variety?.name}</span>
+                      {(order.lot?.variety?.name || order.variety?.name) && (
+                        <span className="text-xs font-medium truncate">{order.lot?.variety?.name || order.variety?.name}</span>
+                      )}
+                      {(order.lot?.category?.name || order.category?.name) && (
+                        <span className="text-xs text-muted-foreground truncate">{order.lot?.category?.name || order.category?.name}</span>
+                      )}
                     </div>
                   ) : (order.status !== "DELIVERED" && order.lotStatus === "PENDING_LOT") ? (
                     <Badge className="bg-red-500 text-white py-0 h-6 mt-1 font-bold text-xs animate-pulse">
