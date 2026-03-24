@@ -13,6 +13,8 @@ export function useLots() {
       if (!res.ok) throw new Error("Failed to fetch lots");
       return api.lots.list.responses[200].parse(await res.json());
     },
+    staleTime: 0,
+    refetchOnMount: true,
   });
 }
 

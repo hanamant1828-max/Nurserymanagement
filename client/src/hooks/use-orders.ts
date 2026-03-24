@@ -17,8 +17,8 @@ export function useOrders(page: number = 1, limit: number = 50, sortField: strin
       }
       return res.json();
     },
-    staleTime: 60 * 1000,
-    placeholderData: (prev) => prev,
+    staleTime: 0,
+    refetchOnMount: true,
   });
 }
 
