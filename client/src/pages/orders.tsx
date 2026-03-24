@@ -1269,11 +1269,17 @@ export default function Orders() {
       if (res.ok) {
         const customer = await res.json();
         if (customer) {
-          form.setValue("customerName", customer.customerName);
-          form.setValue("state", customer.state || "");
-          form.setValue("district", customer.district || "");
-          form.setValue("taluk", customer.taluk || "");
-          form.setValue("village", customer.village || "");
+          form.setValue("customerName", customer.customerName, { shouldDirty: true });
+          form.setValue("village", customer.village || "", { shouldDirty: true });
+          // Set state first, then wait for re-render before setting district and taluk
+          // so the Select options are available when values are applied
+          form.setValue("state", customer.state || "", { shouldDirty: true });
+          setTimeout(() => {
+            form.setValue("district", customer.district || "", { shouldDirty: true });
+            setTimeout(() => {
+              form.setValue("taluk", customer.taluk || "", { shouldDirty: true });
+            }, 50);
+          }, 50);
         }
       }
     } catch (error) {
