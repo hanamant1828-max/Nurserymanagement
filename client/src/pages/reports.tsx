@@ -1,14 +1,16 @@
 import { useState, useMemo, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useLots } from "@/hooks/use-lots";
 import { useOrders } from "@/hooks/use-orders";
 import { useCategories } from "@/hooks/use-categories";
 import { useVarieties } from "@/hooks/use-varieties";
 import { useLocation } from "wouter";
+import { api } from "@shared/routes";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   BarChart3, Search, FileSpreadsheet, Sprout, ShoppingBag,
   Calendar as CalendarIcon, Layers, TrendingUp, IndianRupee,
-  Package, Filter, X, RefreshCw, FileDown, Wallet
+  Package, Filter, X, RefreshCw, FileDown, Wallet, ArrowDownToLine
 } from "lucide-react";
 import {
   Select,
@@ -35,6 +37,11 @@ import { cn } from "@/lib/utils";
 export default function ReportsPage() {
   const { data: lots, isLoading: loadingLots } = useLots();
   const { data: ordersData, isLoading: loadingOrders } = useOrders(1, 10000);
+  const { data: seedInwards } = useQuery<any[]>({
+    queryKey: [api.seedInward.list.path],
+    staleTime: 0,
+    refetchOnMount: true,
+  });
   const orders = useMemo(() => {
     if (!ordersData) return [];
     if (Array.isArray(ordersData)) return ordersData;
@@ -232,11 +239,31 @@ export default function ReportsPage() {
     );
   }
 
+  const filteredSeedInwards = useMemo(() => {
+    if (!seedInwards) return [];
+    let data = seedInwards;
+    if (selectedCategory !== "all")
+      data = data.filter((s: any) => s.categoryId?.toString() === selectedCategory);
+    if (selectedVariety !== "all")
+      data = data.filter((s: any) => s.varietyId?.toString() === selectedVariety);
+    if (searchTerm) {
+      const s = searchTerm.toLowerCase();
+      data = data.filter(
+        (si: any) =>
+          si.lotNo?.toLowerCase().includes(s) ||
+          si.variety?.name?.toLowerCase().includes(s) ||
+          si.receivedFrom?.toLowerCase().includes(s)
+      );
+    }
+    return data;
+  }, [seedInwards, selectedCategory, selectedVariety, searchTerm]);
+
   const tabCounts = {
     sowing: dailySowingData.length,
     stock: lotStockData.length,
     variety: varietyPerformance.length,
     payments: paymentSummary.length,
+    seedinward: filteredSeedInwards.length,
   };
 
   return (
@@ -454,6 +481,7 @@ export default function ReportsPage() {
               { value: "stock", label: "Stock", icon: Layers },
               { value: "variety", label: "Varieties", icon: TrendingUp },
               { value: "payments", label: "Payments", icon: Wallet },
+              { value: "seedinward", label: "Seed Inward", icon: ArrowDownToLine },
             ] as const
           ).map((tab) => (
             <TabsTrigger
@@ -773,6 +801,142 @@ export default function ReportsPage() {
                 )}
               </TableBody>
             </Table>
+          </ReportCard>
+        </TabsContent>
+
+        {/* ── Seed Inward Tab ── */}
+        <TabsContent value="seedinward" className="mt-4">
+          <ReportCard
+            title="Seed Inward Report"
+            subtitle="All seed inward entries with stock usage"
+            count={filteredSeedInwards.length}
+            onPDF={() =>
+              exportToPDF(
+                filteredSeedInwards.map((s: any) => ({
+                  lotNo: s.lotNo,
+                  category: s.category?.name || "-",
+                  variety: s.variety?.name || "-",
+                  receivedFrom: s.receivedFrom || "-",
+                  typeOfPackage: s.typeOfPackage || "-",
+                  numberOfPackets: s.numberOfPackets,
+                  totalQuantity: s.totalQuantity,
+                  usedQuantity: s.usedQuantity,
+                  availableQuantity: s.availableQuantity,
+                  expiryDate: s.expiryDate || "-",
+                })),
+                "Seed_Inward_Report",
+                ["Lot No", "Category", "Variety", "Received From", "Package Type", "Packets", "Total Qty", "Used Qty", "Available Qty", "Expiry Date"],
+                ["lotNo", "category", "variety", "receivedFrom", "typeOfPackage", "numberOfPackets", "totalQuantity", "usedQuantity", "availableQuantity", "expiryDate"]
+              )
+            }
+            onExcel={() =>
+              exportToExcel(
+                filteredSeedInwards.map((s: any) => ({
+                  "Lot No": s.lotNo,
+                  "Category": s.category?.name || "-",
+                  "Variety": s.variety?.name || "-",
+                  "Received From": s.receivedFrom || "-",
+                  "Package Type": s.typeOfPackage || "-",
+                  "No. of Packets": s.numberOfPackets,
+                  "Total Quantity": s.totalQuantity,
+                  "Used Quantity": s.usedQuantity,
+                  "Available Quantity": s.availableQuantity,
+                  "Expiry Date": s.expiryDate || "-",
+                })),
+                "Seed_Inward_Report"
+              )
+            }
+            disabled={filteredSeedInwards.length === 0}
+          >
+            {/* Desktop Table */}
+            <div className="hidden md:block">
+              <Table>
+                <TableHeader className="bg-muted/50">
+                  <TableRow>
+                    <TableHead className="text-xs font-black uppercase tracking-wide">Lot No</TableHead>
+                    <TableHead className="text-xs font-black uppercase tracking-wide">Category</TableHead>
+                    <TableHead className="text-xs font-black uppercase tracking-wide">Variety</TableHead>
+                    <TableHead className="text-xs font-black uppercase tracking-wide">Received From</TableHead>
+                    <TableHead className="text-xs font-black uppercase tracking-wide">Package</TableHead>
+                    <TableHead className="text-xs font-black uppercase tracking-wide text-right">Total Qty</TableHead>
+                    <TableHead className="text-xs font-black uppercase tracking-wide text-right">Used Qty</TableHead>
+                    <TableHead className="text-xs font-black uppercase tracking-wide text-right">Available Qty</TableHead>
+                    <TableHead className="text-xs font-black uppercase tracking-wide">Expiry</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredSeedInwards.length === 0 ? (
+                    <EmptyRow colSpan={9} icon={<ArrowDownToLine className="w-10 h-10" />} message="No seed inward entries found" />
+                  ) : (
+                    filteredSeedInwards.map((s: any, idx: number) => (
+                      <TableRow key={s.id} className="hover:bg-muted/60 transition-colors" data-testid={`row-seedinward-${idx}`}>
+                        <TableCell className="py-3">
+                          <Badge variant="outline" className="font-mono font-bold text-xs">{s.lotNo}</Badge>
+                        </TableCell>
+                        <TableCell className="py-3 font-medium text-sm">{s.category?.name || "-"}</TableCell>
+                        <TableCell className="py-3 text-sm">{s.variety?.name || "-"}</TableCell>
+                        <TableCell className="py-3 text-sm text-muted-foreground">{s.receivedFrom || "-"}</TableCell>
+                        <TableCell className="py-3 text-sm text-muted-foreground">{s.typeOfPackage || "-"} × {s.numberOfPackets}</TableCell>
+                        <TableCell className="py-3 text-right font-bold text-base">{Number(s.totalQuantity).toLocaleString()}</TableCell>
+                        <TableCell className="py-3 text-right">
+                          <span className="font-semibold text-orange-600 dark:text-orange-400">{Number(s.usedQuantity).toLocaleString()}</span>
+                        </TableCell>
+                        <TableCell className="py-3 text-right">
+                          <span className={`font-bold text-base ${Number(s.availableQuantity) > 0 ? "text-green-700 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+                            {Number(s.availableQuantity).toLocaleString()}
+                          </span>
+                        </TableCell>
+                        <TableCell className="py-3 text-sm text-muted-foreground">
+                          {s.expiryDate ? format(new Date(s.expiryDate), "dd MMM yyyy") : "-"}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="md:hidden space-y-3 p-3">
+              {filteredSeedInwards.length === 0 ? (
+                <MobileEmpty icon={<ArrowDownToLine className="w-10 h-10" />} message="No seed inward entries found" />
+              ) : (
+                filteredSeedInwards.map((s: any, idx: number) => (
+                  <MobileCard key={s.id} data-testid={`card-seedinward-${idx}`}>
+                    <div className="flex items-center justify-between">
+                      <Badge variant="outline" className="font-mono font-bold text-xs">{s.lotNo}</Badge>
+                      <span className="text-[10px] font-bold uppercase text-muted-foreground">
+                        {s.expiryDate ? format(new Date(s.expiryDate), "dd MMM yyyy") : "-"}
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-sm font-bold text-foreground">{s.variety?.name || "-"}</span>
+                      <span className="text-xs text-muted-foreground">{s.category?.name || "-"}</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      From: <span className="font-medium text-foreground">{s.receivedFrom || "-"}</span>
+                      {s.typeOfPackage && <> · {s.typeOfPackage} × {s.numberOfPackets}</>}
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 pt-1 border-t border-dashed">
+                      <div className="text-center">
+                        <p className="text-[10px] uppercase font-bold text-muted-foreground">Total</p>
+                        <p className="font-bold text-sm">{Number(s.totalQuantity).toLocaleString()}</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-[10px] uppercase font-bold text-muted-foreground">Used</p>
+                        <p className="font-bold text-sm text-orange-600 dark:text-orange-400">{Number(s.usedQuantity).toLocaleString()}</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-[10px] uppercase font-bold text-muted-foreground">Available</p>
+                        <p className={`font-bold text-sm ${Number(s.availableQuantity) > 0 ? "text-green-700 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+                          {Number(s.availableQuantity).toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                  </MobileCard>
+                ))
+              )}
+            </div>
           </ReportCard>
         </TabsContent>
       </Tabs>
