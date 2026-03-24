@@ -1038,7 +1038,7 @@ export default function Orders() {
   const { data: categories } = useCategories();
   const { data: varieties } = useVarieties();
 
-  const PERSISTENCE_KEY = "orders_filters_state";
+  const PERSISTENCE_KEY = "orders_filters_state_v2";
 
   const getInitialState = () => {
     const saved = localStorage.getItem(PERSISTENCE_KEY);
@@ -1051,8 +1051,8 @@ export default function Orders() {
           pageVarietyId: parsed.pageVarietyId || "all",
           pageLotId: parsed.pageLotId || "all",
           dateRange: {
-            from: parsed.dateRange?.from ? new Date(parsed.dateRange.from) : new Date(new Date().setDate(new Date().getDate() - 30)),
-            to: parsed.dateRange?.to ? new Date(parsed.dateRange.to) : new Date(new Date().setDate(new Date().getDate() + 30)),
+            from: parsed.dateRange?.from ? new Date(parsed.dateRange.from) : new Date(new Date().setDate(new Date().getDate() - 90)),
+            to: parsed.dateRange?.to ? new Date(parsed.dateRange.to) : new Date(new Date().setDate(new Date().getDate() + 90)),
           },
           currentPage: parsed.currentPage || 1,
         };
@@ -1061,9 +1061,9 @@ export default function Orders() {
       }
     }
     const from = new Date();
-    from.setDate(from.getDate() - 30);
+    from.setDate(from.getDate() - 90);
     const to = new Date();
-    to.setDate(to.getDate() + 30);
+    to.setDate(to.getDate() + 90);
     return {
       search: "",
       pageCategoryId: "all",
