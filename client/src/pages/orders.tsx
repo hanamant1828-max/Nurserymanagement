@@ -1602,10 +1602,10 @@ export default function Orders() {
                     <TableCell className="py-4">
                       <div className="flex flex-col gap-1">
                         <div className="text-xs text-muted-foreground">
-                          Sown: <span className="font-semibold text-foreground">{order.lot?.sowingDate ? format(parseISO(order.lot.sowingDate), "dd MMM") : (order.sowingDate ? format(parseISO(order.sowingDate), "dd MMM") : "-")}</span>
+                          Sown: <span className="font-semibold text-foreground">{order.lot?.sowingDate ? format(parseISO(order.lot.sowingDate), "dd MMM yyyy") : (order.sowingDate ? format(parseISO(order.sowingDate), "dd MMM yyyy") : "-")}</span>
                         </div>
                         <div className="text-xs">
-                          Ready: <span className="font-bold text-lg text-primary">{order.lot?.expectedReadyDate ? format(parseISO(order.lot.expectedReadyDate), "dd MMM yy") : (order.deliveryDate ? format(parseISO(order.deliveryDate), "dd MMM yy") : "-")}</span>
+                          Ready: <span className="font-bold text-lg text-primary">{order.lot?.expectedReadyDate ? format(parseISO(order.lot.expectedReadyDate), "dd MMM yyyy") : (order.deliveryDate ? format(parseISO(order.deliveryDate), "dd MMM yyyy") : "-")}</span>
                         </div>
                       </div>
                     </TableCell>
@@ -1817,7 +1817,7 @@ export default function Orders() {
                 </div>
                 <div className="text-right">
                   <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">Delivery Date</p>
-                  <p className="text-xs font-medium">{format(new Date(order.deliveryDate), "MMM d, yyyy")}</p>
+                  <p className="text-xs font-medium">{format(new Date(order.deliveryDate), "dd MMM yyyy")}</p>
                 </div>
               </div>
 
