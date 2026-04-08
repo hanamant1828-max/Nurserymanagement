@@ -28,7 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Sprout, AlertTriangle, Eye, Calendar as CalendarIcon, Trash2, CheckCircle, Layers, CalendarDays, Edit2, ShoppingCart } from "lucide-react";
+import { Plus, Sprout, AlertTriangle, Eye, Calendar as CalendarIcon, Trash2, CheckCircle, Layers, CalendarDays, Edit2, ShoppingCart, Minus } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -114,6 +114,7 @@ export default function LotsPage() {
   const [open, setOpen] = useState(false);
   const [damageDialogOpen, setDamageDialogOpen] = useState(false);
   const [selectedLotId, setSelectedLotId] = useState<number | null>(null);
+  const [damageType, setDamageType] = useState<"add" | "reduce">("add");
   const [search, setSearch] = useState(initialState.search);
   const [selectedCategory, setSelectedCategory] = useState<string>(initialState.selectedCategory);
   const [selectedVariety, setSelectedVariety] = useState<string>(initialState.selectedVariety);
@@ -404,14 +405,25 @@ export default function LotsPage() {
     if (selectedLotId) {
       const lot = lots?.find(l => l.id === selectedLotId);
       if (lot) {
-        // Check if new total damage exceeds sown quantity
-        const newDamage = lot.damaged + data.damaged;
-        if (newDamage > lot.seedsSown) {
-          damageForm.setError("damaged", {
-            type: "manual",
-            message: `Total damage (${newDamage}) cannot exceed sown quantity (${lot.seedsSown})`
-          });
-          return;
+        let newDamage: number;
+        if (damageType === "add") {
+          newDamage = lot.damaged + data.damaged;
+          if (newDamage > lot.seedsSown) {
+            damageForm.setError("damaged", {
+              type: "manual",
+              message: `Total damage (${newDamage}) cannot exceed sown quantity (${lot.seedsSown})`
+            });
+            return;
+          }
+        } else {
+          newDamage = lot.damaged - data.damaged;
+          if (newDamage < 0) {
+            damageForm.setError("damaged", {
+              type: "manual",
+              message: `Cannot reduce by more than current damage (${lot.damaged})`
+            });
+            return;
+          }
         }
 
         update({ id: selectedLotId, damaged: newDamage }, { 
@@ -421,7 +433,7 @@ export default function LotsPage() {
             setSelectedLotId(null); 
             toast({
               title: "Success",
-              description: "Damage recorded successfully",
+              description: damageType === "add" ? "Damage recorded successfully" : "Damage reduced successfully",
             });
           } 
         });
@@ -431,6 +443,8 @@ export default function LotsPage() {
 
   const openDamageDialog = (lotId: number) => {
     setSelectedLotId(lotId);
+    setDamageType("add");
+    damageForm.reset({ damaged: 0, reason: "" });
     setDamageDialogOpen(true);
   };
 
@@ -903,7 +917,7 @@ export default function LotsPage() {
           <DialogHeader>
             <DialogTitle>Update Damage / Loss</DialogTitle>
             <DialogDescription>
-              Record any plant losses or damage for this specific lot.
+              Add new damage or correct/reduce previously recorded damage.
             </DialogDescription>
             {(() => {
               const lot = lots?.find(l => l.id === selectedLotId);
@@ -935,6 +949,35 @@ export default function LotsPage() {
               return null;
             })()}
           </DialogHeader>
+
+          {/* Add / Reduce toggle */}
+          <div className="flex rounded-lg border overflow-hidden">
+            <button
+              type="button"
+              onClick={() => { setDamageType("add"); damageForm.clearErrors(); }}
+              className={cn(
+                "flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium transition-colors",
+                damageType === "add"
+                  ? "bg-destructive text-destructive-foreground"
+                  : "bg-muted/30 text-muted-foreground hover:bg-muted/60"
+              )}
+            >
+              <Plus className="w-4 h-4" /> Add Damage
+            </button>
+            <button
+              type="button"
+              onClick={() => { setDamageType("reduce"); damageForm.clearErrors(); }}
+              className={cn(
+                "flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium transition-colors",
+                damageType === "reduce"
+                  ? "bg-green-600 text-white"
+                  : "bg-muted/30 text-muted-foreground hover:bg-muted/60"
+              )}
+            >
+              <Minus className="w-4 h-4" /> Reduce Damage
+            </button>
+          </div>
+
           <Form {...damageForm}>
             <form onSubmit={damageForm.handleSubmit(onSubmitDamage)} className="space-y-4">
               <FormField
@@ -942,15 +985,19 @@ export default function LotsPage() {
                 name="damaged"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Quantity Damaged (Add to existing)</FormLabel>
+                    <FormLabel>
+                      {damageType === "add" ? "Quantity to Add to Damage" : "Quantity to Reduce from Damage"}
+                    </FormLabel>
                     <FormControl>
                       <Input 
                         type="number" 
-                        {...field} 
+                        min={1}
                         max={(() => {
                           const lot = lots?.find(l => l.id === selectedLotId);
-                          return lot ? lot.seedsSown - lot.damaged : undefined;
+                          if (!lot) return undefined;
+                          return damageType === "add" ? lot.seedsSown - lot.damaged : lot.damaged;
                         })()}
+                        {...field} 
                       />
                     </FormControl>
                     <FormMessage />
@@ -964,14 +1011,26 @@ export default function LotsPage() {
                   <FormItem>
                     <FormLabel>Reason</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="e.g. Pest attack, Rain damage" {...field} />
+                      <Textarea 
+                        placeholder={damageType === "add" ? "e.g. Pest attack, Rain damage" : "e.g. Correction, Re-count"} 
+                        {...field} 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" variant="destructive" className="w-full" disabled={updating}>
-                Record Damage
+              <Button
+                type="submit"
+                className={cn(
+                  "w-full",
+                  damageType === "add"
+                    ? "bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                    : "bg-green-600 hover:bg-green-700 text-white"
+                )}
+                disabled={updating}
+              >
+                {damageType === "add" ? "Record Damage" : "Reduce Damage"}
               </Button>
             </form>
           </Form>
