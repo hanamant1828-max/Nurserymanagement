@@ -1665,7 +1665,7 @@ export default function Orders() {
                     key={order.id} 
                     className={cn(
                       "hover:bg-muted/60 transition-colors",
-                      order.status === "DELIVERED" ? "bg-green-50/30 dark:bg-green-950/10" : "hover:bg-amber-50/30 dark:hover:bg-amber-950/10"
+                      order.status === "DELIVERED" ? "bg-green-50/30 dark:bg-green-950/10" : order.status === "CANCELLED" ? "bg-red-50/60 dark:bg-red-950/20" : "hover:bg-amber-50/30 dark:hover:bg-amber-950/10"
                     )}
                   >
                     <TableCell className="py-4">
@@ -1716,7 +1716,7 @@ export default function Orders() {
                     </TableCell>
                     <TableCell className="py-4">
                       <Badge 
-                        className={order.status === "DELIVERED" ? "bg-green-200 text-green-900 hover:bg-green-300 dark:bg-green-800 dark:text-green-100 dark:hover:bg-green-700 font-semibold text-xs px-3 py-1" : "bg-amber-200 text-amber-900 hover:bg-amber-300 dark:bg-amber-800 dark:text-amber-100 dark:hover:bg-amber-700 font-semibold text-xs px-3 py-1"} 
+                        className={order.status === "DELIVERED" ? "bg-green-200 text-green-900 hover:bg-green-300 dark:bg-green-800 dark:text-green-100 dark:hover:bg-green-700 font-semibold text-xs px-3 py-1" : order.status === "CANCELLED" ? "bg-red-200 text-red-900 hover:bg-red-300 dark:bg-red-800 dark:text-red-100 dark:hover:bg-red-700 font-semibold text-xs px-3 py-1" : "bg-amber-200 text-amber-900 hover:bg-amber-300 dark:bg-amber-800 dark:text-amber-100 dark:hover:bg-amber-700 font-semibold text-xs px-3 py-1"} 
                         data-testid={`status-badge-${order.id}`}
                       >
                         {order.status}
@@ -1862,7 +1862,7 @@ export default function Orders() {
                 key={order.id} 
                 className={cn(
                   "bg-card border rounded-lg p-4 space-y-3 shadow-sm transition-colors",
-                  order.status === "DELIVERED" ? "bg-green-50/50 dark:bg-green-950/10 border-green-200 dark:border-green-800" : "border-amber-200 dark:border-amber-800 hover:bg-amber-50/30"
+                  order.status === "DELIVERED" ? "bg-green-50/50 dark:bg-green-950/10 border-green-200 dark:border-green-800" : order.status === "CANCELLED" ? "bg-red-50/60 dark:bg-red-950/20 border-red-200 dark:border-red-800" : "border-amber-200 dark:border-amber-800 hover:bg-amber-50/30"
                 )}
               >
                 <div className="flex justify-between items-start gap-2">
@@ -1871,7 +1871,7 @@ export default function Orders() {
                     <p className="text-xs text-muted-foreground font-medium">{order.phone}</p>
                   </div>
                   <Badge 
-                    className={order.status === "DELIVERED" ? "bg-green-200 text-green-900 dark:bg-green-800 dark:text-green-100 font-semibold" : "bg-amber-200 text-amber-900 dark:bg-amber-800 dark:text-amber-100 font-semibold"} 
+                    className={order.status === "DELIVERED" ? "bg-green-200 text-green-900 dark:bg-green-800 dark:text-green-100 font-semibold" : order.status === "CANCELLED" ? "bg-red-200 text-red-900 dark:bg-red-800 dark:text-red-100 font-semibold" : "bg-amber-200 text-amber-900 dark:bg-amber-800 dark:text-amber-100 font-semibold"} 
                     data-testid={`status-badge-mobile-${order.id}`}
                   >
                     {order.status}
