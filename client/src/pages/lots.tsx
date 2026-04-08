@@ -1313,10 +1313,19 @@ export default function LotsPage() {
                 </div>
 
                 <div className="flex justify-end gap-2 pt-2 border-t">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="hover:bg-primary/10 hover:text-primary hover:border-primary/30"
+                    onClick={() => handleEdit(lot)}
+                    data-testid={`button-edit-lot-${lot.id}`}
+                  >
+                    <Edit2 className="w-4 h-4 mr-1" /> Edit
+                  </Button>
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="text-destructive border-destructive/20 hover:bg-destructive/5"
+                    className="text-amber-600 border-amber-200 hover:bg-amber-50"
                     onClick={() => openDamageDialog(lot.id)}
                   >
                     <AlertTriangle className="w-4 h-4 mr-1" /> Damage
