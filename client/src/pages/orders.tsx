@@ -987,6 +987,79 @@ const KARNATAKA_DISTRICTS = [
     name: "Ramanagara",
     taluks: ["Ramanagara", "Channapatna", "Kanakapura", "Magadi"],
   },
+  {
+    name: "Shivamogga",
+    taluks: [
+      "Shivamogga",
+      "Bhadravati",
+      "Sagar",
+      "Shikaripura",
+      "Soraba",
+      "Tirthahalli",
+      "Hosanagara",
+    ],
+  },
+  {
+    name: "Tumakuru",
+    taluks: [
+      "Tumakuru",
+      "Chikkanayakanahalli",
+      "Gubbi",
+      "Koratagere",
+      "Kunigal",
+      "Madhugiri",
+      "Pavagada",
+      "Sira",
+      "Tiptur",
+      "Turuvekere",
+    ],
+  },
+  {
+    name: "Udupi",
+    taluks: ["Udupi", "Kundapura", "Karkala"],
+  },
+  {
+    name: "Uttara Kannada",
+    taluks: [
+      "Karwar",
+      "Sirsi",
+      "Siddapur",
+      "Yellapur",
+      "Haliyal",
+      "Mundgod",
+      "Joida",
+      "Bhatkal",
+      "Ankola",
+      "Kumta",
+      "Honnavar",
+      "Dandeli",
+    ],
+  },
+  {
+    name: "Vijayanagara",
+    taluks: [
+      "Hospet",
+      "Hagaribommanahalli",
+      "Harapanahalli",
+      "Sandur",
+      "Kudligi",
+    ],
+  },
+  {
+    name: "Vijayapura",
+    taluks: [
+      "Vijayapura",
+      "Basavana Bagewadi",
+      "Indi",
+      "Muddebihal",
+      "Sindagi",
+      "Tikota",
+    ],
+  },
+  {
+    name: "Yadgir",
+    taluks: ["Yadgir", "Shorapur", "Gurumitkal", "Shahpur", "Hunasagi"],
+  },
 ];
 
 const DISTRICTS_DATA: Record<string, any[]> = {
