@@ -1,0 +1,63 @@
+K
+Kisan hitech Nursery
+
+
+h
+Nurserymanagement-1
+
+Web Service
+Nurserymanagement-1
+Node
+Free
+Upgrade your instance
+
+Connect
+
+Manual Deploy
+Service ID:
+srv-d7qoutmgvqtc73b0god0
+
+hanamant1828-max / Nurserymanagement
+main
+https://nurserymanagement-1.onrender.com
+
+Your free instance will spin down with inactivity, which can delay requests by 50 seconds or more.
+Upgrade now
+May 2, 2026 at 11:38 AM
+failed
+0cc4443
+Update build process to remove TypeScript compiler dependency Modify the build command and script to use Node.js directly, eliminating the need for the tsx compiler. Replit-Commit-Author: Agent Replit-Commit-Session-Id: 566a0ae9-e391-4320-9577-10e900946c21 Replit-Commit-Checkpoint-Type: full_checkpoint Replit-Commit-Event-Id: a4b19f79-df71-4421-9d5c-0a0e304469d8 Replit-Commit-Screenshot-Url: https://storage.googleapis.com/screenshot-production-us-central1/42228cab-13da-45b8-937f-7978604267a6/566a0ae9-e391-4320-9577-10e900946c21/BlGPcpq Replit-Helium-Checkpoint-Created: true
+
+Rollback
+Exited with status 1 while building your code.
+Read our docs for common ways to troubleshoot your deploy.
+
+All logs
+Search
+Search
+
+May 2, 11:37 AM - 11:40 AM
+GMT+5:30
+
+
+
+==> Cloning from https://github.com/hanamant1828-max/Nurserymanagement
+==> Checking out commit 0cc444328e05e6e537a3f6701374d61c7e19b7ef in branch main
+==> Using Node.js version 24.14.1 (default)
+==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+==> Running build command 'pnpm install --frozen-lockfile; pnpm run build'...
+ ERR_PNPM_NO_LOCKFILE  Cannot install with "frozen-lockfile" because pnpm-lock.yaml is absent
+Note that in CI environments this setting is true by default. If you still need to run install in such cases, use "pnpm install --no-frozen-lockfile"
+> rest-express@1.0.0 build /opt/render/project/src
+> tsx script/build.ts
+sh: 1: tsx: not found
+ ELIFECYCLE  Command failed.
+Menu
+==> Build failed 😞
+==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
+Need better ways to work with logs? Try theRender CLI, Render MCP Server, or set up a log stream integration 
+
+0 services selected:
+
+Move
+
