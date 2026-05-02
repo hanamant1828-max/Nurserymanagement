@@ -3,7 +3,7 @@ services:
     name: kisan-nursery
     runtime: node
     plan: free
-    buildCommand: npm install --include=dev && npm run build
+    buildCommand: npm install --include=dev && node script/build.mjs
     startCommand: npm run start
     healthCheckPath: /health
     envVars:
